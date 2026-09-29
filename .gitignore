@@ -113,8 +113,36 @@ InitTestScene*.unity*
 # Auto-generated cache in Assets folder
 /[Aa]ssets/[Ss]ceneDependencyCache*
 
-# URP files prone to merge conflicts
-URP.png
-URP.png.meta
-URPProjectSettings.asset
-URPProjectSettings.asset.meta
+# ==============================================================================
+# Collaboration & Multi-IDE Enhancements
+# ==============================================================================
+
+# Zed Editor
+.zed/
+
+# Visual Studio Code
+.vscode/
+
+# JetBrains Rider / IntelliJ / CLion project directories
+.idea/
+
+# OS-generated files across collaborating platforms (Windows, macOS, Linux)
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+[Tt]humbs.db
+[Dd]esktop.ini
+
+# Package Manager resolved lockfiles (avoid local machine path conflicts if not unified)
+# Uncomment if local cache packages cause conflicts across team members:
+# /[Pp]ackages/packages-lock.json
+
+# Never ignore .meta files in Assets and Packages
+!/[Aa]ssets/**/*.meta
+!/[Pp]ackages/**/*.meta
+
+# Ensure essential settings and lockfiles remain tracked
+!/[Pp]roject[Ss]ettings/
