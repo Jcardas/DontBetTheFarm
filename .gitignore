@@ -112,3 +112,9 @@ InitTestScene*.unity*
 
 # Auto-generated cache in Assets folder
 /[Aa]ssets/[Ss]ceneDependencyCache*
+
+# URP files prone to merge conflicts
+URP.png
+URP.png.meta
+URPProjectSettings.asset
+URPProjectSettings.asset.meta
