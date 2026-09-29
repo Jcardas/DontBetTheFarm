@@ -122,6 +122,7 @@ InitTestScene*.unity*
 
 # Visual Studio Code
 .vscode/
+.vsconfig/
 
 # JetBrains Rider / IntelliJ / CLion project directories
 .idea/
