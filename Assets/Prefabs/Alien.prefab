@@ -632,6 +632,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ab3a14e6986f03441a518e218da20706, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Fighter
+  anchored: 1
   guardRadius: 200
   attackRange: 0.8
   damage: 8

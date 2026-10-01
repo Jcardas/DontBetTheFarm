@@ -4,6 +4,7 @@ using UnityEngine.AI;
 // Collect-and-haul loop: walk to a resource, harvest one load, carry it to the nearest stockpile, repeat.
 // When a resource runs out it moves on to the nearest one of the same type.
 // Animals start working on their own; the farmer starts idle and FarmerController points him at things.
+// A unit that also fights (the farmer) pauses the loop while it is fighting, then picks it back up.
 [RequireComponent(typeof(NavMeshAgent))]
 public class Gatherer : MonoBehaviour
 {
@@ -17,6 +18,7 @@ public class Gatherer : MonoBehaviour
 
     NavMeshAgent agent;
     Health health;
+    Fighter fighter;
     ToyBob toy;
     ResourceNode node;
     Stockpile store;
@@ -29,6 +31,7 @@ public class Gatherer : MonoBehaviour
     {
         agent = GetComponent<NavMeshAgent>();
         health = GetComponent<Health>();
+        fighter = GetComponent<Fighter>();
         toy = GetComponentInChildren<ToyBob>();
     }
 
@@ -53,7 +56,7 @@ public class Gatherer : MonoBehaviour
 
     void Update()
     {
-        if (!working || (health && health.Down)) return;
+        if (!working || (health && health.Down) || (fighter && fighter.Engaged)) return;
 
         if (carrying > 0)
         {
