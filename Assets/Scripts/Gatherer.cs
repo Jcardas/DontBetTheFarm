@@ -3,7 +3,7 @@ using UnityEngine.AI;
 
 // Collect-and-haul loop: walk to a resource, harvest one load, carry it to the nearest stockpile, repeat.
 // When a resource runs out it moves on to the nearest one of the same type.
-// Animals start working on their own; the farmer starts idle and FarmerController points him at things.
+// Animals start working on their own; the farmer starts idle and PlayerControls points him at things.
 // A unit that also fights (the farmer) pauses the loop while it is fighting, then picks it back up.
 [RequireComponent(typeof(NavMeshAgent))]
 public class Gatherer : MonoBehaviour
