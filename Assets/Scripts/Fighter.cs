@@ -22,7 +22,8 @@ public class Fighter : MonoBehaviour
     ToyBob toy;
     Health target;
     Vector3 post;
-    float nextThink, nextAttack;
+    float nextThink, nextAttack, obeyGraceEnds;
+    bool obeying;
 
     void Awake()
     {
@@ -44,9 +45,23 @@ public class Fighter : MonoBehaviour
         if (agent.isOnNavMesh) agent.SetDestination(post);
     }
 
+    // A player order beats self-defence: drop the target and leave the agent alone until the unit arrives.
+    public void Obey()
+    {
+        target = null;
+        obeying = true;
+        obeyGraceEnds = Time.time + 0.5f; // Gatherer.Work only sets its path on its next Update
+    }
+
     void Update()
     {
         if (self.Down) return;
+        if (obeying)
+        {
+            bool arrived = !agent.pathPending && (!agent.hasPath || agent.remainingDistance <= agent.stoppingDistance + 0.2f);
+            if (Time.time < obeyGraceEnds || !arrived) return;
+            obeying = false;
+        }
 
         // Re-pick and re-path four times a second instead of every frame; path requests are the expensive part.
         if (Time.time >= nextThink)

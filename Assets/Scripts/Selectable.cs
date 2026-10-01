@@ -9,7 +9,7 @@ public class Selectable : MonoBehaviour
     static readonly List<Selectable> all = new();
     public static IReadOnlyList<Selectable> All => all;
 
-    [Tooltip("Selected when the night starts and when the player presses Escape. On for the farmer.")]
+    [Tooltip("Selected when the game starts and when the player presses Escape. On for the farmer.")]
     public bool selectedAtStart;
     [Tooltip("Flat ring under the unit, shown only while it is selected.")]
     public GameObject ring;
@@ -49,6 +49,7 @@ public class Selectable : MonoBehaviour
     // One order, routed by what this unit can do. First rule that fits wins.
     public void Command(Vector3 point, ResourceNode node)
     {
+        if (fighter && !fighter.anchored) fighter.Obey();
         if (node && gatherer) gatherer.Work(node);
         else if (fighter && fighter.anchored) fighter.Guard(point);
         else if (gatherer) gatherer.MoveTo(point);
