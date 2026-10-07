@@ -169,3 +169,6 @@ Packages/packages-lock.json linguist-generated
 
 # Exceptions for .asset files such as lightning pre-baking
 LightingData.asset     binary
+
+# NavMesh bakes are binary even though they end in .asset; the unity-yaml eol rule would corrupt them.
+NavMesh*.asset          binary
