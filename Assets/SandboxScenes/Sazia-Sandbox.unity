@@ -119,6 +119,11 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &96945605 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7748407181910711781, guid: 72a81bfaf04574dfea43f6bd2fb514c1, type: 3}
+  m_PrefabInstance: {fileID: 1611106987548441290}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &120348840
 GameObject:
   m_ObjectHideFlags: 0
@@ -198,6 +203,11 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1362125191 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 2860660098010599311, guid: 72a81bfaf04574dfea43f6bd2fb514c1, type: 3}
+  m_PrefabInstance: {fileID: 1611106987548441290}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1404135949
 GameObject:
   m_ObjectHideFlags: 0
@@ -694,9 +704,25 @@ PrefabInstance:
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7910683887424679768, guid: 72a81bfaf04574dfea43f6bd2fb514c1, type: 3}
+      propertyPath: soil
+      value: 
+      objectReference: {fileID: 96945605}
+    - target: {fileID: 7910683887424679768, guid: 72a81bfaf04574dfea43f6bd2fb514c1, type: 3}
       propertyPath: player
       value: 
       objectReference: {fileID: 1609172811}
+    - target: {fileID: 7910683887424679768, guid: 72a81bfaf04574dfea43f6bd2fb514c1, type: 3}
+      propertyPath: growTime
+      value: 15
+      objectReference: {fileID: 0}
+    - target: {fileID: 7910683887424679768, guid: 72a81bfaf04574dfea43f6bd2fb514c1, type: 3}
+      propertyPath: buildableName
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 7910683887424679768, guid: 72a81bfaf04574dfea43f6bd2fb514c1, type: 3}
+      propertyPath: harvestButton
+      value: 
+      objectReference: {fileID: 1362125191}
     - target: {fileID: 7910683887424679768, guid: 72a81bfaf04574dfea43f6bd2fb514c1, type: 3}
       propertyPath: resourceManager
       value: 
