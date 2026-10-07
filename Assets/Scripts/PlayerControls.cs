@@ -3,8 +3,8 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 // The player's mouse and keyboard. Left-click a unit to pick it, or drag a box around several (Shift adds).
-// Left-click the ground or a resource, or right-click anywhere, to order the picked units there.
-// Escape goes back to just the farmer.
+// Left-click the ground, a resource or an alien, or right-click anywhere, to order the picked units there.
+// Escape goes back to just the farmer. Space swings the farmer's pitchfork.
 public class PlayerControls : MonoBehaviour
 {
     const float DragPixels = 8f;
@@ -14,20 +14,27 @@ public class PlayerControls : MonoBehaviour
 
     LeftButton left;
     Vector2 pressedAt;
+    Pitchfork pitchfork;
 
-    void Start() => SelectDefault();
+    void Start()
+    {
+        SelectDefault();
+        pitchfork = FindAnyObjectByType<Pitchfork>();
+    }
 
     void Update()
     {
-        Mouse mouse = Mouse.current;
-        Camera cam = Camera.main;
-        if (mouse == null || cam == null) return;
         Keyboard keys = Keyboard.current;
         bool shift = keys != null && keys.shiftKey.isPressed;
         if (keys != null && keys.escapeKey.wasPressedThisFrame) SelectDefault();
+        if (keys != null && keys.spaceKey.wasPressedThisFrame && pitchfork) pitchfork.Swing();
+
+        Mouse mouse = Mouse.current;
+        Camera cam = Camera.main;
+        if (mouse == null || cam == null) return;
 
         Vector2 at = mouse.position.ReadValue();
-        if (mouse.rightButton.wasPressedThisFrame && Physics.Raycast(cam.ScreenPointToRay(at), out RaycastHit rightHit)) Order(rightHit);
+        if (mouse.rightButton.wasPressedThisFrame && Physics.Raycast(cam.ScreenPointToRay(at), out RaycastHit rightHit)) Command(rightHit);
 
         if (left == LeftButton.Idle && mouse.leftButton.wasPressedThisFrame)
         {
@@ -53,7 +60,7 @@ public class PlayerControls : MonoBehaviour
         var unit = hit.collider.GetComponentInParent<Selectable>();
         if (unit == null || unit.Down)
         {
-            Order(hit);
+            Command(hit);
             return;
         }
         if (shift) unit.Selected = !unit.Selected;
@@ -71,12 +78,12 @@ public class PlayerControls : MonoBehaviour
         foreach (var s in Selectable.All) s.Selected = inside.Contains(s) || (shift && s.Selected);
     }
 
-    // Everyone heads to the same resource; spread targets stop a group stacking on one spot.
-    static void Order(RaycastHit hit)
+    // Everyone gets the same target; spread points stop a group stacking on one spot when it walks.
+    static void Command(RaycastHit hit)
     {
-        var node = hit.collider.GetComponentInParent<ResourceNode>();
+        var order = Order.From(hit);
         var group = Selectable.All.Where(s => s.Selected).ToList();
-        for (int i = 0; i < group.Count; i++) group[i].Command(hit.point + Spread(i), node);
+        for (int i = 0; i < group.Count; i++) group[i].Command(order.Offset(Spread(i)));
     }
 
     // Unit 0 stands on the point; the rest fill rings Spacing apart. Ring k holds 6k units,

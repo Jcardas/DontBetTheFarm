@@ -10,6 +10,7 @@ public enum Team { Farm, Alien }
 public class Health : MonoBehaviour
 {
     static readonly List<Health> all = new();
+    public static IReadOnlyList<Health> All => all;
 
     public Team team;
     public int maxHealth = 50;

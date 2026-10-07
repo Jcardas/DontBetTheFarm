@@ -3,6 +3,8 @@ using UnityEngine.AI;
 
 // Auto-battle brain for animals, aliens and the farmer: walk to the closest enemy, hit it until it is knocked out,
 // then go back to its guard post (where it started, until the player moves it with Guard).
+// A player Attack order picks the target instead and chases it past the guard radius; once it is down,
+// the fighter goes back to its post like after any other fight.
 // Aliens get a huge guard radius so they march on the whole farm. The farmer is not anchored: his post follows him,
 // so he only defends himself where he stands.
 [RequireComponent(typeof(NavMeshAgent), typeof(Health))]
@@ -20,7 +22,7 @@ public class Fighter : MonoBehaviour
     NavMeshAgent agent;
     Health self;
     ToyBob toy;
-    Health target;
+    Health target, ordered;
     Vector3 post;
     float nextThink, nextAttack, obeyGraceEnds;
     bool obeying;
@@ -40,7 +42,7 @@ public class Fighter : MonoBehaviour
     // Move the guard post to `point`: walk there and defend around it from now on.
     public void Guard(Vector3 point)
     {
-        target = null;
+        target = ordered = null;
         post = NavMesh.SamplePosition(point, out NavMeshHit hit, 3f, NavMesh.AllAreas) ? hit.position : point;
         if (agent.isOnNavMesh) agent.SetDestination(post);
     }
@@ -48,9 +50,16 @@ public class Fighter : MonoBehaviour
     // A player order beats self-defence: drop the target and leave the agent alone until the unit arrives.
     public void Obey()
     {
-        target = null;
+        target = ordered = null;
         obeying = true;
         obeyGraceEnds = Time.time + 0.5f; // Gatherer.Work only sets its path on its next Update
+    }
+
+    public void Attack(Health enemy)
+    {
+        obeying = false;
+        target = ordered = enemy;
+        nextThink = 0f;
     }
 
     void Update()
@@ -67,8 +76,9 @@ public class Fighter : MonoBehaviour
         if (Time.time >= nextThink)
         {
             nextThink = Time.time + 0.25f;
+            if (ordered != null && ordered.Down) ordered = null;
             if (!anchored && !Engaged) post = transform.position;
-            target = Health.NearestEnemy(self.team, transform.position, post, guardRadius);
+            target = ordered != null ? ordered : Health.NearestEnemy(self.team, transform.position, post, guardRadius);
             if (target == null)
             {
                 if (Vector3.Distance(transform.position, post) > agent.stoppingDistance + 0.5f) agent.SetDestination(post);

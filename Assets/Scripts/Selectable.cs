@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 // A farm unit the player can pick and order (farmer, cows, horses). Units with no orders keep running their own AI;
-// orders only override where they stand or what they work on. A knocked-out unit cannot stay selected.
+// orders only override where they stand, what they work on or whom they fight. A knocked-out unit cannot stay selected.
 [RequireComponent(typeof(Health))]
 public class Selectable : MonoBehaviour
 {
@@ -47,11 +47,17 @@ public class Selectable : MonoBehaviour
     }
 
     // One order, routed by what this unit can do. First rule that fits wins.
-    public void Command(Vector3 point, ResourceNode node)
+    public void Command(Order order)
     {
+        if (order.kind == OrderKind.Attack && fighter)
+        {
+            if (gatherer) gatherer.working = false;
+            fighter.Attack(order.enemy);
+            return;
+        }
         if (fighter && !fighter.anchored) fighter.Obey();
-        if (node && gatherer) gatherer.Work(node);
-        else if (fighter && fighter.anchored) fighter.Guard(point);
-        else if (gatherer) gatherer.MoveTo(point);
+        if (order.kind == OrderKind.Work && gatherer) gatherer.Work(order.node);
+        else if (fighter && fighter.anchored) fighter.Guard(order.point);
+        else if (gatherer) gatherer.MoveTo(order.point);
     }
 }
