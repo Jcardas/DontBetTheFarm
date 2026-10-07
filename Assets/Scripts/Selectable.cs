@@ -81,6 +81,7 @@ public class Selectable : MonoBehaviour
         }
         if (fighter && !fighter.anchored) fighter.Obey();
         if (order.kind == OrderKind.Work && gatherer) gatherer.Work(order.node);
+        else if (order.kind == OrderKind.Harvest && gatherer && gatherer.harvestsFields) gatherer.Harvest(order.field);
         else if (fighter && fighter.anchored) fighter.Guard(order.point);
         else if (gatherer) gatherer.MoveTo(order.point);
     }

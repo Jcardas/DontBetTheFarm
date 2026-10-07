@@ -1,3 +1,4 @@
+using System.Reflection;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -5,6 +6,8 @@ using UnityEngine.AI;
 // When a resource runs out it moves on to the nearest one of the same type.
 // Animals start working on their own; the farmer starts idle and PlayerControls points him at things.
 // A unit that also fights (the farmer) pauses the loop while it is fighting, then picks it back up.
+// The farmer can also harvest a crop field: walk next to it, wait until it is ripe, work it for a moment, then call
+// WheatField.HarvestWheat, which adds the hay to the field's own ResourceManager. After that he stands idle.
 [RequireComponent(typeof(NavMeshAgent))]
 public class Gatherer : MonoBehaviour
 {
@@ -15,12 +18,21 @@ public class Gatherer : MonoBehaviour
     public float secondsPerLoad = 2f;
     [Tooltip("How close its centre must get to a resource or stockpile's edge. The NavMesh (baked at 0.5 radius) keeps units about 0.5-0.7 off barns and trees, so keep this at 0.8 or more or it never arrives.")]
     public float reach = 1f;
+    [Tooltip("Can be ordered to harvest crop fields. On for the farmer only; other units just walk to a clicked field.")]
+    public bool harvestsFields;
+    [Tooltip("Seconds of work on a ripe field before it is harvested.")]
+    public float secondsPerHarvest = 1.5f;
+
+    // WheatField keeps its ripeness private; reading it here leaves Sazia's script exactly as she wrote it.
+    static readonly FieldInfo ripe = typeof(WheatField).GetField("mature", BindingFlags.Instance | BindingFlags.NonPublic);
 
     NavMeshAgent agent;
     Health health;
     Fighter fighter;
     ToyBob toy;
     ResourceNode node;
+    WheatField field;
+    Collider soil;
     Stockpile store;
     Collider heading;
     ResourceType carryType;
@@ -40,9 +52,20 @@ public class Gatherer : MonoBehaviour
     {
         if (target != node) harvested = 0f; // re-clicking the tree being chopped keeps its progress
         node = target;
+        field = null;
         collects = target.type;
         working = true;
         heading = null;
+    }
+
+    // Walk next to the field, wait there until it is ripe, then harvest it once.
+    public void Harvest(WheatField target)
+    {
+        field = target;
+        soil = target.GetComponentInChildren<Collider>(); // the soil comes first; the wheat plants are added after it
+        working = true;
+        heading = null;
+        harvested = 0f;
     }
 
     // Stop working and walk to a point. Anything being carried is kept until the next Work.
@@ -50,6 +73,7 @@ public class Gatherer : MonoBehaviour
     {
         if (!agent.isOnNavMesh) return;
         working = false;
+        field = null;
         heading = null;
         if (NavMesh.SamplePosition(point, out NavMeshHit hit, 3f, NavMesh.AllAreas)) agent.SetDestination(hit.position);
     }
@@ -57,6 +81,11 @@ public class Gatherer : MonoBehaviour
     void Update()
     {
         if (!working || (health && health.Down) || (fighter && fighter.Engaged)) return;
+        if (field != null)
+        {
+            HarvestField();
+            return;
+        }
 
         if (carrying > 0)
         {
@@ -76,16 +105,31 @@ public class Gatherer : MonoBehaviour
         }
         if (!Arrive(node.Body)) return;
 
+        if (!WorkFor(secondsPerLoad)) return;
+        carryType = node.type;
+        carrying = node.Take(loadSize);
+    }
+
+    void HarvestField()
+    {
+        if (!Arrive(soil) || !(bool)ripe.GetValue(field) || !WorkFor(secondsPerHarvest)) return;
+        field.HarvestWheat();
+        field = null;
+        working = false;
+    }
+
+    // Adds this frame to the work in progress, hopping now and then, and returns true once it has taken `seconds`.
+    bool WorkFor(float seconds)
+    {
         harvested += Time.deltaTime;
         if (toy && Time.time >= nextBump)
         {
             toy.Bump();
             nextBump = Time.time + 0.5f;
         }
-        if (harvested < secondsPerLoad) return;
+        if (harvested < seconds) return false;
         harvested = 0f;
-        carryType = node.type;
-        carrying = node.Take(loadSize);
+        return true;
     }
 
     // Walks toward `target` and returns true once standing next to it.
