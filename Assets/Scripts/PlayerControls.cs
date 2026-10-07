@@ -1,20 +1,29 @@
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-// The player's mouse and keyboard. Left-click a unit to pick it, or drag a box around several (Shift adds).
-// Left-click the ground, a resource or an alien, or right-click anywhere, to order the picked units there.
-// Escape goes back to just the farmer. Space swings the farmer's pitchfork.
+// The player's mouse and keyboard. Left-click a unit to pick it, double-click to pick every unit of its type on screen,
+// or drag a box around several (Shift adds). Left-click the ground, a resource or an alien, or right-click anywhere,
+// to order the picked units there. Ctrl+1..3 saves the picked units as a group, 1..3 picks the group again
+// (Shift+1..3 adds it). Escape goes back to just the farmer. Space swings the farmer's pitchfork.
 public class PlayerControls : MonoBehaviour
 {
     const float DragPixels = 8f;
     const float Spacing = 1.2f;
+    const float DoubleClickSeconds = 0.35f;
 
     enum LeftButton { Idle, Pressed, Dragging }
+
+    [Tooltip("Spawned where each order lands, so the player sees the click register.")]
+    public OrderMarker marker;
 
     LeftButton left;
     Vector2 pressedAt;
     Pitchfork pitchfork;
+    Selectable hovered, lastClicked;
+    float lastClickAt;
+    readonly List<Selectable>[] groups = { new(), new(), new() };
 
     void Start()
     {
@@ -26,15 +35,16 @@ public class PlayerControls : MonoBehaviour
     {
         Keyboard keys = Keyboard.current;
         bool shift = keys != null && keys.shiftKey.isPressed;
-        if (keys != null && keys.escapeKey.wasPressedThisFrame) SelectDefault();
-        if (keys != null && keys.spaceKey.wasPressedThisFrame && pitchfork) pitchfork.Swing();
+        if (keys != null) ReadKeys(keys, shift);
 
         Mouse mouse = Mouse.current;
         Camera cam = Camera.main;
         if (mouse == null || cam == null) return;
 
         Vector2 at = mouse.position.ReadValue();
-        if (mouse.rightButton.wasPressedThisFrame && Physics.Raycast(cam.ScreenPointToRay(at), out RaycastHit rightHit)) Command(rightHit);
+        bool overSomething = Physics.Raycast(cam.ScreenPointToRay(at), out RaycastHit hit);
+        Hover(overSomething ? hit.collider.GetComponentInParent<Selectable>() : null);
+        if (mouse.rightButton.wasPressedThisFrame && overSomething) Command(hit);
 
         if (left == LeftButton.Idle && mouse.leftButton.wasPressedThisFrame)
         {
@@ -44,9 +54,21 @@ public class PlayerControls : MonoBehaviour
         if (left == LeftButton.Pressed && (at - pressedAt).magnitude > DragPixels) left = LeftButton.Dragging;
         if (left == LeftButton.Idle || !mouse.leftButton.wasReleasedThisFrame) return;
 
-        if (left == LeftButton.Dragging) BoxSelect(cam, Box(pressedAt, at), shift);
-        else Click(cam, at, shift);
+        if (left == LeftButton.Dragging) Pick(Selectable.All.Where(s => OnScreen(cam, s, Box(pressedAt, at))), shift);
+        else if (overSomething) Click(cam, hit, shift);
         left = LeftButton.Idle;
+    }
+
+    void ReadKeys(Keyboard keys, bool shift)
+    {
+        if (keys.escapeKey.wasPressedThisFrame) SelectDefault();
+        if (keys.spaceKey.wasPressedThisFrame && pitchfork) pitchfork.Swing();
+        for (int g = 0; g < groups.Length; g++)
+        {
+            if (!keys[Key.Digit1 + g].wasPressedThisFrame) continue;
+            if (keys.ctrlKey.isPressed) groups[g] = Selectable.All.Where(s => s.Selected).ToList();
+            else Pick(groups[g], shift);
+        }
     }
 
     static void SelectDefault()
@@ -54,34 +76,47 @@ public class PlayerControls : MonoBehaviour
         foreach (var s in Selectable.All) s.Selected = s.selectedAtStart;
     }
 
-    static void Click(Camera cam, Vector2 at, bool shift)
+    void Hover(Selectable unit)
     {
-        if (!Physics.Raycast(cam.ScreenPointToRay(at), out RaycastHit hit)) return;
+        if (unit == hovered) return;
+        if (hovered) hovered.Hovered = false;
+        hovered = unit;
+        if (unit) unit.Hovered = true;
+    }
+
+    void Click(Camera cam, RaycastHit hit, bool shift)
+    {
         var unit = hit.collider.GetComponentInParent<Selectable>();
-        if (unit == null || unit.Down)
-        {
-            Command(hit);
-            return;
-        }
-        if (shift) unit.Selected = !unit.Selected;
+        if (unit != null && unit.Down) unit = null;
+        bool twice = unit != null && unit == lastClicked && Time.unscaledTime - lastClickAt < DoubleClickSeconds;
+        lastClicked = unit;
+        lastClickAt = Time.unscaledTime;
+
+        if (unit == null) Command(hit);
+        else if (twice) Pick(Selectable.All.Where(s => s.unitType == unit.unitType && OnScreen(cam, s, cam.pixelRect)), shift);
+        else if (shift) unit.Selected = !unit.Selected;
         else foreach (var s in Selectable.All) s.Selected = s == unit;
     }
 
-    static void BoxSelect(Camera cam, Rect box, bool shift)
+    // Picks the standing `units` instead of the current selection (Shift adds them to it). Does nothing if none are standing.
+    static void Pick(IEnumerable<Selectable> units, bool shift)
     {
-        var inside = Selectable.All.Where(s =>
-        {
-            Vector3 p = cam.WorldToScreenPoint(s.transform.position);
-            return !s.Down && p.z > 0f && box.Contains(p);
-        }).ToList();
-        if (inside.Count == 0) return;
-        foreach (var s in Selectable.All) s.Selected = inside.Contains(s) || (shift && s.Selected);
+        var standing = units.Where(s => !s.Down).ToList();
+        if (standing.Count == 0) return;
+        foreach (var s in Selectable.All) s.Selected = standing.Contains(s) || (shift && s.Selected);
+    }
+
+    static bool OnScreen(Camera cam, Selectable s, Rect area)
+    {
+        Vector3 p = cam.WorldToScreenPoint(s.transform.position);
+        return p.z > 0f && area.Contains(p);
     }
 
     // Everyone gets the same target; spread points stop a group stacking on one spot when it walks.
-    static void Command(RaycastHit hit)
+    void Command(RaycastHit hit)
     {
         var order = Order.From(hit);
+        if (marker) Instantiate(marker, order.point, Quaternion.identity).Show(order.kind);
         var group = Selectable.All.Where(s => s.Selected).ToList();
         for (int i = 0; i < group.Count; i++) group[i].Command(order.Offset(Spread(i)));
     }
