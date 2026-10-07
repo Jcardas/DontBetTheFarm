@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class WheatField: Buildable { 
-    [Header("Wheat Growth")][SerializeField] private float growTime = 5f;
+    [Header("Wheat Growth")][SerializeField] private float growTime = 15f;
     [SerializeField] private float startHeight = 0.1f;
     [SerializeField] private float finalHeight = 0.6f;
 
@@ -17,7 +17,7 @@ public class WheatField: Buildable {
     [SerializeField] private ResourceManager resourceManager;
 
     private bool planted = false;
-    private bool mature = false;
+    public bool mature = false;
 
     private float growthProgress = 0f;
 
@@ -253,5 +253,7 @@ public class WheatField: Buildable {
         if (harvestButton != null) {
         harvestButton.SetActive(false);
         }
+
+         StartNewCrop();
     }
 }

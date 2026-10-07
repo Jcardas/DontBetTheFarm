@@ -1,4 +1,3 @@
-using System.Reflection;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -22,9 +21,6 @@ public class Gatherer : MonoBehaviour
     public bool harvestsFields;
     [Tooltip("Seconds of work on a ripe field before it is harvested.")]
     public float secondsPerHarvest = 1.5f;
-
-    // WheatField keeps its ripeness private; reading it here leaves Sazia's script exactly as she wrote it.
-    static readonly FieldInfo ripe = typeof(WheatField).GetField("mature", BindingFlags.Instance | BindingFlags.NonPublic);
 
     NavMeshAgent agent;
     Health health;
@@ -112,7 +108,7 @@ public class Gatherer : MonoBehaviour
 
     void HarvestField()
     {
-        if (!Arrive(soil) || !(bool)ripe.GetValue(field) || !WorkFor(secondsPerHarvest)) return;
+        if (!Arrive(soil) || !field.mature || !WorkFor(secondsPerHarvest)) return;
         field.HarvestWheat();
         field = null;
         working = false;
