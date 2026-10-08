@@ -7,7 +7,7 @@ using UnityEngine.InputSystem;
 // from the selection, double-click to pick every unit of its type on screen, or drag a box around several
 // (Shift-click toggles one unit, Shift-drag adds). Right-click the ground, a resource or an alien to order the picked
 // units there. Ctrl+1..3 saves the picked units as a group, 1..3 picks the group again (Shift+1..3 adds it).
-// Escape goes back to just the farmer. Space swings the farmer's pitchfork.
+// Escape goes back to just the farmer. Space fires the farmer's shotgun toward the cursor.
 // The cursor shows what a right-click would do on whatever the mouse is over.
 public class PlayerControls : MonoBehaviour
 {
@@ -24,11 +24,12 @@ public class PlayerControls : MonoBehaviour
     InputAction[] groupKeys;
     LeftButton left;
     Vector2 pressedAt;
-    Pitchfork pitchfork;
+    Shotgun shotgun;
     Selectable hovered, lastClicked;
     CursorType cursor;
     float lastClickAt;
     readonly List<Selectable>[] groups = { new(), new(), new() };
+    readonly Plane ground = new(Vector3.up, Vector3.zero);
 
     void Awake()
     {
@@ -54,7 +55,7 @@ public class PlayerControls : MonoBehaviour
     void Start()
     {
         SelectDefault();
-        pitchfork = FindAnyObjectByType<Pitchfork>();
+        shotgun = FindAnyObjectByType<Shotgun>();
     }
 
     void Update()
@@ -67,7 +68,9 @@ public class PlayerControls : MonoBehaviour
         if (cam == null) return;
 
         Vector2 at = player.Point.ReadValue<Vector2>();
-        bool overSomething = Physics.Raycast(cam.ScreenPointToRay(at), out RaycastHit hit);
+        Ray ray = cam.ScreenPointToRay(at);
+        if (player.Fire.WasPressedThisFrame() && shotgun && ground.Raycast(ray, out float along)) shotgun.Fire(ray.GetPoint(along));
+        bool overSomething = Physics.Raycast(ray, out RaycastHit hit);
         var unit = overSomething ? hit.collider.GetComponentInParent<Selectable>() : null;
         Hover(unit);
         ShowCursor(overSomething ? CursorFor(hit, unit) : CursorType.Default);
@@ -90,7 +93,6 @@ public class PlayerControls : MonoBehaviour
     {
         var player = input.Player;
         if (player.Cancel.WasPressedThisFrame()) SelectDefault();
-        if (player.Fire.WasPressedThisFrame() && pitchfork) pitchfork.Swing();
         for (int g = 0; g < groups.Length; g++)
         {
             if (!groupKeys[g].WasPressedThisFrame()) continue;
