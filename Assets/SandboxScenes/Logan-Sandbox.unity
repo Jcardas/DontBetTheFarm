@@ -1238,6 +1238,21 @@ MonoBehaviour:
   - type: 13
     texture: {fileID: 2800000, guid: 0a99dafdd0bbb2e4bba8a6f87b051a3b, type: 3}
     hotspot: {x: 2, y: 14}
+  - type: 14
+    texture: {fileID: 2800000, guid: 691b66de25a2a384faaf9494a819dbf5, type: 3}
+    hotspot: {x: 16, y: 16}
+  - type: 15
+    texture: {fileID: 2800000, guid: b0c02dda577950445b1c349e9b00bd0e, type: 3}
+    hotspot: {x: 16, y: 16}
+  - type: 16
+    texture: {fileID: 2800000, guid: 6b4aa92800aefef43abb073b71272983, type: 3}
+    hotspot: {x: 16, y: 16}
+  - type: 17
+    texture: {fileID: 2800000, guid: 33d4d02adb9837e489f4174f43fc8f9c, type: 3}
+    hotspot: {x: 16, y: 16}
+  - type: 18
+    texture: {fileID: 2800000, guid: 919a5598ff6836844bfbf121ff4a497f, type: 3}
+    hotspot: {x: 16, y: 16}
 --- !u!4 &1294371893
 Transform:
   m_ObjectHideFlags: 0
