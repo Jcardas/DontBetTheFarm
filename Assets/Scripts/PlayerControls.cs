@@ -3,10 +3,12 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-// The player's mouse and keyboard. Left-click a unit to pick it, double-click to pick every unit of its type on screen,
-// or drag a box around several (Shift adds). Left-click the ground, a resource or an alien, or right-click anywhere,
-// to order the picked units there. Ctrl+1..3 saves the picked units as a group, 1..3 picks the group again
-// (Shift+1..3 adds it). Escape goes back to just the farmer. Space swings the farmer's pitchfork.
+// The player's mouse and keyboard. Left-click only selects: click a unit to pick just it, click a picked unit to drop it
+// from the selection, double-click to pick every unit of its type on screen, or drag a box around several
+// (Shift-click toggles one unit, Shift-drag adds). Right-click the ground, a resource or an alien to order the picked
+// units there. Ctrl+1..3 saves the picked units as a group, 1..3 picks the group again (Shift+1..3 adds it).
+// Escape goes back to just the farmer. Space swings the farmer's pitchfork.
+// The cursor shows what a right-click would do on whatever the mouse is over.
 public class PlayerControls : MonoBehaviour
 {
     const float DragPixels = 8f;
@@ -18,12 +20,36 @@ public class PlayerControls : MonoBehaviour
     [Tooltip("Spawned where each order lands, so the player sees the click register.")]
     public OrderMarker marker;
 
+    InputActions input;
+    InputAction[] groupKeys;
     LeftButton left;
     Vector2 pressedAt;
     Pitchfork pitchfork;
     Selectable hovered, lastClicked;
+    CursorType cursor;
     float lastClickAt;
     readonly List<Selectable>[] groups = { new(), new(), new() };
+
+    void Awake()
+    {
+        input = new InputActions();
+        groupKeys = new[] { input.Player.Group1, input.Player.Group2, input.Player.Group3 };
+    }
+
+    // Middle-drag belongs to CameraController; its MiddleClick is enabled here only so hover cursors can yield to Grab.
+    void OnEnable()
+    {
+        input.Player.Enable();
+        input.Camera.MiddleClick.Enable();
+    }
+
+    void OnDisable()
+    {
+        input.Player.Disable();
+        input.Camera.MiddleClick.Disable();
+    }
+
+    void OnDestroy() => input?.Dispose();
 
     void Start()
     {
@@ -33,40 +59,42 @@ public class PlayerControls : MonoBehaviour
 
     void Update()
     {
-        Keyboard keys = Keyboard.current;
-        bool shift = keys != null && keys.shiftKey.isPressed;
-        if (keys != null) ReadKeys(keys, shift);
+        var player = input.Player;
+        bool shift = player.Add.IsPressed();
+        ReadKeys(shift);
 
-        Mouse mouse = Mouse.current;
         Camera cam = Camera.main;
-        if (mouse == null || cam == null) return;
+        if (cam == null) return;
 
-        Vector2 at = mouse.position.ReadValue();
+        Vector2 at = player.Point.ReadValue<Vector2>();
         bool overSomething = Physics.Raycast(cam.ScreenPointToRay(at), out RaycastHit hit);
-        Hover(overSomething ? hit.collider.GetComponentInParent<Selectable>() : null);
-        if (mouse.rightButton.wasPressedThisFrame && overSomething) Command(hit);
+        var unit = overSomething ? hit.collider.GetComponentInParent<Selectable>() : null;
+        Hover(unit);
+        ShowCursor(overSomething ? CursorFor(hit, unit) : CursorType.Default);
+        if (player.Command.WasPressedThisFrame() && overSomething) Command(hit);
 
-        if (left == LeftButton.Idle && mouse.leftButton.wasPressedThisFrame)
+        if (left == LeftButton.Idle && player.Select.WasPressedThisFrame())
         {
             left = LeftButton.Pressed;
             pressedAt = at;
         }
         if (left == LeftButton.Pressed && (at - pressedAt).magnitude > DragPixels) left = LeftButton.Dragging;
-        if (left == LeftButton.Idle || !mouse.leftButton.wasReleasedThisFrame) return;
+        if (left == LeftButton.Idle || !player.Select.WasReleasedThisFrame()) return;
 
         if (left == LeftButton.Dragging) Pick(Selectable.All.Where(s => OnScreen(cam, s, Box(pressedAt, at))), shift);
         else if (overSomething) Click(cam, hit, shift);
         left = LeftButton.Idle;
     }
 
-    void ReadKeys(Keyboard keys, bool shift)
+    void ReadKeys(bool shift)
     {
-        if (keys.escapeKey.wasPressedThisFrame) SelectDefault();
-        if (keys.spaceKey.wasPressedThisFrame && pitchfork) pitchfork.Swing();
+        var player = input.Player;
+        if (player.Cancel.WasPressedThisFrame()) SelectDefault();
+        if (player.Fire.WasPressedThisFrame() && pitchfork) pitchfork.Swing();
         for (int g = 0; g < groups.Length; g++)
         {
-            if (!keys[Key.Digit1 + g].wasPressedThisFrame) continue;
-            if (keys.ctrlKey.isPressed) groups[g] = Selectable.All.Where(s => s.Selected).ToList();
+            if (!groupKeys[g].WasPressedThisFrame()) continue;
+            if (player.SaveGroup.IsPressed()) groups[g] = Selectable.All.Where(s => s.Selected).ToList();
             else Pick(groups[g], shift);
         }
     }
@@ -84,6 +112,24 @@ public class PlayerControls : MonoBehaviour
         if (unit) unit.Hovered = true;
     }
 
+    // Same precedence as Order.From, so the cursor always previews the order a right-click would give.
+    static CursorType CursorFor(RaycastHit hit, Selectable unit) => Order.From(hit).kind switch
+    {
+        OrderKind.Attack => CursorType.Attack,
+        OrderKind.Harvest => CursorType.Harvest,
+        OrderKind.Work => CursorType.Chop,
+        _ => unit && !unit.Down ? CursorType.Interact : CursorType.Default,
+    };
+
+    // CameraController also sets cursors (Grab, edge arrows) and resets to Default when its own state ends,
+    // so a non-Default hover cursor is re-asserted every frame; SetCursor ignores repeats. Grab wins while held.
+    void ShowCursor(CursorType kind)
+    {
+        bool changed = kind != cursor;
+        cursor = kind;
+        if ((changed || kind != CursorType.Default) && !input.Camera.MiddleClick.IsPressed()) CursorManager.Instance?.SetCursor(kind);
+    }
+
     void Click(Camera cam, RaycastHit hit, bool shift)
     {
         var unit = hit.collider.GetComponentInParent<Selectable>();
@@ -92,9 +138,9 @@ public class PlayerControls : MonoBehaviour
         lastClicked = unit;
         lastClickAt = Time.unscaledTime;
 
-        if (unit == null) Command(hit);
-        else if (twice) Pick(Selectable.All.Where(s => s.unitType == unit.unitType && OnScreen(cam, s, cam.pixelRect)), shift);
-        else if (shift) unit.Selected = !unit.Selected;
+        if (unit == null) return;
+        if (twice) Pick(Selectable.All.Where(s => s.unitType == unit.unitType && OnScreen(cam, s, cam.pixelRect)), shift);
+        else if (shift || unit.Selected) unit.Selected = !unit.Selected;
         else foreach (var s in Selectable.All) s.Selected = s == unit;
     }
 
@@ -138,8 +184,8 @@ public class PlayerControls : MonoBehaviour
 
     void OnGUI()
     {
-        if (left != LeftButton.Dragging || Mouse.current == null) return;
-        Rect r = Box(pressedAt, Mouse.current.position.ReadValue());
+        if (left != LeftButton.Dragging) return;
+        Rect r = Box(pressedAt, input.Player.Point.ReadValue<Vector2>());
         r.y = Screen.height - r.yMax; // input is bottom-left origin, IMGUI is top-left
         var tint = new Color(1f, 0.85f, 0.1f);
         GUI.DrawTexture(r, Texture2D.whiteTexture, ScaleMode.StretchToFill, true, 0f, new Color(tint.r, tint.g, tint.b, 0.15f), 0f, 0f);
