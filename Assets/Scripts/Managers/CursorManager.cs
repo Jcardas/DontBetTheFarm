@@ -20,7 +20,12 @@ public enum CursorType
     Attack,
     Interact,
     Harvest,
-    Chop
+    Chop,
+    Reload0,
+    Reload25,
+    Reload50,
+    Reload75,
+    Reload100
 }
 
 /// <summary>

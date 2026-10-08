@@ -10,6 +10,8 @@ using UnityEngine.AI;
 [RequireComponent(typeof(NavMeshAgent))]
 public class Gatherer : MonoBehaviour
 {
+    static readonly Color WorkTint = new(0.8f, 1f, 0.7f);
+
     [Tooltip("Run the loop from the start. Off for the farmer, who waits for a click.")]
     public bool working = true;
     public ResourceType collects = ResourceType.Wood;
@@ -26,6 +28,7 @@ public class Gatherer : MonoBehaviour
     Health health;
     Fighter fighter;
     ToyBob toy;
+    ProgressRing progress;
     ResourceNode node;
     WheatField field;
     Collider soil;
@@ -41,6 +44,7 @@ public class Gatherer : MonoBehaviour
         health = GetComponent<Health>();
         fighter = GetComponent<Fighter>();
         toy = GetComponentInChildren<ToyBob>();
+        progress = GetComponent<ProgressRing>();
     }
 
     // Start harvesting this resource (or the nearest one like it, if it is used up).
@@ -114,10 +118,11 @@ public class Gatherer : MonoBehaviour
         working = false;
     }
 
-    // Adds this frame to the work in progress, hopping now and then, and returns true once it has taken `seconds`.
+    // Adds this frame to the work in progress, hopping now and then and filling the ring, and returns true once it has taken `seconds`.
     bool WorkFor(float seconds)
     {
         harvested += Time.deltaTime;
+        if (progress) progress.Set(harvested / seconds, WorkTint, ProgressRing.Work);
         if (toy && Time.time >= nextBump)
         {
             toy.Bump();
