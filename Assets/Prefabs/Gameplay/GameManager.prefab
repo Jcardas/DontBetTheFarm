@@ -1,0 +1,92 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &7980839796599825426
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5772230492171609025}
+  - component: {fileID: 3183855829140993825}
+  - component: {fileID: 592981295939912885}
+  m_Layer: 0
+  m_Name: GameManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5772230492171609025
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7980839796599825426}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: -0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3183855829140993825
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7980839796599825426}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8726592102cf35448876c909349d2c27, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UnityNote
+  note: This is the general game manager object that should hold all game logic manager
+    scripts.
+--- !u!114 &592981295939912885
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7980839796599825426}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e22caa948484aec4a9f73cc32b5b2abb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CursorManager
+  cursorList:
+  - type: 0
+    texture: {fileID: 2800000, guid: fedc076baeb05804cab1ff17dd39e132, type: 3}
+    hotspot: {x: 8, y: 7}
+  - type: 1
+    texture: {fileID: 2800000, guid: 17c834c55c6624b4fb06b8f0dc9c131a, type: 3}
+    hotspot: {x: 16, y: 16}
+  - type: 2
+    texture: {fileID: 2800000, guid: d8ef4d5105042ee46b435457fc77fc89, type: 3}
+    hotspot: {x: 16, y: 16}
+  - type: 3
+    texture: {fileID: 2800000, guid: e5ba837a585e69741a7888a9c41b1646, type: 3}
+    hotspot: {x: 16, y: 16}
+  - type: 4
+    texture: {fileID: 2800000, guid: c03dd9ab698b83e43a05b9ff186a23bd, type: 3}
+    hotspot: {x: 16, y: 16}
+  - type: 5
+    texture: {fileID: 2800000, guid: 61f0d0b60f3e8b4459abbf0fe8f99dea, type: 3}
+    hotspot: {x: 16, y: 16}
+  - type: 6
+    texture: {fileID: 2800000, guid: 012c89da7b1b6c74cb37a997e7edcf24, type: 3}
+    hotspot: {x: 16, y: 16}
+  - type: 7
+    texture: {fileID: 2800000, guid: 32fa90cbe4e33d8479e062f5c3773c52, type: 3}
+    hotspot: {x: 16, y: 16}
+  - type: 8
+    texture: {fileID: 2800000, guid: da6d1a6e711a6d14584b210ae9668282, type: 3}
+    hotspot: {x: 16, y: 16}
+  - type: 9
+    texture: {fileID: 2800000, guid: c5d063eccf46d3d4db247f5f5a1f2987, type: 3}
+    hotspot: {x: 16, y: 16}

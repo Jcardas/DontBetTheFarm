@@ -283,7 +283,7 @@ GameObject:
   - component: {fileID: 9190490319079997848}
   - component: {fileID: 9135603751702638983}
   m_Layer: 0
-  m_Name: Barn
+  m_Name: BarnProto
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

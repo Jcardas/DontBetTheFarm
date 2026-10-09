@@ -376,7 +376,7 @@ GameObject:
   - component: {fileID: 4044711343678575196}
   - component: {fileID: 7191107656802303171}
   m_Layer: 0
-  m_Name: Cow
+  m_Name: CowProto
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

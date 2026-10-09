@@ -466,7 +466,7 @@ GameObject:
   - component: {fileID: 6432866820995172586}
   - component: {fileID: 8082436924824092105}
   m_Layer: 0
-  m_Name: Horse
+  m_Name: HorseProto
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
