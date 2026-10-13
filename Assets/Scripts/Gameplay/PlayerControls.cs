@@ -8,7 +8,7 @@ using UnityEngine.InputSystem;
 // (Shift-click toggles one unit, Shift-drag adds). Right-click the ground, a resource or an alien to order the picked
 // units there. Ctrl+1..3 saves the picked units as a group, 1..3 picks the group again (Shift+1..3 adds it).
 // Escape goes back to just the farmer. Space fires the farmer's shotgun toward the cursor.
-// The cursor shows what a right-click would do on whatever the mouse is over.
+// The cursor shows what a right-click would do on whatever the mouse is over, or how far along a shotgun reload is.
 public class PlayerControls : MonoBehaviour
 {
     const float DragPixels = 8f;
@@ -73,7 +73,8 @@ public class PlayerControls : MonoBehaviour
         bool overSomething = Physics.Raycast(ray, out RaycastHit hit);
         var unit = overSomething ? hit.collider.GetComponentInParent<Selectable>() : null;
         Hover(unit);
-        ShowCursor(overSomething ? CursorFor(hit, unit) : CursorType.Default);
+        ShowCursor(shotgun && shotgun.Reloading ? ReloadCursor(shotgun.ReloadProgress)
+            : overSomething ? CursorFor(hit, unit) : CursorType.Default);
         if (player.Command.WasPressedThisFrame() && overSomething) Command(hit);
 
         if (left == LeftButton.Idle && player.Select.WasPressedThisFrame())
@@ -122,6 +123,9 @@ public class PlayerControls : MonoBehaviour
         OrderKind.Work => CursorType.Chop,
         _ => unit && !unit.Down ? CursorType.Interact : CursorType.Default,
     };
+
+    // Quarter steps. Reload100 is never shown: the frame the reload completes, the hover cursor comes back.
+    static CursorType ReloadCursor(float progress) => CursorType.Reload0 + Mathf.Min(3, (int)(progress * 4f));
 
     // CameraController also sets cursors (Grab, edge arrows) and resets to Default when its own state ends,
     // so a non-Default hover cursor is re-asserted every frame; SetCursor ignores repeats. Grab wins while held.
