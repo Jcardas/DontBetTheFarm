@@ -28,6 +28,17 @@ public class Stockpile : MonoBehaviour
     public static Stockpile Nearest(Vector3 from) =>
         all.OrderBy(s => Reach.Gap(from, s.Body)).FirstOrDefault();
 
+    public static bool Spend(ResourceType type, int amount)
+    {
+        if (amount < 0 || Count(type) < amount)
+            return false;
+
+        totals[type] -= amount;
+        Debug.Log(type + " remaining: " + totals[type]);
+
+        return true;
+    }
+
     // Placeholder readout until the real HUD exists.
     void OnGUI()
     {

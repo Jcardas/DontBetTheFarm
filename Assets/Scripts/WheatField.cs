@@ -1,259 +1,272 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class WheatField: Buildable { 
-    [Header("Wheat Growth")][SerializeField] private float growTime = 15f;
-    [SerializeField] private float startHeight = 0.1f;
-    [SerializeField] private float finalHeight = 0.6f;
+public class WheatField: Buildable { [Header("Wheat Growth")][SerializeField] private float growTime = 15f;
+  [SerializeField] private float startHeight = 0.1f;
+  [SerializeField] private float finalHeight = 0.6f;
 
-    [Header("Field")][SerializeField] private GameObject soil;
-    [SerializeField] private float spacing = 0.3f;
-    [SerializeField] private float edgePadding = 0.15f;
+  [Header("Field")][SerializeField] private GameObject soil;
+  [SerializeField] private float spacing = 0.3f;
+  [SerializeField] private float edgePadding = 0.15f;
 
-    [Header("Player Interaction")][SerializeField] private Transform player;
-    [SerializeField] private float harvestDistance = 2f;
+  [Header("Player Interaction")][SerializeField] private Transform player;
+  [SerializeField] private float harvestDistance = 2f;
 
-    [Header("UI")][SerializeField] private GameObject harvestButton;
-    [SerializeField] private ResourceManager resourceManager;
+  [Header("UI")][SerializeField] private GameObject harvestButton;
 
-    private bool planted = false;
-    public bool mature = false;
+  private bool planted = false;
+  public bool mature = false;
 
-    private float growthProgress = 0f;
+  private float growthProgress = 0f;
 
-    private List < GameObject > wheatPlants = new List < GameObject > ();
+  private List < GameObject > wheatPlants = new List < GameObject > ();
 
-    void Start() {
-        buildableName = "Wheat Field";
+  void Start() {
+    buildableName = "Wheat Field";
 
-        PositionHarvestIcon();
-        if (harvestButton != null) {
-        harvestButton.SetActive(false);
-        }
+    PositionHarvestIcon();
+    if (harvestButton != null) {
+      harvestButton.SetActive(false);
+    }
+    if (player == null) {
+      GameObject playerObject = GameObject.Find("Farmer");
 
-        StartNewCrop();
+      if (playerObject != null) player = playerObject.transform;
     }
 
-    void Update() {
-        if (planted && !mature) {
-        GrowWheat();
-        }
+    StartNewCrop();
+  }
 
-        CheckPlayerDistance();
+  void Update() {
+    if (planted && !mature) {
+      GrowWheat();
     }
 
-    void PositionHarvestIcon() {
-        if (soil == null || harvestButton == null) {
-        return;
-        }
+    CheckPlayerDistance();
+  }
 
-        Renderer soilRenderer = soil.GetComponent < Renderer > ();
-
-        if (soilRenderer == null) {
-        return;
-        }
-
-        Bounds bounds = soilRenderer.bounds;
-
-        Vector3 iconPosition = new Vector3(
-        bounds.center.x, bounds.max.y + 1.2f, bounds.center.z);
-
-        harvestButton.transform.position = iconPosition;
+  void PositionHarvestIcon() {
+    if (soil == null || harvestButton == null) {
+      return;
     }
 
-    public override void Build() {
-        Debug.Log("Wheat Field ready.");
+    Renderer soilRenderer = soil.GetComponent < Renderer > ();
+
+    if (soilRenderer == null) {
+      return;
     }
 
-    void StartNewCrop() {
-        if (planted || soil == null) {
-        return;
-        }
+    Bounds bounds = soilRenderer.bounds;
 
-        CreateWheat();
+    Vector3 iconPosition = new Vector3(
+    bounds.center.x, bounds.max.y + 1.2f, bounds.center.z);
 
-        planted = true;
-        mature = false;
-        growthProgress = 0f;
+    harvestButton.transform.position = iconPosition;
+  }
 
-        Debug.Log("Wheat started growing.");
+  public override void Build() {
+    Debug.Log("Wheat Field ready.");
+  }
+
+  void StartNewCrop() {
+    if (planted || soil == null) {
+      return;
     }
 
-    void CreateWheat() {
-        Renderer soilRenderer = soil.GetComponent < Renderer > ();
+    CreateWheat();
 
-        if (soilRenderer == null) {
-        Debug.Log("Soil needs a Renderer component.");
-        return;
-        }
+    planted = true;
+    mature = false;
+    growthProgress = 0f;
 
-        Bounds bounds = soilRenderer.bounds;
+    Debug.Log("Wheat started growing.");
+  }
 
-        float topY = bounds.max.y;
+  void CreateWheat() {
+    Renderer soilRenderer = soil.GetComponent < Renderer > ();
 
-        for (float x = bounds.min.x + edgePadding;
-        x <= bounds.max.x - edgePadding;
-        x += spacing) {
-        for (float z = bounds.min.z + edgePadding;
-        z <= bounds.max.z - edgePadding;
-        z += spacing) {
-            Vector3 position = new Vector3(
-            x, topY, z);
-
-            CreateWheatPlant(position);
-        }
-        }
+    if (soilRenderer == null) {
+      Debug.Log("Soil needs a Renderer component.");
+      return;
     }
 
-    void CreateWheatPlant(Vector3 position) {
-        GameObject wheatPlant = new GameObject("WheatPlant");
+    Bounds bounds = soilRenderer.bounds;
 
-        wheatPlant.transform.SetParent(transform);
+    float topY = bounds.max.y;
 
-        wheatPlant.transform.position = position;
+    for (float x = bounds.min.x + edgePadding;
+    x <= bounds.max.x - edgePadding;
+    x += spacing) {
+      for (float z = bounds.min.z + edgePadding;
+      z <= bounds.max.z - edgePadding;
+      z += spacing) {
+        Vector3 position = new Vector3(
+        x, topY, z);
 
-        GameObject stem = GameObject.CreatePrimitive(
-        PrimitiveType.Cube);
+        CreateWheatPlant(position);
+      }
+    }
+  }
 
-        stem.name = "Stem";
+  void CreateWheatPlant(Vector3 position) {
+    GameObject wheatPlant = new GameObject("WheatPlant");
 
-        stem.transform.SetParent(
-        wheatPlant.transform);
+    wheatPlant.transform.SetParent(transform);
 
-        stem.transform.localScale = new Vector3(
-        0.06f, startHeight, 0.06f);
+    wheatPlant.transform.position = position;
 
-        stem.transform.localPosition = new Vector3(
-        0f, startHeight / 2f, 0f);
+    GameObject stem = GameObject.CreatePrimitive(
+    PrimitiveType.Cube);
 
-        stem.GetComponent < Renderer > ().material.color = new Color(
-        0.45f, 0.72f, 0.25f);
+    stem.name = "Stem";
 
-        GameObject head = GameObject.CreatePrimitive(
-        PrimitiveType.Capsule);
+    stem.transform.SetParent(
+    wheatPlant.transform);
 
-        head.name = "Head";
+    stem.transform.localScale = new Vector3(
+    0.06f, startHeight, 0.06f);
 
-        head.transform.SetParent(
-        wheatPlant.transform);
+    stem.transform.localPosition = new Vector3(
+    0f, startHeight / 2f, 0f);
 
-        head.transform.localScale = new Vector3(
-        0.08f, 0.04f, 0.08f);
+    stem.GetComponent < Renderer > ().material.color = new Color(
+    0.45f, 0.72f, 0.25f);
 
-        head.transform.localPosition = new Vector3(
-        0f, startHeight + 0.04f, 0f);
+    GameObject head = GameObject.CreatePrimitive(
+    PrimitiveType.Capsule);
 
-        head.GetComponent < Renderer > ().material.color = new Color(
-        0.45f, 0.72f, 0.25f);
+    head.name = "Head";
 
-        wheatPlants.Add(wheatPlant);
+    head.transform.SetParent(
+    wheatPlant.transform);
+
+    head.transform.localScale = new Vector3(
+    0.08f, 0.04f, 0.08f);
+
+    head.transform.localPosition = new Vector3(
+    0f, startHeight + 0.04f, 0f);
+
+    head.GetComponent < Renderer > ().material.color = new Color(
+    0.45f, 0.72f, 0.25f);
+
+    wheatPlants.Add(wheatPlant);
+  }
+
+  void GrowWheat() {
+    growthProgress += Time.deltaTime / growTime;
+
+    growthProgress = Mathf.Clamp01(
+    growthProgress);
+
+    float currentHeight = Mathf.Lerp(
+    startHeight, finalHeight, growthProgress);
+
+    float headSize = Mathf.Lerp(
+    0.04f, 0.10f, growthProgress);
+
+    foreach(GameObject wheatPlant in wheatPlants) {
+      Transform stem = wheatPlant.transform.Find("Stem");
+
+      Transform head = wheatPlant.transform.Find("Head");
+
+      // Grow stem
+      stem.localScale = new Vector3(
+      0.06f, currentHeight, 0.06f);
+
+      stem.localPosition = new Vector3(
+      0f, currentHeight / 2f, 0f);
+
+      // Grow head
+      head.localScale = new Vector3(
+      0.08f, headSize, 0.08f);
+
+      head.localPosition = new Vector3(
+      0f, currentHeight + headSize, 0f);
     }
 
-    void GrowWheat() {
-        growthProgress += Time.deltaTime / growTime;
+    if (growthProgress >= 1f) {
+      MakeGolden();
+    }
+  }
 
-        growthProgress = Mathf.Clamp01(
-        growthProgress);
+  void MakeGolden() {
+    Color golden = new Color(
+    0.93f, 0.78f, 0.28f);
 
-        float currentHeight = Mathf.Lerp(
-        startHeight, finalHeight, growthProgress);
+    foreach(GameObject wheatPlant in wheatPlants) {
+      Renderer stemRenderer = wheatPlant.transform.Find("Stem").GetComponent < Renderer > ();
 
-        float headSize = Mathf.Lerp(
-        0.04f, 0.10f, growthProgress);
+      Renderer headRenderer = wheatPlant.transform.Find("Head").GetComponent < Renderer > ();
 
-        foreach(GameObject wheatPlant in wheatPlants) {
-        Transform stem = wheatPlant.transform.Find("Stem");
+      stemRenderer.material.color = golden;
 
-        Transform head = wheatPlant.transform.Find("Head");
-
-        // Grow stem
-        stem.localScale = new Vector3(
-        0.06f, currentHeight, 0.06f);
-
-        stem.localPosition = new Vector3(
-        0f, currentHeight / 2f, 0f);
-
-        // Grow head
-        head.localScale = new Vector3(
-        0.08f, headSize, 0.08f);
-
-        head.localPosition = new Vector3(
-        0f, currentHeight + headSize, 0f);
-        }
-
-        if (growthProgress >= 1f) {
-        MakeGolden();
-        }
+      headRenderer.material.color = golden;
     }
 
-    void MakeGolden() {
-        Color golden = new Color(
-        0.93f, 0.78f, 0.28f);
+    mature = true;
 
-        foreach(GameObject wheatPlant in wheatPlants) {
-        Renderer stemRenderer = wheatPlant.transform.Find("Stem").GetComponent < Renderer > ();
+    Debug.Log("Wheat is ready to harvest!");
+  }
 
-        Renderer headRenderer = wheatPlant.transform.Find("Head").GetComponent < Renderer > ();
-
-        stemRenderer.material.color = golden;
-
-        headRenderer.material.color = golden;
-        }
-
-        mature = true;
-
-        Debug.Log("Wheat is ready to harvest!");
+  void CheckPlayerDistance() {
+    if (player == null || harvestButton == null || soil == null) {
+      return;
     }
 
-    void CheckPlayerDistance() {
-        if (player == null || harvestButton == null || soil == null) {
-        return;
-        }
+    Renderer soilRenderer = soil.GetComponent < Renderer > ();
 
-        Renderer soilRenderer = soil.GetComponent < Renderer > ();
-
-        if (soilRenderer == null) {
-        return;
-        }
-
-        Bounds bounds = soilRenderer.bounds;
-
-        Vector3 closestPoint = bounds.ClosestPoint(
-        player.position);
-
-        closestPoint.y = player.position.y;
-
-        float distance = Vector3.Distance(
-        player.position, closestPoint);
-
-        harvestButton.SetActive(
-        distance <= harvestDistance && mature);
-
+    if (soilRenderer == null) {
+      return;
     }
 
-    public void HarvestWheat() {
-        if (!mature) {
-        return;
-        }
+    Bounds bounds = soilRenderer.bounds;
 
-        foreach(GameObject wheatPlant in wheatPlants) {
-        Destroy(wheatPlant);
-        }
+    Vector3 closestPoint = bounds.ClosestPoint(
+    player.position);
 
-        wheatPlants.Clear();
+    closestPoint.y = player.position.y;
 
-        planted = false;
-        mature = false;
-        growthProgress = 0f;
+    float distance = Vector3.Distance(
+    player.position, closestPoint);
 
-        if (resourceManager != null) {
-        resourceManager.AddHay(1);
-        }
+    harvestButton.SetActive(
+    distance <= harvestDistance && mature);
 
-        if (harvestButton != null) {
-        harvestButton.SetActive(false);
-        }
+  }
 
-         StartNewCrop();
+  public void HarvestWheat() {
+    if (!mature) {
+      Debug.Log("Wheat is not ready to harvest.");
+      return;
     }
+
+    Debug.Log("Wheat harvested!");
+    Debug.Log("Depositing wheat to stockpile.");
+
+    foreach(GameObject wheatPlant in wheatPlants) {
+      Destroy(wheatPlant);
+    }
+
+    wheatPlants.Clear();
+
+    planted = false;
+    mature = false;
+    growthProgress = 0f;
+
+    Stockpile store = Stockpile.Nearest(transform.position);
+
+    if (store != null) {
+      store.Deposit(ResourceType.Hay, 1);
+      Debug.Log("Added 1 Hay to stockpile.");
+    }
+    else {
+      Debug.LogWarning("No stockpile found!");
+    }
+
+    if (harvestButton != null) {
+      harvestButton.SetActive(false);
+    }
+
+    StartNewCrop();
+  }
 }
