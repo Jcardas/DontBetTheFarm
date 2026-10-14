@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Rendering;
 using UnityEngine.UI;
 
 // A small ring over a unit's head that fills while it works (chopping, harvesting).
@@ -9,9 +10,22 @@ public class ProgressRing : MonoBehaviour
     [Tooltip("The filled ring. Its parent is the world-space canvas that is shown or hidden.")]
     public Image fill;
 
+    static Material onTop;
+
     float fraction;
     Color tint;
     bool busy;
+
+    // Drawn over the scenery, so a tree crown or the barn between the camera and the unit can't hide the ring.
+    void Awake()
+    {
+        if (!onTop)
+        {
+            onTop = new Material(Canvas.GetDefaultCanvasMaterial());
+            onTop.SetInt("unity_GUIZTestMode", (int)CompareFunction.Always);
+        }
+        foreach (var layer in fill.transform.parent.GetComponentsInChildren<Graphic>(true)) layer.material = onTop;
+    }
 
     public void Set(float fraction, Color tint)
     {
