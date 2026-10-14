@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 76b7f941c79284566a553444579bf685, type: 3}
+  m_Name: GameConstants
+  m_EditorClassIdentifier: Assembly-CSharp::GameConstants
+  teamDefinitions:
+  - team: 0
+    displayName: Farm
+    teamColor: {r: 0.09873017, g: 0.8050314, b: 0.18095307, a: 0}
+  - team: 1
+    displayName: Alien
+    teamColor: {r: 0.8050314, g: 0.03797308, b: 0.74850875, a: 0}
+  - team: 2
+    displayName: Neutral
+    teamColor: {r: 0.7610062, g: 0.7610062, b: 0.7610062, a: 0}
+  baseFarmerStats:
+    speed: 2
+    maxHealth: 100
+    attackSpeed: 1
+    team: 0
+  baseAnimalStats:
+    speed: 1
+    maxHealth: 50
+    attackSpeed: 1
+    team: 0
+  baseAlienStats:
+    speed: 1
+    maxHealth: 50
+    attackSpeed: 1
+    team: 1

@@ -6,22 +6,15 @@ using UnityEngine;
 /// </summary>
 public abstract class FarmAnimal : Creature
 {
-    [Header("Farm Animal Settings")]
-    [SerializeField] private bool useGlobalConstants = true;
-
-    protected override void Awake()
+    protected override void Reset()
     {
-        if (useGlobalConstants)
-        {
-            // Use global constants for farm animal stats
-            maxHealth = GameConstants.Instance.BaseCreature.MaxHealth;
-            moveSpeed = GameConstants.Instance.BaseCreature.Speed;
-            attackSpeed = GameConstants.Instance.BaseCreature.AttackSpeed;
-        }
-        
-        base.Awake(); // Use the base Awake method to initialize health and other properties
+        // Use global constants for farm animal stats
+        maxHealth = GameConstants.Instance.BaseAnimal.MaxHealth;
+        moveSpeed = GameConstants.Instance.BaseAnimal.Speed;
+        attackSpeed = GameConstants.Instance.BaseAnimal.AttackSpeed;
+        team = GameConstants.Instance.BaseAnimal.Team;
     }
-    
+
     protected override void HandleZeroHealth()
     {
         // Animals do not die, they are knocked out.
@@ -32,6 +25,4 @@ public abstract class FarmAnimal : Creature
     {
         
     }
-
-
 }
