@@ -1,38 +1,60 @@
 using UnityEngine;
 
-
 ///
 /// A base class for all creatures, including the farmer, aliens and animals.
 /// It is a MonoBehaviour so it can be attached to a GameObject in the scene,
 /// but it does not have any functionality on its own.
 /// It is meant to be inherited by other classes that implement specific creature behaviors.
 ///
-public class Creature : MonoBehaviour
+public abstract class Creature : MonoBehaviour
 {
     /// <summary>
-    /// The name of the creature.
+    /// The current health of the creature.
     /// </summary>
-    public string name;
+    [SerializeField] protected int currentHealth;
 
     /// <summary>
-    /// The health of the creature.
+    /// The maximum health of the creature.
     /// </summary>
-    public int health;
-
+    [SerializeField] protected int maxHealth;
+    
     /// <summary>
-    /// The speed of the creature.
+    /// The movement speed of the creature.
     /// </summary>
-    public float speed;
+    [SerializeField] protected float moveSpeed;
+    
+    /// <summary>
+    /// The attack speed (time between attacks) of the creature.
+    /// </summary>
+    [SerializeField] protected float attackSpeed;
+    
+    // Public Getters
+    public int CurrentHealth => currentHealth;
+    public int MaxHealth => maxHealth;
+    public float MoveSpeed => moveSpeed;
+    public float AttackSpeed => attackSpeed;
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    protected virtual void Awake()
     {
-        
+        // Initialize the creature with default values or specific parameters if needed
+        if(currentHealth <= 0 && maxHealth <= 0)
+        {
+            currentHealth = maxHealth; // Start with full health
+        }
     }
 
-    // Update is called once per frame
-    void Update()
+    public virtual void TakeDamage(int amount)
     {
-        
+        currentHealth = Mathf.Max(0, currentHealth - amount);
+
+        if (currentHealth <= 0)
+        {
+            HandleZeroHealth();
+        }
+    }
+
+    protected virtual void HandleZeroHealth()
+    {
+        // Override this method to handle what happens when the creature's health reaches zero.
     }
 }
