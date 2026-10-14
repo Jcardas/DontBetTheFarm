@@ -11,7 +11,6 @@ public class Shotgun : MonoBehaviour
 {
     const int MaxShells = 2;
     const float ChestHeight = 0.6f;
-    static readonly Color ReloadTint = new(1f, 0.6f, 0.15f);
 
     enum State { Ready, Reloading }
 
@@ -40,7 +39,6 @@ public class Shotgun : MonoBehaviour
 
     Health self;
     ToyBob toy;
-    ProgressRing progress;
     AudioSource audioSource;
     State state;
     int shells = MaxShells;
@@ -55,18 +53,12 @@ public class Shotgun : MonoBehaviour
     {
         self = GetComponent<Health>();
         toy = GetComponentInChildren<ToyBob>();
-        progress = GetComponent<ProgressRing>();
         audioSource = GetComponent<AudioSource>();
     }
 
     void Update()
     {
-        if (state != State.Reloading) return;
-        if (Time.time < reloadedAt)
-        {
-            if (progress && !self.Down) progress.Set(ReloadProgress, ReloadTint, ProgressRing.Reload);
-            return;
-        }
+        if (state != State.Reloading || Time.time < reloadedAt) return;
         shells = MaxShells;
         state = State.Ready;
     }
@@ -95,8 +87,8 @@ public class Shotgun : MonoBehaviour
         reloadedAt = Time.time + reloadSeconds;
     }
 
-    // Flies through the farmer and his own side (units and barn alike) and through anyone already down;
-    // the first standing enemy takes the hit, anything else solid (tree, fence) stops the pellet. Returns where it ended.
+    // Flies through the farmer, his own animals and anyone already down; the first standing enemy takes the hit,
+    // and anything else solid (tree, barn, any building) stops the pellet. Returns where it ended.
     // Damage stacks per pellet, but an enemy is pushed only once per shot, or point-blank it would fly pellets x knockback.
     Vector3 Pellet(Vector3 from, Vector3 direction)
     {
@@ -107,7 +99,11 @@ public class Shotgun : MonoBehaviour
             if (hit.collider.transform.IsChildOf(transform)) continue;
             var target = hit.collider.GetComponentInParent<Health>();
             if (target == null) return hit.point;
-            if (target.team == self.team || target.Down) continue;
+            if (target.team == self.team || target.Down)
+            {
+                if (hit.collider.GetComponentInParent<NavMeshAgent>()) continue; // a unit, not a building
+                return hit.point;
+            }
             target.TakeDamage(pelletDamage);
             if (pushed.Add(target) && target.TryGetComponent(out NavMeshAgent agent) && agent.enabled && agent.isOnNavMesh) agent.Move(direction * knockback);
             return hit.point;
