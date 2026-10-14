@@ -11,7 +11,6 @@ public class Shotgun : MonoBehaviour
 {
     const int MaxShells = 2;
     const float ChestHeight = 0.6f;
-    static readonly Color ReloadTint = new(1f, 0.6f, 0.15f);
 
     enum State { Ready, Reloading }
 
@@ -40,7 +39,6 @@ public class Shotgun : MonoBehaviour
 
     Health self;
     ToyBob toy;
-    ProgressRing progress;
     AudioSource audioSource;
     State state;
     int shells = MaxShells;
@@ -55,18 +53,12 @@ public class Shotgun : MonoBehaviour
     {
         self = GetComponent<Health>();
         toy = GetComponentInChildren<ToyBob>();
-        progress = GetComponent<ProgressRing>();
         audioSource = GetComponent<AudioSource>();
     }
 
     void Update()
     {
-        if (state != State.Reloading) return;
-        if (Time.time < reloadedAt)
-        {
-            if (progress && !self.Down) progress.Set(ReloadProgress, ReloadTint, ProgressRing.Reload);
-            return;
-        }
+        if (state != State.Reloading || Time.time < reloadedAt) return;
         shells = MaxShells;
         state = State.Ready;
     }

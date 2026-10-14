@@ -122,7 +122,7 @@ public class Gatherer : MonoBehaviour
     bool WorkFor(float seconds)
     {
         harvested += Time.deltaTime;
-        if (progress) progress.Set(harvested / seconds, WorkTint, ProgressRing.Work);
+        if (progress) progress.Set(harvested / seconds, WorkTint);
         if (toy && Time.time >= nextBump)
         {
             toy.Bump();
