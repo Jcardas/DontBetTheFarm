@@ -14,6 +14,7 @@ public abstract class FarmAnimal : Creature
         attackSpeed = GameConstants.Instance.BaseAnimal.AttackSpeed;
         team = GameConstants.Instance.BaseAnimal.Team;
     }
+    
 
     protected override void HandleZeroHealth()
     {

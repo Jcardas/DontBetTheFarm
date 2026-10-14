@@ -65,6 +65,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 8f69b12e2e3b84a499eaafbba2ebdca8, type: 3}
       insertIndex: -1
       addedObject: {fileID: 3280359256616727060}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 8f69b12e2e3b84a499eaafbba2ebdca8, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2298241624715259957}
   m_SourcePrefab: {fileID: 100100000, guid: 8f69b12e2e3b84a499eaafbba2ebdca8, type: 3}
 --- !u!1 &8930047177322382128 stripped
 GameObject:
@@ -118,9 +121,26 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MeleeAnimal
   team: 0
-  currentHealth: 0
   maxHealth: 50
   moveSpeed: 1
+  attackDamage: 10
   attackSpeed: 1
-  post: {x: 0, y: 0, z: 0}
-  useGlobalConstants: 1
+  attackRange: 1
+  guardRadius: 8
+  anchored: 1
+--- !u!114 &2298241624715259957
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8930047177322382128}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d7bf16c5421485b4b9c353d8374ef00e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ToyBob
+  hopHeight: 0.25
+  hopsPerMetre: 1.2
+  rockDegrees: 10
+  lyingHeight: 0.3
