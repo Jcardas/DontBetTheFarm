@@ -587,7 +587,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5cebb61462041924cb1d3b676309d252, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Selectable
-  selectedAtStart: 0
   unitType: 1
   ring: {fileID: 9182428249209388140}
   hoverRing: {fileID: 2569079467851920564}

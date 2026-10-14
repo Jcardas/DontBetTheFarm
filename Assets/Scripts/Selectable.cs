@@ -11,8 +11,6 @@ public class Selectable : MonoBehaviour
     static readonly List<Selectable> all = new();
     public static IReadOnlyList<Selectable> All => all;
 
-    [Tooltip("Selected when the game starts and when the player presses Escape. On for the farmer.")]
-    public bool selectedAtStart;
     [Tooltip("Double-clicking a unit picks every standing unit of the same type on screen.")]
     public UnitType unitType;
     [Tooltip("Flat ring under the unit, shown only while it is selected.")]

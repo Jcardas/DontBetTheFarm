@@ -3,11 +3,12 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-// The player's mouse and keyboard. Left-click only selects: click a unit to pick just it, click a picked unit to drop it
-// from the selection, double-click to pick every unit of its type on screen, or drag a box around several
-// (Shift-click toggles one unit, Shift-drag adds). Right-click the ground, a resource or an alien to order the picked
+// The player's mouse and keyboard. Nothing is picked at the start. Left-click only selects: click a unit to pick just it,
+// click a picked unit to drop it from the selection, double-click to pick every unit of its type on screen, or drag a box
+// around several (Shift-click toggles one unit, Shift-drag adds, Ctrl-click and Ctrl-drag drop). Left-clicking anything
+// that isn't a unit, or pressing Escape, drops everyone. Right-click the ground, a resource or an alien to order the picked
 // units there. Ctrl+1..3 saves the picked units as a group, 1..3 picks the group again (Shift+1..3 adds it).
-// Escape goes back to just the farmer. Space fires the farmer's shotgun toward the cursor.
+// Space fires the farmer's shotgun toward the cursor.
 // The cursor shows what a right-click would do on whatever the mouse is over, or how far along a shotgun reload is.
 public class PlayerControls : MonoBehaviour
 {
@@ -52,16 +53,12 @@ public class PlayerControls : MonoBehaviour
 
     void OnDestroy() => input?.Dispose();
 
-    void Start()
-    {
-        SelectDefault();
-        shotgun = FindAnyObjectByType<Shotgun>();
-    }
+    void Start() => shotgun = FindAnyObjectByType<Shotgun>();
 
     void Update()
     {
         var player = input.Player;
-        bool shift = player.Add.IsPressed();
+        bool shift = player.Add.IsPressed(), ctrl = player.SaveGroup.IsPressed();
         ReadKeys(shift);
 
         Camera cam = Camera.main;
@@ -85,15 +82,15 @@ public class PlayerControls : MonoBehaviour
         if (left == LeftButton.Pressed && (at - pressedAt).magnitude > DragPixels) left = LeftButton.Dragging;
         if (left == LeftButton.Idle || !player.Select.WasReleasedThisFrame()) return;
 
-        if (left == LeftButton.Dragging) Pick(Selectable.All.Where(s => OnScreen(cam, s, Box(pressedAt, at))), shift);
-        else if (overSomething) Click(cam, hit, shift);
+        if (left == LeftButton.Dragging) Pick(Selectable.All.Where(s => OnScreen(cam, s, Box(pressedAt, at))), shift, ctrl);
+        else Click(cam, unit, shift, ctrl);
         left = LeftButton.Idle;
     }
 
     void ReadKeys(bool shift)
     {
         var player = input.Player;
-        if (player.Cancel.WasPressedThisFrame()) SelectDefault();
+        if (player.Cancel.WasPressedThisFrame()) Clear();
         for (int g = 0; g < groups.Length; g++)
         {
             if (!groupKeys[g].WasPressedThisFrame()) continue;
@@ -102,9 +99,9 @@ public class PlayerControls : MonoBehaviour
         }
     }
 
-    static void SelectDefault()
+    static void Clear()
     {
-        foreach (var s in Selectable.All) s.Selected = s.selectedAtStart;
+        foreach (var s in Selectable.All) s.Selected = false;
     }
 
     void Hover(Selectable unit)
@@ -136,24 +133,34 @@ public class PlayerControls : MonoBehaviour
         if ((changed || kind != CursorType.Default) && !input.Camera.MiddleClick.IsPressed()) CursorManager.Instance?.SetCursor(kind);
     }
 
-    void Click(Camera cam, RaycastHit hit, bool shift)
+    // `unit` is whatever unit is under the mouse, or null.
+    void Click(Camera cam, Selectable unit, bool shift, bool ctrl)
     {
-        var unit = hit.collider.GetComponentInParent<Selectable>();
         if (unit != null && unit.Down) unit = null;
         bool twice = unit != null && unit == lastClicked && Time.unscaledTime - lastClickAt < DoubleClickSeconds;
         lastClicked = unit;
         lastClickAt = Time.unscaledTime;
 
-        if (unit == null) return;
-        if (twice) Pick(Selectable.All.Where(s => s.unitType == unit.unitType && OnScreen(cam, s, cam.pixelRect)), shift);
+        if (unit == null)
+        {
+            if (!shift && !ctrl) Clear();
+        }
+        else if (twice) Pick(Selectable.All.Where(s => s.unitType == unit.unitType && OnScreen(cam, s, cam.pixelRect)), shift, ctrl);
+        else if (ctrl) unit.Selected = false;
         else if (shift || unit.Selected) unit.Selected = !unit.Selected;
         else foreach (var s in Selectable.All) s.Selected = s == unit;
     }
 
-    // Picks the standing `units` instead of the current selection (Shift adds them to it). Does nothing if none are standing.
-    static void Pick(IEnumerable<Selectable> units, bool shift)
+    // Picks the standing `units` instead of the current selection (Shift adds them to it, Ctrl drops them from it).
+    // Picking nobody leaves the selection as it was.
+    static void Pick(IEnumerable<Selectable> units, bool shift, bool ctrl = false)
     {
         var standing = units.Where(s => !s.Down).ToList();
+        if (ctrl)
+        {
+            foreach (var s in standing) s.Selected = false;
+            return;
+        }
         if (standing.Count == 0) return;
         foreach (var s in Selectable.All) s.Selected = standing.Contains(s) || (shift && s.Selected);
     }
