@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 4566376447188857352}
   - component: {fileID: 7197212814931991660}
   - component: {fileID: 8198807386989021538}
+  - component: {fileID: 636894829888825116}
   m_Layer: 0
   m_Name: AlienProto (Updated)
   m_TagString: Untagged
@@ -113,6 +114,22 @@ MonoBehaviour:
   attackRange: 1
   guardRadius: 8
   anchored: 0
+--- !u!114 &636894829888825116
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 304660079250710828}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ccd992bef0a6a684c8ebe5f7c4723af9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CombatFeedback
+  flashColor: {r: 1, g: 0.25, b: 0.2, a: 1}
+  flashSeconds: 0.12
+  barGap: 0.25
+  barSize: {x: 0.9, y: 0.1}
 --- !u!1 &1582250672558202170
 GameObject:
   m_ObjectHideFlags: 0
