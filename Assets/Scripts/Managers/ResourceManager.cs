@@ -1,67 +1,63 @@
-// using UnityEngine;
-//
-//
-// public class ResourceManager : MonoBehaviour
-// {
-//     [Header("Resources")]
-//     [SerializeField] private int hay = 0;
-//     [SerializeField] private int wood = 0;
-//     [SerializeField] private int technology = 0;
-//     
-//     public static ResourceManager Instance { get; private set; }
-//
-//     private void Awake()
-//     {
-//         if (Instance != null && Instance != this)
-//         {
-//             Destroy(gameObject);
-//             return;
-//         }
-//         Instance = this;
-//     }
-//
-//     public void AddResource(ResourceType resourceType, int amount)
-//     {
-//         Debug.Log("Adding " + amount + " of resource: " + resourceType);
-//
-//         if (amount <= 0) return;
-//
-//         switch (resourceType)
-//         {
-//             case ResourceType.Hay:
-//                 AddHay(amount);
-//                 break;
-//             case ResourceType.Wood:
-//                 AddWood(amount);
-//                 break;
-//             case ResourceType.Technology:
-//                 AddTechnology(amount);
-//                 break;
-//             default:
-//                 Debug.LogWarning("Unknown resource type: " + resourceType);
-//                 break;
-//         }
-//     }
-//
-//     public void AddHay(int amount)
-//     {
-//         hay += amount;
-//         Debug.Log("Hay: " + hay);
-//     }
-//
-//     public void AddWood(int amount)
-//     {
-//         wood += amount;
-//         Debug.Log("Wood: " + wood);
-//     }
-//
-//     public void AddTechnology(int amount)
-//     {
-//         technology += amount;
-//         Debug.Log("Technology: " + technology);
-//     }
-//
-//     public int GetHay() => hay;
-//     public int GetWood() => wood;
-//     public int GetTechnology() => technology;
-// }
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using UnityEngine;
+
+public enum ResourceType { Wood, Hay, Technology }
+
+// Where gatherers drop off what they carry (the barn). Every stockpile adds to one shared total.
+// Needs a collider, on it or a child: gatherers measure their reach to it.
+// Put storage close to the resources: the paper prototype found long hauls are the inefficient part.
+public class ResourceManager : MonoBehaviour
+{
+    public static ResourceManager Instance { get; private set; }
+
+    private void Awake()
+    {
+        Body = GetComponentInChildren<Collider>();
+        
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        Instance = this;
+    }
+
+    static readonly List<ResourceManager> all = new();
+    static readonly Dictionary<ResourceType, int> totals = new();
+
+    // Clears totals between plays even when "Reload Domain" is turned off in Enter Play Mode settings.
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    static void ResetTotals() => totals.Clear();
+
+    public Collider Body { get; private set; }
+
+    void OnEnable() => all.Add(this);
+    void OnDisable() => all.Remove(this);
+
+    public static int Count(ResourceType type) => totals.TryGetValue(type, out int n) ? n : 0;
+
+    public void Deposit(ResourceType type, int amount) => totals[type] = Count(type) + amount;
+
+    public static ResourceManager Nearest(Vector3 from) =>
+        all.OrderBy(s => Reach.Gap(from, s.Body)).FirstOrDefault();
+
+    public static bool Spend(ResourceType type, int amount)
+    {
+        if (amount < 0 || Count(type) < amount)
+            return false;
+
+        totals[type] -= amount;
+        Debug.Log(type + " remaining: " + totals[type]);
+
+        return true;
+    }
+
+    // Placeholder readout until the real HUD exists.
+    void OnGUI()
+    {
+        string text = string.Join("   ", Enum.GetValues(typeof(ResourceType)).Cast<ResourceType>().Select(t => $"{t} {Count(t)}"));
+        GUI.Label(new Rect(10, 10, 400, 24), text);
+    }
+}
