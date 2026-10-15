@@ -21,7 +21,7 @@ public class PenDoor : MonoBehaviour
     void Update()
     {
         if (Keyboard.current != null &&
-            Keyboard.current.dKey.wasPressedThisFrame)
+            Keyboard.current.fKey.wasPressedThisFrame)
         {
             isOpen = !isOpen;
         }
