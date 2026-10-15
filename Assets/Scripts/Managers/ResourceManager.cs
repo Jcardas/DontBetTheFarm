@@ -41,8 +41,11 @@ public class ResourceManager : MonoBehaviour
     public void Deposit(ResourceType type, int amount) => totals[type] = Count(type) + amount;
 
     public static ResourceManager Nearest(Vector3 from) =>
-        all.OrderBy(s => Reach.Gap(from, s.Body)).FirstOrDefault();
-
+    all.Where(s => s != null)
+       .OrderBy(s => s.Body != null ? Reach.Gap(from, s.Body)
+                                    : Vector3.Distance(from, s.transform.position))
+       .FirstOrDefault();
+       
     public static bool Spend(ResourceType type, int amount)
     {
         if (amount < 0 || Count(type) < amount)
