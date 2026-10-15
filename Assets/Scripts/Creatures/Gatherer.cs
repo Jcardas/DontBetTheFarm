@@ -166,7 +166,7 @@ public class Gatherer : MonoBehaviour
 
             if (amountTaken > 0)
             {
-                ResourceManager.Instance.AddResource(node.type, amountTaken);
+                ResourceManager.Instance.Deposit(node.type, amountTaken);
             }
             else
             {

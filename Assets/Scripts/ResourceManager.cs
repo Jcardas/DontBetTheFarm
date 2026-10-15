@@ -3,11 +3,27 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
+public enum ResourceType { Wood, Hay, Technology }
+
 // Where gatherers drop off what they carry (the barn). Every stockpile adds to one shared total.
 // Needs a collider, on it or a child: gatherers measure their reach to it.
 // Put storage close to the resources: the paper prototype found long hauls are the inefficient part.
 public class ResourceManager : MonoBehaviour
 {
+    public static ResourceManager Instance { get; private set; }
+
+    private void Awake()
+    {
+        Body = GetComponentInChildren<Collider>();
+        
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        Instance = this;
+    }
+
     static readonly List<ResourceManager> all = new();
     static readonly Dictionary<ResourceType, int> totals = new();
 
@@ -17,7 +33,6 @@ public class ResourceManager : MonoBehaviour
 
     public Collider Body { get; private set; }
 
-    void Awake() => Body = GetComponentInChildren<Collider>();
     void OnEnable() => all.Add(this);
     void OnDisable() => all.Remove(this);
 
