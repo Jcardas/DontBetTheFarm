@@ -21,7 +21,7 @@ public class BossFighter : MonoBehaviour
         toyVisuals = GetComponentInChildren<ToyBob>();
     }
 
-    // We will call this from AlienBossController instead of the standard Fighter
+    // We will call this from AlienBossBroodmother instead of the standard Fighter
     public void EngageTarget(Health target)
     {
         if (target == null || target.Down) return;

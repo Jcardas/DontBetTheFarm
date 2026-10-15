@@ -632,7 +632,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f656dc6055246ae4985822b4d863841b, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::AlienBossController
+  m_EditorClassIdentifier: Assembly-CSharp::AlienBossBroodmother
   standardAlienPrefab: {fileID: 6837674044408812746, guid: 037fd39c7a608304b8b692dc5a0d848c, type: 3}
   spawnCountOnDeath: 5
 --- !u!114 &8082682314697522786

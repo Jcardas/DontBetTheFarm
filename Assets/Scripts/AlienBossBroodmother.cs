@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.AI;
 
 [RequireComponent(typeof(NavMeshAgent), typeof(Health), typeof(BossFighter))]
-public class AlienBossController : MonoBehaviour
+public class AlienBossBroodmother : MonoBehaviour
 {
     [Header("Boss Settings")]
     public GameObject standardAlienPrefab;
