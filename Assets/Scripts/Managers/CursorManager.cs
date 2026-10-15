@@ -20,7 +20,12 @@ public enum CursorType
     Attack,
     Interact,
     Harvest,
-    Chop
+    Chop,
+    Reload0,
+    Reload25,
+    Reload50,
+    Reload75,
+    Reload100
 }
 
 /// <summary>
@@ -56,22 +61,34 @@ public class CursorManager : MonoBehaviour
 
     private void Awake()
     {
-        // Singleton pattern to ensure only one instance of CursorManager exists
+        // If an instance exists, check which one has the valid cursor list
         if (Instance != null && Instance != this)
         {
-            Destroy(gameObject);
-            return;
+            // If the existing instance has no data, replace it with this populated one
+            if (Instance.cursorList == null || Instance.cursorList.Count == 0)
+            {
+                Destroy(Instance.gameObject);
+                Instance = this;
+            }
+            else
+            {
+                // Otherwise, this duplicate is redundant
+                Destroy(gameObject);
+                return;
+            }
         }
-        Instance = this;
-
-        // Initialize the cursor dictionary for quick lookup
-        _cursorDict = new Dictionary<CursorType, CursorData>();
-        foreach (var data in cursorList)
+        else
         {
+            Instance = this;
+        }
+
+        _cursorDict = new Dictionary<CursorType, CursorData>();
+        for (int i = 0; i < cursorList.Count; i++)
+        {
+            var data = cursorList[i];
             _cursorDict[data.type] = data;
         }
-        
-        // Set the default cursor at the start
+
         SetCursor(CursorType.Default);
     }
 
@@ -85,22 +102,22 @@ public class CursorManager : MonoBehaviour
     /// <param name="type"> The type of cursor to set. </param>
     public void SetCursor(CursorType type)
     {
-        if (_currentCursorType == type)
+        if (_cursorDict == null)
         {
-            // If the requested cursor type is already set, do nothing
             return;
         }
-        
-        // Check if the cursor type exists in the dictionary and has a valid texture
-        if (_cursorDict.TryGetValue(type, out CursorData data) && data.texture != null)
+
+        bool hasKey = _cursorDict.TryGetValue(type, out CursorData data);
+        bool hasTexture = hasKey && data.texture != null;
+
+
+        if (hasKey && hasTexture)
         {
-            // Set the cursor to the specified texture and hotspot
             Cursor.SetCursor(data.texture, data.hotspot, CursorMode.Auto);
             _currentCursorType = type;
             return;
         }
-
-        // Fall back to system default cursor if type wasn't configured or texture is null
+        
         Cursor.SetCursor(null, Vector2.zero, CursorMode.Auto);
         _currentCursorType = type;
     }
