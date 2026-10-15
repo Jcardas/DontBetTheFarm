@@ -66,8 +66,12 @@ public class CameraController : MonoBehaviour
     /// Whether the camera is currently being panned using edge scrolling or keyboard input.
     /// </summary>
     private bool _isPanning;
+    private bool _isEdgeScrolling;
 
     private CursorType _currentEdgeCursor = CursorType.Default;
+
+    public bool IsDragging => _isDragging;
+    public bool IsEdgeScrolling => _isEdgeScrolling && !_isDragging;
 
     // A plane representing the ground level (XZ plane) for raycasting (Zoom at cursor functionality)
     private readonly Plane _groundPlane = new Plane(Vector3.up, Vector3.zero);
@@ -192,6 +196,7 @@ public class CameraController : MonoBehaviour
 
         // If the camera is being dragged, we don't want to allow edge scrolling or keyboard panning to interfere.
         _isPanning = direction != Vector3.zero;
+        _isEdgeScrolling = false;
         if (useEdgeScrolling && !_isDragging && Mouse.current != null)
         {
             Vector2 mousePos = Mouse.current.position.ReadValue();
@@ -224,6 +229,7 @@ public class CameraController : MonoBehaviour
 
             SetEdgePanCursor(horizontalEdge, verticalEdge);
 
+            _isEdgeScrolling = edgeDir != Vector3.zero;
             _isPanning = edgeDir != Vector3.zero;
 
             if (edgeDir != Vector3.zero)

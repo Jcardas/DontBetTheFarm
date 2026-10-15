@@ -18,11 +18,13 @@ public class Selectable : MonoBehaviour
     [Tooltip("Fainter ring shown while the mouse is over the unit, unless it is selected.")]
     public GameObject hoverRing;
 
-    Creature creature;
-    CreatureBrain brain;
-    bool selected, hovered;
+    private Creature creature;
+    private CreatureBrain brain;
+    private bool selected;
+    private bool hovered;
 
-    public bool Down => creature.Down;
+    public Creature Creature => creature;
+    public bool Down => creature == null || creature.Down;
 
     public bool Selected
     {
@@ -44,29 +46,28 @@ public class Selectable : MonoBehaviour
         }
     }
 
-    void ShowRings()
-    {
-        if (ring) ring.SetActive(selected);
-        if (hoverRing) hoverRing.SetActive(hovered && !selected);
-    }
-
-    void Awake()
+    private void Awake()
     {
         creature = GetComponent<Creature>();
         brain = GetComponent<CreatureBrain>();
     }
 
-    void OnEnable() => all.Add(this);
-    void OnDisable() => all.Remove(this);
+    private void OnEnable() => all.Add(this);
+    private void OnDisable() => all.Remove(this);
 
-    void Update()
+    private void Update()
     {
         if (!Down) return;
         if (selected) Selected = false;
         if (hovered) Hovered = false;
     }
 
-    // One order, routed by what this unit can do. First rule that fits wins.
+    private void ShowRings()
+    {
+        if (ring) ring.SetActive(selected);
+        if (hoverRing) hoverRing.SetActive(hovered && !selected);
+    }
+
     public void Command(Order order)
     {
         if (Down || brain == null) return;
@@ -75,6 +76,6 @@ public class Selectable : MonoBehaviour
 
     public string GetCreatureName()
     {
-        return creature ? creature.name : "Unknown";
+        return creature != null ? creature.CreatureName : gameObject.name;
     }
 }

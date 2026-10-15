@@ -24,7 +24,7 @@ public abstract class Creature : MonoBehaviour
     private Gatherer gatherer;
 
     // Public properties
-    string CreatureName => gameObject.name.Replace("(Clone)", "").Trim();    
+    public string CreatureName => gameObject.name.Replace("(Clone)", "").Trim();    
     public GameConstants.Team Team => team;
     public int CurrentHealth => currentHealth;
     public int MaxHealth => maxHealth;

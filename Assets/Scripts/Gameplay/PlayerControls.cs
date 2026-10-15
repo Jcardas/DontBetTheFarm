@@ -26,6 +26,7 @@ public class PlayerControls : MonoBehaviour
     LeftButton left;
     Vector2 pressedAt;
     Shotgun shotgun;
+    CameraController cameraController;
     Selectable hovered, lastClicked;
     CursorType cursor;
     float lastClickAt;
@@ -53,7 +54,11 @@ public class PlayerControls : MonoBehaviour
 
     void OnDestroy() => input?.Dispose();
 
-    void Start() => shotgun = FindAnyObjectByType<Shotgun>();
+    void Start()
+    {
+        shotgun = FindAnyObjectByType<Shotgun>();
+        cameraController = FindAnyObjectByType<CameraController>();
+    }
 
     void Update()
     {
@@ -70,8 +75,6 @@ public class PlayerControls : MonoBehaviour
         bool overSomething = Physics.Raycast(ray, out RaycastHit hit);
         var unit = overSomething ? hit.collider.GetComponentInParent<Selectable>() : null;
         Hover(unit);
-        ShowCursor(shotgun && shotgun.Reloading ? ReloadCursor(shotgun.ReloadProgress)
-            : overSomething ? CursorFor(hit, unit) : CursorType.Default);
         if (player.Command.WasPressedThisFrame() && overSomething) Command(hit);
 
         if (left == LeftButton.Idle && player.Select.WasPressedThisFrame())
@@ -85,6 +88,31 @@ public class PlayerControls : MonoBehaviour
         if (left == LeftButton.Dragging) Pick(Selectable.All.Where(s => OnScreen(cam, s, Box(pressedAt, at))), shift, ctrl);
         else Click(cam, unit, shift, ctrl);
         left = LeftButton.Idle;
+    }
+
+    void LateUpdate()
+    {
+        if (cameraController != null &&
+            (cameraController.IsDragging || cameraController.IsEdgeScrolling))
+        {
+            return;
+        }
+
+        Camera cam = Camera.main;
+        if (cam == null) return;
+
+        Vector2 at = input.Player.Point.ReadValue<Vector2>();
+        Ray ray = cam.ScreenPointToRay(at);
+        bool overSomething = Physics.Raycast(ray, out RaycastHit hit);
+        var unit = overSomething
+            ? hit.collider.GetComponentInParent<Selectable>()
+            : null;
+
+        ShowCursor(shotgun && shotgun.Reloading
+            ? ReloadCursor(shotgun.ReloadProgress)
+            : overSomething
+                ? CursorFor(hit, unit)
+                : CursorType.Default);
     }
 
     void ReadKeys(bool shift)
@@ -130,7 +158,10 @@ public class PlayerControls : MonoBehaviour
     {
         bool changed = kind != cursor;
         cursor = kind;
-        if ((changed || kind != CursorType.Default) && !input.Camera.MiddleClick.IsPressed()) CursorManager.Instance?.SetCursor(kind);
+        if ((changed || kind != CursorType.Default) && !input.Camera.MiddleClick.IsPressed())
+        {
+            CursorManager.Instance?.SetCursor(kind);
+        }
     }
 
     // `unit` is whatever unit is under the mouse, or null.
