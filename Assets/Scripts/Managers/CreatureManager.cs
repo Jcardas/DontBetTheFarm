@@ -19,6 +19,18 @@ public class CreatureManager : MonoBehaviour
         Instance = this;
     }
 
+    // Ensure that the instance is set in Start() as well, in case Awake() is called before this script is initialized.
+    private void Start()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        Instance = this;
+    }
+
     public void Register(Creature creature)
     {
         if (!creaturesByTeam.TryGetValue(creature.Team, out var list))
@@ -50,7 +62,8 @@ public class CreatureManager : MonoBehaviour
         // Iterate over opposing teams only
         foreach (var pair in creaturesByTeam)
         {
-            if (pair.Key == myTeam) continue;
+            // Skip friendly or neutral factions
+            if (!GameConstants.IsHostile(myTeam, pair.Key)) continue;
 
             var enemies = pair.Value;
             for (int i = 0; i < enemies.Count; i++)
@@ -58,7 +71,6 @@ public class CreatureManager : MonoBehaviour
                 var enemy = enemies[i];
                 if (enemy == null || enemy.Down || enemy.Body == null) continue;
 
-                // Out of guard tether
                 if (Reach.Gap(guardPost, enemy.Body) > radius) continue;
 
                 float dist = Reach.Gap(fromPos, enemy.Body);

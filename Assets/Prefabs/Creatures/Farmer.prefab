@@ -18,7 +18,7 @@ GameObject:
   - component: {fileID: 8800662261060431582}
   - component: {fileID: 1849350384654280135}
   - component: {fileID: 7163794546945123289}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Farmer
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -144,12 +144,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 80c74e6182afa2a418f71c753b71cd81, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Gatherer
-  working: 0
   collects: 0
   loadSize: 5
   secondsPerLoad: 2
   reach: 1
-  harvestsFields: 0
+  harvestsFields: 1
   secondsPerHarvest: 1.5
 --- !u!82 &8800662261060431582
 AudioSource:
@@ -294,7 +293,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1548788296488182836}
   - component: {fileID: 105028958980536271}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: '"Mesh"'
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -347,7 +346,7 @@ GameObject:
   - component: {fileID: 6532854087314146732}
   - component: {fileID: 8736346146261814954}
   - component: {fileID: 8795996202864386554}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: HatBrim
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -435,7 +434,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6284581056457517002}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Muzzle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -468,7 +467,7 @@ GameObject:
   - component: {fileID: 4208240404676198301}
   - component: {fileID: 5152347122954041863}
   - component: {fileID: 8657357489911464714}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: HatTop
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -558,7 +557,7 @@ GameObject:
   - component: {fileID: 2262070298775208893}
   - component: {fileID: 7539045742525954106}
   - component: {fileID: 8687804013752912828}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Head
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -648,7 +647,7 @@ GameObject:
   - component: {fileID: 3009894846436846277}
   - component: {fileID: 8472268363805641186}
   - component: {fileID: 6482869945352076711}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Body
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -791,6 +790,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Shotgun_SawedOff
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 37086117a4520724f93a10fd0187c256, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects:
@@ -852,9 +855,33 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 454752247219553034, guid: 3e74716dada74f241869f9dd75e36d2d, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
     - target: {fileID: 498298594721972670, guid: 3e74716dada74f241869f9dd75e36d2d, type: 3}
       propertyPath: m_Name
       value: Rings
+      objectReference: {fileID: 0}
+    - target: {fileID: 498298594721972670, guid: 3e74716dada74f241869f9dd75e36d2d, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 825405008640358898, guid: 3e74716dada74f241869f9dd75e36d2d, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 991266254667708858, guid: 3e74716dada74f241869f9dd75e36d2d, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 3313410516953446276, guid: 3e74716dada74f241869f9dd75e36d2d, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 3679798406557774165, guid: 3e74716dada74f241869f9dd75e36d2d, type: 3}
+      propertyPath: m_Layer
+      value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 8024162680806593437, guid: 3e74716dada74f241869f9dd75e36d2d, type: 3}
       propertyPath: m_AnchoredPosition.y

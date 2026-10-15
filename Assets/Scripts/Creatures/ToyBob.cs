@@ -23,6 +23,10 @@ public class ToyBob : MonoBehaviour
     float phase;
     float bumpStart = float.NegativeInfinity;
 
+    // Stores the randomly chosen tip angle once the creature goes down
+    float fallRollAngle = 0f;
+    bool wasDown;
+
     void Awake()
     {
         restPosition = transform.localPosition;
@@ -43,23 +47,39 @@ public class ToyBob : MonoBehaviour
     // One hop in place, for an attack or a chop.
     public void Bump() => bumpStart = Time.time;
 
+    void OnEnable()
+    {
+        wasDown = false;
+    }
+    
+    private static readonly System.Random rng = new System.Random();
     void LateUpdate()
     {
         if (creature != null && creature.Down)
         {
-            // Tips the visual onto its side (local X/Z) & elevates position so it doesn't clip below ground
+            // Pick +90° or -90° on the local Z-axis on the single frame it drops
+            if (!wasDown)
+            {
+                wasDown = true;
+                fallRollAngle = (rng.Next(0, 2) == 0) ? 90f : -90f;
+            }
+
+            // Elevate position so model doesn't clip below ground
             transform.localPosition = restPosition + Vector3.up * lyingHeight;
-            
-            // Apply a 90-degree tip onto its side along the local X-axis, keeping the Z and Y locally aligned
-            Quaternion tippedRotation = restRotation * Quaternion.Euler(90f, 0f, 0f);
-            
+
+            // Apply the chosen 90-degree roll along the local Z-axis
+            Quaternion tippedRotation = restRotation * Quaternion.Euler(0f, 0f, fallRollAngle);
+
             transform.localRotation = Quaternion.RotateTowards(
-                transform.localRotation, 
-                tippedRotation, 
+                transform.localRotation,
+                tippedRotation,
                 360f * Time.deltaTime
             );
             return;
         }
+
+        // Reset if revived
+        wasDown = false;
 
         Vector3 moved = trackingParent.position - lastPosition;
         moved.y = 0f;
@@ -78,7 +98,7 @@ public class ToyBob : MonoBehaviour
 
         phase = Mathf.Repeat(phase, 2f * Mathf.PI);
 
-        // calculate lift/bounce values
+        // Calculate lift/bounce values
         float wave = Mathf.Sin(phase);
         float lift = Mathf.Abs(wave) * hopHeight;
         float sinceBump = Time.time - bumpStart;
@@ -90,8 +110,7 @@ public class ToyBob : MonoBehaviour
 
         transform.localPosition = restPosition + Vector3.up * lift;
 
-        // apply local side-to-side rocking by modifying only the local Z-axis (roll/tilt)
-        // Multiplying on the right-hand side of restRotation applies Z-rotation in local coordinates
+        // Apply local side-to-side rocking by modifying only the local Z-axis (roll/tilt)
         transform.localRotation = restRotation * Quaternion.Euler(0f, 0f, wave * rockDegrees);
     }
 }

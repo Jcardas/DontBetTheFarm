@@ -68,6 +68,13 @@ public abstract class Creature : MonoBehaviour
             CreatureManager.Instance.Register(this);
     }
 
+    protected virtual void Start()
+    {
+        // Ensure the creature is registered with the CreatureManager at the start
+        if (CreatureManager.Instance != null)
+            CreatureManager.Instance.Register(this);
+    }
+
     protected virtual void OnDisable()
     {
         // Unregister this creature from the CreatureManager when disabled

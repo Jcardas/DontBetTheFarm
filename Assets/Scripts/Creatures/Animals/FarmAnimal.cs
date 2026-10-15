@@ -9,6 +9,7 @@ public abstract class FarmAnimal : Creature
 {
     protected override void Reset()
     {
+        base.Reset();
         // Use global constants for farm animal stats
         maxHealth = GameConstants.Instance.BaseAnimal.MaxHealth;
         moveSpeed = GameConstants.Instance.BaseAnimal.Speed;

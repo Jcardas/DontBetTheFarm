@@ -17,6 +17,7 @@ public class GameConstants : ScriptableObject
                     Debug.LogError("[GameConstants] Failed to load GameConstants from Resources!");
                 }
             }
+
             return _instance;
         }
     }
@@ -26,6 +27,27 @@ public class GameConstants : ScriptableObject
         Farm,
         Alien,
         Neutral
+    }
+
+    public static bool IsHostile(GameConstants.Team a, GameConstants.Team b)
+    {
+        if (a == b) return false;
+
+        return (a, b) switch
+        {
+            // Aliens hunt Players, Friendly Animals, and Livestock
+            (Team.Alien, Team.Farm) => true,
+            (Team.Alien, Team.Neutral) => true,
+            (Team.Farm, Team.Alien) => true,
+            (Team.Neutral, Team.Alien) => true,
+
+            // Wildlife/Animals do not hunt Players (unless aggressive)
+            (Team.Neutral, Team.Farm) => false,
+            (Team.Farm, Team.Neutral) => false,
+
+            _ => false
+        };
+        
     }
 
     [System.Serializable]
@@ -50,17 +72,17 @@ public class GameConstants : ScriptableObject
         public Color teamColor;
     }
 
-    [Header("Global Team Visuals/Settings")]
-    [SerializeField] private TeamConfig[] teamDefinitions;
+    [Header("Global Team Visuals/Settings")] [SerializeField]
+    private TeamConfig[] teamDefinitions;
 
-    [Header("Farmer Settings")]
-    [SerializeField] private CreatureStats baseFarmerStats;
+    [Header("Farmer Settings")] [SerializeField]
+    private CreatureStats baseFarmerStats;
 
-    [Header("Animal Settings")]
-    [SerializeField] private CreatureStats baseAnimalStats;
+    [Header("Animal Settings")] [SerializeField]
+    private CreatureStats baseAnimalStats;
 
-    [Header("Alien Settings")]
-    [SerializeField] private CreatureStats baseAlienStats;
+    [Header("Alien Settings")] [SerializeField]
+    private CreatureStats baseAlienStats;
 
     public CreatureStats BaseFarmer => baseFarmerStats;
     public CreatureStats BaseAnimal => baseAnimalStats;
@@ -75,6 +97,7 @@ public class GameConstants : ScriptableObject
                 if (teamDefinitions[i].team == type) return teamDefinitions[i].teamColor;
             }
         }
+
         return Color.white;
     }
 }
