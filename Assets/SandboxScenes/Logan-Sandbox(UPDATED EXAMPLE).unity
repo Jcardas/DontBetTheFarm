@@ -2114,7 +2114,7 @@ GameObject:
   - component: {fileID: 1999000002}
   - component: {fileID: 1999000003}
   m_Layer: 0
-  m_Name: Alien Spawn Button
+  m_Name: Alien Spawn Key (K)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2146,9 +2146,8 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7adc1abadff342ce826f62a072a35694, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::AlienSpawnButton
+  m_EditorClassIdentifier: Assembly-CSharp::AlienSpawnKey
   alien: {fileID: 304660079250710828, guid: 4cb3cf3fc22fcf94c98194a0301d71b8, type: 3}
-  distance: 6
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
