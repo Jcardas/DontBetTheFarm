@@ -520,7 +520,7 @@ GameObject:
   - component: {fileID: 9002964929963775488}
   - component: {fileID: 8082682314697522786}
   m_Layer: 0
-  m_Name: AlienBossBroodmother
+  m_Name: AlienBossBroodmotherProto
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
