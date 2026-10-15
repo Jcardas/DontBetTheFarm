@@ -6,9 +6,9 @@ using UnityEngine;
 // Where gatherers drop off what they carry (the barn). Every stockpile adds to one shared total.
 // Needs a collider, on it or a child: gatherers measure their reach to it.
 // Put storage close to the resources: the paper prototype found long hauls are the inefficient part.
-public class Stockpile : MonoBehaviour
+public class ResourceManager : MonoBehaviour
 {
-    static readonly List<Stockpile> all = new();
+    static readonly List<ResourceManager> all = new();
     static readonly Dictionary<ResourceType, int> totals = new();
 
     // Clears totals between plays even when "Reload Domain" is turned off in Enter Play Mode settings.
@@ -25,7 +25,7 @@ public class Stockpile : MonoBehaviour
 
     public void Deposit(ResourceType type, int amount) => totals[type] = Count(type) + amount;
 
-    public static Stockpile Nearest(Vector3 from) =>
+    public static ResourceManager Nearest(Vector3 from) =>
         all.OrderBy(s => Reach.Gap(from, s.Body)).FirstOrDefault();
 
     public static bool Spend(ResourceType type, int amount)

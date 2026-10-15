@@ -29,7 +29,7 @@ public class Gatherer : MonoBehaviour
     ResourceNode node;
     WheatField field;
     Collider soil;
-    Stockpile store;
+    ResourceManager store;
     Collider heading;
     ResourceType carryType;
     int carrying;
@@ -85,7 +85,7 @@ public class Gatherer : MonoBehaviour
 
         if (carrying > 0)
         {
-            if (store == null) store = Stockpile.Nearest(transform.position);
+            if (store == null) store = ResourceManager.Nearest(transform.position);
             if (store == null || !Arrive(store.Body)) return;
             store.Deposit(carryType, carrying);
             carrying = 0;

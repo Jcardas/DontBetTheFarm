@@ -45,7 +45,7 @@ public class BuildingManager: MonoBehaviour {
       return;
     }
 
-    if (Stockpile.Count(ResourceType.Wood) < cost) {
+    if (ResourceManager.Count(ResourceType.Wood) < cost) {
       Debug.Log("Not enough Wood!");
       return;
     }
@@ -165,7 +165,7 @@ public class BuildingManager: MonoBehaviour {
   }
 
   private void PlaceBuilding(Vector3 position) {
-    if (!Stockpile.Spend(ResourceType.Wood, selectedWoodCost)) {
+    if (!ResourceManager.Spend(ResourceType.Wood, selectedWoodCost)) {
       CancelBuilding();
       return;
     }

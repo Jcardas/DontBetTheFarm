@@ -253,7 +253,7 @@ public class WheatField: Buildable { [Header("Wheat Growth")][SerializeField] pr
     mature = false;
     growthProgress = 0f;
 
-    Stockpile store = Stockpile.Nearest(transform.position);
+    ResourceManager store = ResourceManager.Nearest(transform.position);
 
     if (store != null) {
       store.Deposit(ResourceType.Hay, 1);
