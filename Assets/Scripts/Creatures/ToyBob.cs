@@ -15,9 +15,11 @@ public class ToyBob : MonoBehaviour
 
     const float BumpSeconds = 0.2f;
 
-    Vector3 restPosition, lastPosition;
+    Vector3 restPosition;
+    Vector3 lastPosition;
     Quaternion restRotation;
-    Health health;
+    Creature creature;
+    Transform trackingParent;
     float phase;
     float bumpStart = float.NegativeInfinity;
 
@@ -25,8 +27,17 @@ public class ToyBob : MonoBehaviour
     {
         restPosition = transform.localPosition;
         restRotation = transform.localRotation;
-        lastPosition = transform.parent.position;
-        health = GetComponentInParent<Health>();
+
+        // Fall back to self if there is no parent, although child is recommended
+        trackingParent = transform.parent != null ? transform.parent : transform;
+        lastPosition = trackingParent.position;
+
+        creature = GetComponentInParent<Creature>();
+
+        if (transform.parent == null)
+        {
+            Debug.LogWarning($"[ToyBob] On root GameObject '{gameObject.name}'. Re-parent this to a child holding visual mesh to ensure movement doesn't overwrite local adjustments!", this);
+        }
     }
 
     // One hop in place, for an attack or a chop.
@@ -34,28 +45,53 @@ public class ToyBob : MonoBehaviour
 
     void LateUpdate()
     {
-        if (health && health.Down)
+        if (creature != null && creature.Down)
         {
+            // Tips the visual onto its side (local X/Z) & elevates position so it doesn't clip below ground
             transform.localPosition = restPosition + Vector3.up * lyingHeight;
-            transform.localRotation = Quaternion.RotateTowards(transform.localRotation, restRotation * Quaternion.Euler(0f, 0f, 90f), 360f * Time.deltaTime);
+            
+            // Apply a 90-degree tip onto its side along the local X-axis, keeping the Z and Y locally aligned
+            Quaternion tippedRotation = restRotation * Quaternion.Euler(90f, 0f, 0f);
+            
+            transform.localRotation = Quaternion.RotateTowards(
+                transform.localRotation, 
+                tippedRotation, 
+                360f * Time.deltaTime
+            );
             return;
         }
 
-        Vector3 moved = transform.parent.position - lastPosition;
+        Vector3 moved = trackingParent.position - lastPosition;
         moved.y = 0f;
-        lastPosition = transform.parent.position;
+        lastPosition = trackingParent.position;
 
-        // One hop is half a sine wave: |sin| touches down between hops, and the sign of sin flips the rock left and right.
-        if (moved.sqrMagnitude > 1e-8f) phase += moved.magnitude * hopsPerMetre * Mathf.PI;
-        else phase = Mathf.MoveTowards(phase, Mathf.Ceil(phase / Mathf.PI) * Mathf.PI, 4f * Mathf.PI * Time.deltaTime); // land the current hop instead of freezing mid-air
-        phase = Mathf.Repeat(phase, 2f * Mathf.PI); // big phases don't round-trip through Ceil(phase / PI) * PI, and a landed toy would hop again
+        // Calculate phase change based on speed
+        if (moved.sqrMagnitude > 1e-8f)
+        {
+            phase += moved.magnitude * hopsPerMetre * Mathf.PI;
+        }
+        else
+        {
+            // If stopped, smoothly bring visual to ground instead of stopping mid-hop
+            phase = Mathf.MoveTowards(phase, Mathf.Ceil(phase / Mathf.PI) * Mathf.PI, 4f * Mathf.PI * Time.deltaTime);
+        }
 
+        phase = Mathf.Repeat(phase, 2f * Mathf.PI);
+
+        // calculate lift/bounce values
         float wave = Mathf.Sin(phase);
         float lift = Mathf.Abs(wave) * hopHeight;
         float sinceBump = Time.time - bumpStart;
-        if (sinceBump < BumpSeconds) lift = Mathf.Max(lift, Mathf.Sin(sinceBump / BumpSeconds * Mathf.PI) * hopHeight);
+
+        if (sinceBump < BumpSeconds)
+        {
+            lift = Mathf.Max(lift, Mathf.Sin((sinceBump / BumpSeconds) * Mathf.PI) * hopHeight);
+        }
 
         transform.localPosition = restPosition + Vector3.up * lift;
+
+        // apply local side-to-side rocking by modifying only the local Z-axis (roll/tilt)
+        // Multiplying on the right-hand side of restRotation applies Z-rotation in local coordinates
         transform.localRotation = restRotation * Quaternion.Euler(0f, 0f, wave * rockDegrees);
     }
 }

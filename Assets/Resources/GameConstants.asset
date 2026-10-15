@@ -23,17 +23,17 @@ MonoBehaviour:
     displayName: Neutral
     teamColor: {r: 0.7610062, g: 0.7610062, b: 0.7610062, a: 0}
   baseFarmerStats:
-    speed: 2
+    speed: 10
     maxHealth: 100
     attackSpeed: 1
     team: 0
   baseAnimalStats:
-    speed: 1
+    speed: 5
     maxHealth: 50
     attackSpeed: 1
     team: 0
   baseAlienStats:
-    speed: 1
+    speed: 5
     maxHealth: 50
     attackSpeed: 1
     team: 1

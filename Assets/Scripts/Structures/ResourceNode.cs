@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public enum ResourceType { Wood, Hay }
+
 
 // Something gatherers harvest, like a tree. When used up it shrinks to a sapling and grows back
 // (design: trees regrow, but slower than a sawmill). Needs a collider, on it or a child, so it can be clicked and reached.

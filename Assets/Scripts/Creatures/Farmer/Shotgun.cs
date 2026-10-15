@@ -6,7 +6,7 @@ using UnityEngine.AI;
 // The farmer's own attack, on Space (PlayerControls): a double-barrel that sprays a flat fan of pellets toward the cursor.
 // Two shells, then a reload. It works whether or not he is selected, but a knocked-out farmer can't fire.
 // His automatic melee (Fighter) keeps running alongside it.
-[RequireComponent(typeof(Health), typeof(AudioSource))]
+[RequireComponent(typeof(Creature), typeof(AudioSource))]
 public class Shotgun : MonoBehaviour
 {
     const int MaxShells = 2;
@@ -37,13 +37,13 @@ public class Shotgun : MonoBehaviour
     [Tooltip("Played on every shot that fires.")]
     public AudioClip shot;
 
-    Health self;
+    Creature self;
     ToyBob toy;
     AudioSource audioSource;
     State state;
     int shells = MaxShells;
     float nextShot, reloadedAt;
-    readonly HashSet<Health> pushed = new();
+    readonly HashSet<Creature> pushed = new();
 
     public int Shells => shells;
     public bool Reloading => state == State.Reloading;
@@ -51,7 +51,7 @@ public class Shotgun : MonoBehaviour
 
     void Awake()
     {
-        self = GetComponent<Health>();
+        self = GetComponent<Creature>();
         toy = GetComponentInChildren<ToyBob>();
         audioSource = GetComponent<AudioSource>();
     }
@@ -97,9 +97,9 @@ public class Shotgun : MonoBehaviour
         foreach (var hit in hits)
         {
             if (hit.collider.transform.IsChildOf(transform)) continue;
-            var target = hit.collider.GetComponentInParent<Health>();
+            var target = hit.collider.GetComponentInParent<Creature>();
             if (target == null) return hit.point;
-            if (target.team == self.team || target.Down)
+            if (target.Team == self.Team || target.Down)
             {
                 if (hit.collider.GetComponentInParent<NavMeshAgent>()) continue; // a unit, not a building
                 return hit.point;

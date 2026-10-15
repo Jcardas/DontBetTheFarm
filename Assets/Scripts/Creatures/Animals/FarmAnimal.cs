@@ -4,6 +4,7 @@ using UnityEngine;
 /// A farm animal is a friendly creature that can be controlled by the farmer.
 /// It inherits from the Creature class and can be used to create different types of farm animals.
 /// </summary>
+[RequireComponent(typeof(Selectable), typeof(Gatherer))]
 public abstract class FarmAnimal : Creature
 {
     protected override void Reset()

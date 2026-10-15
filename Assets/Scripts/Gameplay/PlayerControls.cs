@@ -145,7 +145,7 @@ public class PlayerControls : MonoBehaviour
         {
             if (!shift && !ctrl) Clear();
         }
-        else if (twice) Pick(Selectable.All.Where(s => s.unitType == unit.unitType && OnScreen(cam, s, cam.pixelRect)), shift, ctrl);
+        else if (twice) Pick(Selectable.All.Where(s => s.GetCreatureName() == unit.GetCreatureName() && OnScreen(cam, s, cam.pixelRect)), shift, ctrl);
         else if (ctrl) unit.Selected = false;
         else if (shift || unit.Selected) unit.Selected = !unit.Selected;
         else foreach (var s in Selectable.All) s.Selected = s == unit;

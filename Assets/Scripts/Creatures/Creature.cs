@@ -1,9 +1,7 @@
-using System;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
-[RequireComponent(typeof(NavMeshAgent), typeof(CreatureBrain), typeof(ToyBob))]
+[RequireComponent(typeof(NavMeshAgent), typeof(CreatureBrain))]
 public abstract class Creature : MonoBehaviour
 {
     [Header("Team & Alignment")]
@@ -23,8 +21,10 @@ public abstract class Creature : MonoBehaviour
     private CreatureBrain creatureBrain;
     private Collider bodyCollider;
     private ToyBob toyBob;
+    private Gatherer gatherer;
 
     // Public properties
+    string CreatureName => gameObject.name.Replace("(Clone)", "").Trim();    
     public GameConstants.Team Team => team;
     public int CurrentHealth => currentHealth;
     public int MaxHealth => maxHealth;
@@ -35,6 +35,7 @@ public abstract class Creature : MonoBehaviour
     public float GuardRadius => guardRadius;
     public bool Anchored => anchored;
     public bool Down => currentHealth <= 0;
+    public Gatherer Gatherer => gatherer;
 
     public Collider Body => bodyCollider;
     public NavMeshAgent NavMeshAgent => navMeshAgent;
@@ -47,6 +48,7 @@ public abstract class Creature : MonoBehaviour
         creatureBrain = GetComponent<CreatureBrain>();
         bodyCollider = GetComponentInChildren<Collider>();
         toyBob = GetComponentInChildren<ToyBob>();
+        gatherer = GetComponentInChildren<Gatherer>();
 
         if (navMeshAgent != null)
             navMeshAgent.speed = moveSpeed;
@@ -106,5 +108,4 @@ public abstract class Creature : MonoBehaviour
     {
         if (toyBob != null) toyBob.Bump();
     }
-    
 }

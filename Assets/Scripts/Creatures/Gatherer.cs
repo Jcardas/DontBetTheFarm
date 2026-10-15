@@ -1,152 +1,247 @@
 using UnityEngine;
 using UnityEngine.AI;
 
-// Collect-and-haul loop: walk to a resource, harvest one load, carry it to the nearest stockpile, repeat.
-// When a resource runs out it moves on to the nearest one of the same type.
-// Animals start working on their own; the farmer starts idle and PlayerControls points him at things.
-// A unit that also fights (the farmer) pauses the loop while it is fighting, then picks it back up.
-// The farmer can also harvest a crop field: walk next to it, wait until it is ripe, work it for a moment, then call
-// WheatField.HarvestWheat, which adds the hay to the field's own ResourceManager. After that he stands idle.
-[RequireComponent(typeof(NavMeshAgent))]
+[RequireComponent(typeof(NavMeshAgent), typeof(Creature), typeof(CreatureBrain))]
 public class Gatherer : MonoBehaviour
 {
-    static readonly Color WorkTint = new(0.8f, 1f, 0.7f);
+    private static readonly Color WorkTint = new(0.8f, 1f, 0.7f);
 
-    [Tooltip("Run the loop from the start. Off for the farmer, who waits for a click.")]
-    public bool working = true;
-    public ResourceType collects = ResourceType.Wood;
+    public enum State
+    {
+        Idle,
+        GatheringNode,
+        HarvestingField
+    }
+
+    [Header("Gathering Settings")] public ResourceType collects = ResourceType.Wood;
     public int loadSize = 5;
     public float secondsPerLoad = 2f;
-    [Tooltip("How close its centre must get to a resource or stockpile's edge. The NavMesh (baked at 0.5 radius) keeps units about 0.5-0.7 off barns and trees, so keep this at 0.8 or more or it never arrives.")]
-    public float reach = 1f;
-    [Tooltip("Can be ordered to harvest crop fields. On for the farmer only; other units just walk to a clicked field.")]
+
+    [Tooltip("How close its centre must get to a resource's edge.")]
+    public float reach = 1.2f;
+
+    [Tooltip("Can be ordered to harvest crop fields. On for the farmer only.")]
     public bool harvestsFields;
+
     [Tooltip("Seconds of work on a ripe field before it is harvested.")]
     public float secondsPerHarvest = 1.5f;
 
-    NavMeshAgent agent;
-    Health health;
-    Fighter fighter;
-    ToyBob toy;
-    ProgressRing progress;
-    ResourceNode node;
-    WheatField field;
-    Collider soil;
-    Stockpile store;
-    Collider heading;
-    ResourceType carryType;
-    int carrying;
-    float harvested, nextBump;
+    private NavMeshAgent agent;
+    private Creature creature;
+    private CreatureBrain brain;
+    private ToyBob toy;
+    private ProgressRing progress;
 
-    void Awake()
+    private ResourceNode node;
+    private WheatField field;
+    private Collider soil;
+    private Collider heading;
+
+    private State state = State.Idle;
+    private float workTimer;
+    private float nextBump;
+
+    public bool IsWorking => state != State.Idle;
+
+    private void Awake()
     {
         agent = GetComponent<NavMeshAgent>();
-        health = GetComponent<Health>();
-        fighter = GetComponent<Fighter>();
+        creature = GetComponent<Creature>();
+        brain = GetComponent<CreatureBrain>();
         toy = GetComponentInChildren<ToyBob>();
         progress = GetComponent<ProgressRing>();
     }
 
-    // Start harvesting this resource (or the nearest one like it, if it is used up).
     public void Work(ResourceNode target)
     {
-        if (target != node) harvested = 0f; // re-clicking the tree being chopped keeps its progress
-        node = target;
+        if (target == null) return;
+
         field = null;
+        soil = null;
+        node = target;
         collects = target.type;
-        working = true;
+        workTimer = 0f;
         heading = null;
+
+        brain.IsPassive = true;
+        // Tether unit to the work site rather than its old spawn post
+        brain.SetGuardPost(target.transform.position);
+
+        state = State.GatheringNode;
     }
 
-    // Walk next to the field, wait there until it is ripe, then harvest it once.
     public void Harvest(WheatField target)
     {
+        if (target == null || !harvestsFields) return;
+
+        node = null;
         field = target;
-        soil = target.GetComponentInChildren<Collider>(); // the soil comes first; the wheat plants are added after it
-        working = true;
+        soil = target.GetComponentInChildren<Collider>();
+        workTimer = 0f;
         heading = null;
-        harvested = 0f;
+
+        brain.IsPassive = true;
+        brain.SetGuardPost(target.transform.position);
+
+        state = State.HarvestingField;
     }
 
-    // Stop working and walk to a point. Anything being carried is kept until the next Work.
     public void MoveTo(Vector3 point)
     {
-        if (!agent.isOnNavMesh) return;
-        working = false;
-        field = null;
-        heading = null;
-        if (NavMesh.SamplePosition(point, out NavMeshHit hit, 3f, NavMesh.AllAreas)) agent.SetDestination(hit.position);
+        AbortWork();
+
+        if (agent.isOnNavMesh && NavMesh.SamplePosition(point, out NavMeshHit hit, 3f, NavMesh.AllAreas))
+        {
+            agent.SetDestination(hit.position);
+        }
     }
 
-    void Update()
+    public void AbortWork()
     {
-        if (!working || (health && health.Down) || (fighter && fighter.Engaged)) return;
-        if (field != null)
+        state = State.Idle;
+        node = null;
+        field = null;
+        soil = null;
+        heading = null;
+        workTimer = 0f;
+
+        if (agent != null && agent.isOnNavMesh && agent.hasPath)
         {
-            HarvestField();
+            agent.ResetPath();
+        }
+
+        if (brain != null)
+        {
+            brain.IsPassive = false;
+            // Guard where the unit currently stands when interrupted
+            brain.SetGuardPost(transform.position);
+        }
+    }
+
+    private void Update()
+    {
+        if (state == State.Idle || creature.Down)
+        {
+            if (creature.Down && state != State.Idle) AbortWork();
             return;
         }
 
-        if (carrying > 0)
+        if (state == State.HarvestingField)
         {
-            if (store == null) store = Stockpile.Nearest(transform.position);
-            if (store == null || !Arrive(store.Body)) return;
-            store.Deposit(carryType, carrying);
-            carrying = 0;
-            store = null;
-            return;
+            UpdateFieldHarvest();
         }
+        else if (state == State.GatheringNode)
+        {
+            UpdateNodeGathering();
+        }
+    }
 
+    private void UpdateNodeGathering()
+    {
         if (node == null || node.Empty)
         {
             node = ResourceNode.Nearest(transform.position, collects);
-            harvested = 0f;
-            if (node == null) return;
+            workTimer = 0f;
+            if (node == null)
+            {
+                AbortWork();
+                return;
+            }
+
+            brain.SetGuardPost(node.transform.position);
         }
+
         if (!Arrive(node.Body)) return;
 
-        if (!WorkFor(secondsPerLoad)) return;
-        carryType = node.type;
-        carrying = node.Take(loadSize);
+        if (DoWorkTick(secondsPerLoad))
+        {
+            int amountTaken = node.Take(loadSize);
+
+            if (ResourceManager.Instance == null)
+            {
+                Debug.LogError(
+                    "[Gatherer] ResourceManager.Instance is NULL! Ensure a GameObject in the scene has ResourceManager attached.");
+                return;
+            }
+
+            if (amountTaken > 0)
+            {
+                ResourceManager.Instance.AddResource(node.type, amountTaken);
+            }
+            else
+            {
+                Debug.LogWarning(
+                    $"[Gatherer] Node {node.name} returned 0 resources on Take({loadSize}). Is the node empty or unconfigured?");
+            }
+
+            if (node.Empty)
+            {
+                node = null;
+                heading = null;
+            }
+        }
     }
 
-    void HarvestField()
+    private void UpdateFieldHarvest()
     {
-        if (!Arrive(soil) || !field.mature || !WorkFor(secondsPerHarvest)) return;
-        field.HarvestWheat();
-        field = null;
-        working = false;
+        if (field == null || soil == null)
+        {
+            AbortWork();
+            return;
+        }
+
+        if (!Arrive(soil)) return;
+        if (!field.mature) return;
+
+        if (DoWorkTick(secondsPerHarvest))
+        {
+            field.HarvestWheat();
+            AbortWork();
+        }
     }
 
-    // Adds this frame to the work in progress, hopping now and then and filling the ring, and returns true once it has taken `seconds`.
-    bool WorkFor(float seconds)
+    private bool DoWorkTick(float duration)
     {
-        harvested += Time.deltaTime;
-        if (progress) progress.Set(harvested / seconds, WorkTint);
+        workTimer += Time.deltaTime;
+
+        if (progress)
+            progress.Set(workTimer / duration, WorkTint);
+
         if (toy && Time.time >= nextBump)
         {
             toy.Bump();
             nextBump = Time.time + 0.5f;
         }
-        if (harvested < seconds) return false;
-        harvested = 0f;
+
+        if (workTimer < duration) return false;
+
+        workTimer = 0f;
         return true;
     }
 
-    // Walks toward `target` and returns true once standing next to it.
-    bool Arrive(Collider target)
+    private bool Arrive(Collider target)
     {
+        if (target == null) return false;
+
         if (Reach.Gap(transform.position, target) <= reach)
         {
             if (agent.hasPath) agent.ResetPath();
             heading = null;
             return true;
         }
+
         if (heading != target || !(agent.hasPath || agent.pathPending))
         {
             heading = target;
             Reach.WalkTo(agent, target);
         }
+
         return false;
+    }
+
+    private void OnDisable()
+    {
+        if (brain != null)
+            brain.IsPassive = false;
     }
 }
