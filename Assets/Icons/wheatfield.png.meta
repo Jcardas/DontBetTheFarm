@@ -3,8 +3,8 @@ guid: b0329da036a274b608748777d1a8ee3d
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 7926645595125887569
-    second: wheatfield_0
+      213: -7404235014020475954
+    second: WheatField_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -100,13 +100,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: wheatfield_0
+      name: WheatField_0
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 522
-        height: 478
+        width: 1536
+        height: 1024
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -115,8 +115,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 152b4edeb2a110e60800000000000000
-      internalID: 7926645595125887569
+      spriteID: ec3dccbeb7fde3990800000000000000
+      internalID: -7404235014020475954
       vertices: []
       indices: 
       edges: []
@@ -135,7 +135,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      wheatfield_0: 7926645595125887569
+      WheatField_0: -7404235014020475954
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

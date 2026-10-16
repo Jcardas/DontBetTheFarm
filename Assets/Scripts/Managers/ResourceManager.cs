@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using TMPro;
+
 
 public enum ResourceType { Wood, Hay, Technology }
 
@@ -10,6 +12,9 @@ public enum ResourceType { Wood, Hay, Technology }
 // Put storage close to the resources: the paper prototype found long hauls are the inefficient part.
 public class ResourceManager : MonoBehaviour
 {
+     [SerializeField] private TMP_Text woodValue;
+    [SerializeField] private TMP_Text hayValue;
+    [SerializeField] private TMP_Text technologyValue;
     public static ResourceManager Instance { get; private set; }
 
     private void Awake()
@@ -22,6 +27,11 @@ public class ResourceManager : MonoBehaviour
             return;
         }
         Instance = this;
+    }
+
+    void Update()
+    {
+        UpdateResourceHUD();
     }
 
     static readonly List<ResourceManager> all = new();
@@ -58,9 +68,15 @@ public class ResourceManager : MonoBehaviour
     }
 
     // Placeholder readout until the real HUD exists.
-    void OnGUI()
+    // void OnGUI()
+    // {
+    //     string text = string.Join("   ", Enum.GetValues(typeof(ResourceType)).Cast<ResourceType>().Select(t => $"{t} {Count(t)}"));
+    //     GUI.Label(new Rect(10, 10, 400, 24), text);
+    // }
+    void UpdateResourceHUD()
     {
-        string text = string.Join("   ", Enum.GetValues(typeof(ResourceType)).Cast<ResourceType>().Select(t => $"{t} {Count(t)}"));
-        GUI.Label(new Rect(10, 10, 400, 24), text);
+        woodValue.text = Count(ResourceType.Wood).ToString();
+        hayValue.text = Count(ResourceType.Hay).ToString();
+        technologyValue.text = Count(ResourceType.Technology).ToString();
     }
 }
