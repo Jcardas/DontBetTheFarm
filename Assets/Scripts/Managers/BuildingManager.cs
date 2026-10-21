@@ -2,6 +2,9 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.EventSystems;
 using UnityEngine.AI;
+using System.Collections;
+using Unity.AI.Navigation;
+
 
 public class BuildingManager: MonoBehaviour { 
   [Header("Building Prefabs")]
@@ -17,6 +20,8 @@ public class BuildingManager: MonoBehaviour {
   [Header("Preview Colors")][SerializeField] private Color validColor = new Color(0f, 1f, 0f, 0.5f);
 
   [SerializeField] private Color invalidColor = new Color(1f, 0f, 0f, 0.5f);
+
+  [SerializeField] private NavMeshSurface navMeshSurface;
 
   private GameObject selectedPrefab;
   private GameObject preview;
@@ -48,6 +53,8 @@ public class BuildingManager: MonoBehaviour {
     InitSingleton();
   }
 
+
+
   public void StartBuilding() {
     BeginBuilding(wheatFieldPrefab, woodCost, "Soil");
   }
@@ -58,7 +65,11 @@ public class BuildingManager: MonoBehaviour {
 
   private void BeginBuilding(
   GameObject prefab, int cost, string groundName) {
-    if (building || prefab == null) return;
+
+    if (building || prefab == null) {
+      Debug.LogWarning("Already building or prefab is null!");
+      return;
+    }
 
     if (mainCamera == null) {
       Debug.LogError("Main Camera is not assigned!");
@@ -106,6 +117,7 @@ public class BuildingManager: MonoBehaviour {
 
     building = true;
     canBuild = false;
+  
   }
 
   private void Update() {
@@ -184,21 +196,32 @@ public class BuildingManager: MonoBehaviour {
     return true;
   }
 
-  private void PlaceBuilding(Vector3 position) {
-    if (!ResourceManager.Spend(ResourceType.Wood, selectedWoodCost)) {
-      CancelBuilding();
-      return;
-    }
+ 
+  private void PlaceBuilding(Vector3 position)
+  {
+      if (!ResourceManager.Spend(
+          ResourceType.Wood, selectedWoodCost))
+      {
+          CancelBuilding();
+          return;
+      }
 
-    GameObject prefabToPlace = selectedPrefab;
+      GameObject prefabToPlace = selectedPrefab;
 
-    ClearPreview();
+      ClearPreview();
 
-    Instantiate(
-    prefabToPlace, position, Quaternion.identity);
+      GameObject newBuilding = Instantiate(
+          prefabToPlace,
+          position,
+          Quaternion.identity
+      );
 
-    Debug.Log($"{prefabToPlace.name} built!");
+      Debug.Log($"{newBuilding.name} built!");
+
+      // Update navigation after placing the building
+      StartCoroutine(RefreshNavMesh());
   }
+
 
   private void CancelBuilding() {
     ClearPreview();
@@ -222,4 +245,30 @@ public class BuildingManager: MonoBehaviour {
   private void OnDisable() {
     ClearPreview();
   }
+
+
+  private IEnumerator RefreshNavMesh()
+  {
+      yield return null;
+
+      if (navMeshSurface == null)
+      {
+          Debug.LogError("NavMeshSurface is not assigned!");
+          yield break;
+      }
+
+      if (navMeshSurface.navMeshData == null)
+      {
+          navMeshSurface.BuildNavMesh();
+      }
+      else
+      {
+          yield return navMeshSurface.UpdateNavMesh(
+              navMeshSurface.navMeshData
+          );
+      }
+
+      Debug.Log("NavMesh updated!");
+  }
+
 }
