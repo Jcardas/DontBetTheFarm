@@ -18,6 +18,7 @@ GameObject:
   - component: {fileID: 8800662261060431582}
   - component: {fileID: 1849350384654280135}
   - component: {fileID: 7163794546945123289}
+  - component: {fileID: 7338576979227426404}
   m_Layer: 6
   m_Name: Farmer
   m_TagString: Untagged
@@ -283,6 +284,22 @@ MonoBehaviour:
   tracerSeconds: 0.06
   tracer: {fileID: 2100000, guid: 372ca13b914b03445ba42e5270e0ad8b, type: 2}
   shot: {fileID: 8300000, guid: 4a2997f1d3b07f24c9ec0f413f65e890, type: 3}
+--- !u!114 &7338576979227426404
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 772027456437343675}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ccd992bef0a6a684c8ebe5f7c4723af9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CombatFeedback
+  flashColor: {r: 1, g: 0.25, b: 0.2, a: 1}
+  flashSeconds: 0.12
+  barGap: 0.25
+  barSize: {x: 0.9, y: 0.1}
 --- !u!1 &1082710212965220737
 GameObject:
   m_ObjectHideFlags: 0

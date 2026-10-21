@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -24,7 +25,8 @@ public abstract class Creature : MonoBehaviour
     private Gatherer gatherer;
 
     // Public properties
-    public string CreatureName => gameObject.name.Replace("(Clone)", "").Trim();    
+    // "Cow", "Cow (1)" and "Cow(Clone)" are all a Cow: drops Unity's duplicate numbers and spawn suffixes.
+    public string CreatureName => Regex.Replace(gameObject.name, @"(\s*\(\d+\)|\s*\(Clone\))+$", "").Trim();
     public GameConstants.Team Team => team;
     public int CurrentHealth => currentHealth;
     public int MaxHealth => maxHealth;
