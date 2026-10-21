@@ -19,6 +19,9 @@ public class BuildingManager: MonoBehaviour {
   [Header("References")][SerializeField] private Camera mainCamera;
   [SerializeField] private LayerMask groundLayer;
 
+  [Header("Placement Settings")]
+  [SerializeField] private float minBuildingSpacing = 1f;
+
   [Header("Preview Colors")][SerializeField] private Color validColor = new Color(0f, 1f, 0f, 0.5f);
 
   [SerializeField] private Color invalidColor = new Color(1f, 0f, 0f, 0.5f);
@@ -191,8 +194,70 @@ public class BuildingManager: MonoBehaviour {
     }
   }
 
+
+  private bool IsTooCloseToBuilding(Bounds newBounds)
+  {
+      GameObject[] buildings = GameObject.FindGameObjectsWithTag("Building");
+
+      foreach (GameObject building in buildings)
+      {
+          if (building == preview)
+              continue;
+
+          Collider[] colliders =
+              building.GetComponentsInChildren<Collider>();
+
+          Bounds existingBounds = default;
+          bool found = false;
+
+          foreach (Collider col in colliders)
+          {
+              if (!col.enabled || col.isTrigger)
+                  continue;
+
+              if (!found)
+              {
+                  existingBounds = col.bounds;
+                  found = true;
+              }
+              else
+              {
+                  existingBounds.Encapsulate(col.bounds);
+              }
+          }
+
+          if (!found) continue;
+
+          float gapX = Mathf.Max(
+              0f,
+              Mathf.Max(
+                  newBounds.min.x - existingBounds.max.x,
+                  existingBounds.min.x - newBounds.max.x
+              )
+          );
+
+          float gapZ = Mathf.Max(
+              0f,
+              Mathf.Max(
+                  newBounds.min.z - existingBounds.max.z,
+                  existingBounds.min.z - newBounds.max.z
+              )
+          );
+
+          float distance = Mathf.Sqrt(gapX * gapX + gapZ * gapZ);
+
+          if (distance < minBuildingSpacing)
+              return true;
+      }
+
+      return false;
+  }
+
   private bool CanPlace(Vector3 position) {
     Bounds bounds = groundRenderer.bounds;
+
+    if (IsTooCloseToBuilding(bounds))
+      return false;
 
     float halfX = Mathf.Max(0f, bounds.extents.x - 0.1f);
     float halfZ = Mathf.Max(0f, bounds.extents.z - 0.1f);
