@@ -32,6 +32,8 @@ MonoBehaviour:
     maxHealth: 50
     attackSpeed: 1
     team: 0
+  baseBreedingCost: 5
+  baseHealCost: 10
   baseAlienStats:
     speed: 5
     maxHealth: 50

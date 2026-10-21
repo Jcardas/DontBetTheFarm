@@ -516,7 +516,7 @@ NavMeshAgent:
   m_AgentTypeID: 0
   m_Radius: 0.9
   m_Speed: 3.5
-  m_Acceleration: 8
+  m_Acceleration: 100
   avoidancePriority: 50
   m_AngularSpeed: 120
   m_StoppingDistance: 0
@@ -559,6 +559,8 @@ MonoBehaviour:
   attackRange: 1
   guardRadius: 8
   anchored: 1
+  breedingCost: 5
+  healCost: 10
 --- !u!114 &1140187867803301487
 MonoBehaviour:
   m_ObjectHideFlags: 0

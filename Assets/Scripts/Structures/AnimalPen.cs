@@ -1,108 +1,318 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
-public class AnimalPen : Buildable
+public class AnimalPen : Buildable, IContextInteractable
 {
-    [Header("Animal Pen Settings")]
     [SerializeField]
-    private int MaxAnimals; // Arbitrary limit for the maximum number of animals in the pen
-    
+    private bool isStartingPen; // Determines if this pen is a starting pen for the player
+
     [SerializeField]
-    private List<FarmAnimal> animalsInPen; // Array to hold the animals in the pen
-    
-    public override (ResourceType, int) CostAndResource => 
-  
-        // GameConstants base material and base cost for wheat field
+    private List<FarmAnimal> startingAnimals = new(); // Animals to spawn if starting pen
+
+    [SerializeField]
+    private int MaxAnimals; // Limit for the maximum number of animals in the pen
+
+    [SerializeField]
+    private List<FarmAnimal> animalsInPen = new(); // Active animals in the pen
+
+    [Header("Context Menu Styling")]
+    [SerializeField] private Sprite breedIcon;
+    [SerializeField] private Sprite healIcon;
+    [SerializeField] private Color enabledButtonTint = new(0.18f, 0.28f, 0.20f, 1f);
+    [SerializeField] private Color disabledButtonTint = new(0.25f, 0.25f, 0.25f, 0.7f);
+
+    public override (ResourceType, int) CostAndResource =>
         (GameConstants.Instance.BaseAnimalPen.ResourceType, GameConstants.Instance.BaseAnimalPen.BuildingCost);
 
     protected override void Reset()
     {
         base.Reset();
-        MaxAnimals = GameConstants.Instance.MaxAnimalsInPen;
-        animalsInPen = new List<FarmAnimal>(MaxAnimals);
+
+        if (GameConstants.Instance != null)
+        {
+            MaxAnimals = GameConstants.Instance.MaxAnimalsInPen;
+        }
+
+        animalsInPen ??= new List<FarmAnimal>(MaxAnimals);
     }
-    
+
+    protected override void Awake()
+    {
+        base.Awake();
+        animalsInPen ??= new List<FarmAnimal>(MaxAnimals);
+
+        if (!isStartingPen || startingAnimals == null) return;
+
+        foreach (var animalPrefab in startingAnimals.Where(animalPrefab => animalPrefab != null))
+        {
+            SpawnAnimal(animalPrefab);
+        }
+    }
+
     private void AddAnimal(FarmAnimal animal)
     {
-        // Check if there's space in the pen
-        if (animalsInPen.Count <= MaxAnimals)
+        if (animal == null) return;
+
+        PruneNullAnimals();
+
+        if (animalsInPen.Count < MaxAnimals)
         {
             animalsInPen.Add(animal);
             return;
         }
-        Debug.LogWarning("No space in the pen to add a new animal.");
+
+        Debug.LogWarning($"[{name}] No space in the pen to add animal: {animal.name}.");
     }
 
     private void RemoveAnimal(FarmAnimal animal)
     {
-        if (animalsInPen.Contains(animal))
+        if (animalsInPen.Remove(animal))
         {
-            animalsInPen.Remove(animal);
             return;
         }
-        Debug.LogWarning("Animal not found in the pen.");
+
+        Debug.LogWarning($"[{name}] Animal {animal.name} not found in pen.");
     }
-    
+
     private void SpawnAnimal(FarmAnimal animalPrefab)
     {
-        // Check if there's space in the pen
-        if (animalsInPen.Count <= MaxAnimals)
+        if (animalPrefab == null)
         {
-            // Place the new animal at a random position within the pen's bounds,
-            // ensuring it doesn't overlap with existing animals.
-            // We achieve this by generating a random position within a certain range around the pen's
-            // position and checking if that position is already occupied by another animal.
-            Vector3 spawnPosition;
-            Quaternion spawnRotation;
-            bool positionFound;
-            int attempts = 0;
-            do
-            {
-                spawnPosition = transform.position +
-                                new Vector3(UnityEngine.Random.Range(-1f, 1f), 0, UnityEngine.Random.Range(-1f, 1f));
-                
-                // Random rotation for the animal
-                spawnRotation = Quaternion.Euler(0, UnityEngine.Random.Range(0, 360), 0);
-                
-                positionFound = true;
-                foreach (var existingAnimal in animalsInPen)
-                {
-                    if (Vector3.Distance(spawnPosition, existingAnimal.transform.position) < 1f) // Assuming 1 unit is the minimum distance between animals
-                    {
-                        positionFound = false;
-                        break;
-                    }
-                }
-                attempts++;
-            } while (!positionFound && attempts < 10); // Try up to 10 times (arbitrary limit)
-            
-            if (!positionFound)
-            {
-                // simply place the animal at the last generated position if no free space was found after 10 attempts
-                spawnPosition = transform.position +
-                                new Vector3(UnityEngine.Random.Range(-1f, 1f), 0, UnityEngine.Random.Range(-1f, 1f));
-                spawnRotation = Quaternion.Euler(0, UnityEngine.Random.Range(0, 360), 0);
-            }
-
-            FarmAnimal newAnimal = Instantiate(animalPrefab, spawnPosition, spawnRotation);
-            AddAnimal(newAnimal);
+            Debug.LogWarning($"[{name}] Cannot spawn a null FarmAnimal prefab.");
             return;
         }
-        Debug.LogWarning("No space in the pen to spawn a new animal.");
+
+        PruneNullAnimals();
+
+        if (animalsInPen.Count >= MaxAnimals)
+        {
+            Debug.LogWarning($"[{name}] No space in the pen to spawn a new animal.");
+            return;
+        }
+
+        Vector3 spawnPosition = transform.position;
+        Quaternion spawnRotation = Quaternion.Euler(0f, UnityEngine.Random.Range(0f, 360f), 0f);
+        bool positionFound;
+        int attempts = 0;
+
+        do
+        {
+            Vector3 randomOffset = new(UnityEngine.Random.Range(-1f, 1f), 0f, UnityEngine.Random.Range(-1f, 1f));
+            spawnPosition = transform.position + randomOffset;
+            spawnRotation = Quaternion.Euler(0f, UnityEngine.Random.Range(0f, 360f), 0f);
+
+            positionFound = true;
+            foreach (var existingAnimal in animalsInPen)
+            {
+                if (existingAnimal != null && Vector3.Distance(spawnPosition, existingAnimal.transform.position) < 1f)
+                {
+                    positionFound = false;
+                    break;
+                }
+            }
+            attempts++;
+        } while (!positionFound && attempts < 10);
+
+        FarmAnimal newAnimal = Instantiate(animalPrefab, spawnPosition, spawnRotation, transform);
+        AddAnimal(newAnimal);
     }
 
-    /// <summary>
-    /// Breeds animals in the pen if there are at least two of the same species and there's space for a new animal.
-    ///
-    /// Subtracts hay from the farm's resources when breeding occurs. If there are not enough resources, breeding will not occur.
-    /// </summary>
     private void BreedAnimals()
     {
-        // Check if there are at least two animals of the same species in the pen
-        // and if so, create a new animal and add it to the pen if there's space.
-        
-        // Check if there are at least two animals of the same species in the pen
-        // ...
+        PruneNullAnimals();
+
+        if (animalsInPen.Count >= MaxAnimals)
+        {
+            Debug.LogWarning($"[{name}] No space in pen to breed ({animalsInPen.Count}/{MaxAnimals}).");
+            return;
+        }
+
+        if (!TryGetBreedableAnimal(out FarmAnimal parentTemplate))
+        {
+            Debug.LogWarning($"[{name}] Need at least 2 animals of the same species to breed.");
+            return;
+        }
+
+        int hayCost = parentTemplate.BreedingCost;
+        if (!TryConsumeHay(hayCost))
+        {
+            Debug.LogWarning($"[{name}] Insufficient Hay. Requires: {hayCost}.");
+            return;
+        }
+
+        SpawnAnimal(parentTemplate);
     }
+
+    private void HealAllAnimals()
+    {
+        PruneNullAnimals();
+
+        List<FarmAnimal> injuredAnimals = GetInjuredAnimals();
+        if (injuredAnimals.Count == 0)
+        {
+            Debug.Log($"[{name}] All animals are healthy.");
+            return;
+        }
+
+        int totalHayCost = CalculateHealingHayCost(injuredAnimals);
+
+        if (!TryConsumeHay(totalHayCost))
+        {
+            Debug.LogWarning($"[{name}] Insufficient Hay. Requires: {totalHayCost}.");
+            return;
+        }
+
+        foreach (FarmAnimal animal in injuredAnimals)
+        {
+            HealAnimal(animal);
+        }
+
+        Debug.Log($"[{name}] Healed {injuredAnimals.Count} animals for {totalHayCost} Hay.");
+    }
+
+    private List<FarmAnimal> GetInjuredAnimals()
+    {
+        var injured = new List<FarmAnimal>();
+        foreach (FarmAnimal animal in animalsInPen)
+        {
+            if (animal != null && IsAnimalInjured(animal))
+            {
+                injured.Add(animal);
+            }
+        }
+        return injured;
+    }
+
+    private static bool IsAnimalInjured(FarmAnimal animal) => animal.CurrentHealth < animal.MaxHealth;
+
+    private static void HealAnimal(FarmAnimal animal) => animal.HealToFull();
+
+    private static int CalculateHealingHayCost(List<FarmAnimal> injuredAnimals)
+    {
+        return injuredAnimals.Sum(animal => animal.HealCost);
+    }
+
+    private bool TryGetBreedableAnimal(out FarmAnimal breedableTemplate)
+    {
+        var speciesCounts = new Dictionary<string, (int count, FarmAnimal template)>();
+
+        foreach (FarmAnimal animal in animalsInPen)
+        {
+            if (animal == null) continue;
+
+            string key = GetSpeciesKey(animal);
+
+            if (speciesCounts.TryGetValue(key, out var entry))
+            {
+                entry.count++;
+                speciesCounts[key] = entry;
+
+                if (entry.count >= 2)
+                {
+                    breedableTemplate = entry.template;
+                    return true;
+                }
+            }
+            else
+            {
+                speciesCounts[key] = (1, animal);
+            }
+        }
+
+        breedableTemplate = null;
+        return false;
+    }
+
+    private static string GetSpeciesKey(FarmAnimal animal)
+    {
+        return animal.name.Replace("(Clone)", string.Empty).Trim();
+    }
+
+    private static bool TryConsumeHay(int hayCost)
+    {
+        return ResourceManager.Spend(ResourceType.Hay, hayCost);
+    }
+
+    private void PruneNullAnimals()
+    {
+        animalsInPen.RemoveAll(a => a == null);
+    }
+
+    #region IContextInteractable Implementation
+
+    public IReadOnlyList<ContextActionData> GetContextActions()
+    {
+        PruneNullAnimals();
+
+        var actions = new List<ContextActionData>();
+        int currentHay = ResourceManager.Count(ResourceType.Hay);
+
+        // Breed Action
+        bool hasSpace = animalsInPen.Count < MaxAnimals;
+        bool hasBreedingPair = TryGetBreedableAnimal(out FarmAnimal breedableAnimal);
+        bool hasHayForBreeding = breedableAnimal != null && currentHay >= breedableAnimal.BreedingCost;
+        bool canBreed = hasSpace && hasBreedingPair && hasHayForBreeding;
+
+        string breedLabel;
+        if (!hasSpace)
+        {
+            breedLabel = $"Breed (Full {animalsInPen.Count}/{MaxAnimals})";
+        }
+        else if (!hasBreedingPair)
+        {
+            breedLabel = "Can't Breed (<2 Same Species)";
+        }
+        else
+        {
+            string speciesName = GetSpeciesKey(breedableAnimal);
+            breedLabel = hasHayForBreeding
+                ? $"Breed {speciesName}'s ({breedableAnimal.BreedingCost} Hay)"
+                : $"Breed {speciesName}'s (Need {breedableAnimal.BreedingCost} Hay)";
+        }
+
+        actions.Add(new ContextActionData(
+            label: breedLabel,
+            onExecute: BreedAnimals,
+            icon: breedIcon,
+            textColor: canBreed ? Color.white : new Color(0.75f, 0.75f, 0.75f, 1f),
+            buttonTint: canBreed ? enabledButtonTint : disabledButtonTint
+        ));
+
+        // Heal Action
+        List<FarmAnimal> injuredAnimals = GetInjuredAnimals();
+        bool hasInjured = injuredAnimals.Count > 0;
+        int healHayCost = hasInjured ? CalculateHealingHayCost(injuredAnimals) : 0;
+        bool hasHayForHeal = currentHay >= healHayCost;
+        bool canHeal = hasInjured && hasHayForHeal;
+
+        string healLabel;
+        if (animalsInPen.Count == 0)
+        {
+            healLabel = "Heal All (Pen Empty)";
+        }
+        else if (!hasInjured)
+        {
+            healLabel = "Heal All (All Healthy)";
+        }
+        else
+        {
+            healLabel = hasHayForHeal
+                ? $"Heal All ({injuredAnimals.Count}) [{healHayCost} Hay]"
+                : $"Heal All ({injuredAnimals.Count}) [Need {healHayCost} Hay]";
+        }
+
+        actions.Add(new ContextActionData(
+            label: healLabel,
+            onExecute: HealAllAnimals,
+            icon: healIcon,
+            textColor: canHeal ? Color.white : new Color(0.75f, 0.75f, 0.75f, 1f),
+            buttonTint: canHeal ? enabledButtonTint : disabledButtonTint
+        ));
+
+        return actions;
+    }
+
+    #endregion
 }

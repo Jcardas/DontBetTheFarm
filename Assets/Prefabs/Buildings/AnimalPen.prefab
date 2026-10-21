@@ -932,6 +932,11 @@ MonoBehaviour:
   resourceType: 0
   MaxAnimals: 5
   animalsInPen: []
+  baseHayCostPerHeal: 5
+  breedIcon: {fileID: -7631897544656223232, guid: 945d7e10d48412745a0fbf5f6858a76b, type: 3}
+  healIcon: {fileID: 2563150252966488688, guid: 62f9bc738aa39c847b8803d63e0819aa, type: 3}
+  enabledButtonTint: {r: 0.18, g: 0.28, b: 0.2, a: 1}
+  disabledButtonTint: {r: 0.25, g: 0.25, b: 0.25, a: 0.7}
 --- !u!1 &2614879296198230183
 GameObject:
   m_ObjectHideFlags: 0

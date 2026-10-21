@@ -7,6 +7,12 @@ using UnityEngine;
 [RequireComponent(typeof(Selectable), typeof(Gatherer))]
 public abstract class FarmAnimal : Creature
 {
+    [SerializeField] protected int breedingCost;
+    public int BreedingCost => breedingCost;
+    
+    [SerializeField] protected int healCost; 
+    public int HealCost => healCost;
+
     protected override void Reset()
     {
         base.Reset();
@@ -15,6 +21,8 @@ public abstract class FarmAnimal : Creature
         moveSpeed = GameConstants.Instance.BaseAnimal.Speed;
         attackSpeed = GameConstants.Instance.BaseAnimal.AttackSpeed;
         team = GameConstants.Instance.BaseAnimal.Team;
+        breedingCost = GameConstants.Instance.BaseBreedingCost;
+        healCost = GameConstants.Instance.BaseHealCost;
     }
     
 
@@ -25,6 +33,11 @@ public abstract class FarmAnimal : Creature
     }
 
     protected virtual void AnimalKnockedOut()
+    {
+        
+    }
+
+    public override void HealToFull()
     {
         
     }

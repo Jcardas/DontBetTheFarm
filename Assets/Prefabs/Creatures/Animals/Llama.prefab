@@ -494,6 +494,8 @@ MonoBehaviour:
   attackRange: 1
   guardRadius: 8
   anchored: 1
+  breedingCost: 5
+  healCost: 10
 --- !u!65 &7739518994544259854
 BoxCollider:
   m_ObjectHideFlags: 0

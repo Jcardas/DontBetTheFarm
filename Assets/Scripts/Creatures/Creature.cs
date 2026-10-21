@@ -96,10 +96,35 @@ public abstract class Creature : MonoBehaviour
         }
     }
 
-    public void Heal(int amount)
+    private void Heal(int amount)
     {
-        if (Down) return;
+        if (Down)
+        {
+            HandleRevive();
+        }
         currentHealth = Mathf.Min(maxHealth, currentHealth + amount);
+    }
+    
+    public virtual void HealToFull()
+    {
+        if (Down)
+        {
+            HandleRevive();
+        }
+        Heal(maxHealth - currentHealth);
+    }
+
+    private void HandleRevive()
+    {
+        if (currentHealth > 0) return;
+
+        currentHealth = maxHealth;
+
+        // Re-enable the NavMeshAgent if it was disabled
+        if (navMeshAgent != null && !navMeshAgent.enabled)
+        {
+            navMeshAgent.enabled = true;
+        }
     }
 
     protected virtual void HandleZeroHealth()

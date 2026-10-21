@@ -63,18 +63,12 @@ public class ResourceManager : MonoBehaviour
         if (amount < 0 || Count(type) < amount)
             return false;
 
-        totals[type] -= amount;
+        totals[type] = Count(type) - amount;
         Debug.Log(type + " remaining: " + totals[type]);
 
         return true;
     }
-
-    // Placeholder readout until the real HUD exists.
-    // void OnGUI()
-    // {
-    //     string text = string.Join("   ", Enum.GetValues(typeof(ResourceType)).Cast<ResourceType>().Select(t => $"{t} {Count(t)}"));
-    //     GUI.Label(new Rect(10, 10, 400, 24), text);
-    // }
+    
     void UpdateResourceHUD()
     {
         woodValue.text = Count(ResourceType.Wood).ToString();

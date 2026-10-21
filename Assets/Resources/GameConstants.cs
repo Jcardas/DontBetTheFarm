@@ -80,12 +80,17 @@ public class GameConstants : ScriptableObject
 
     [Header("Animal Settings")] [SerializeField]
     private CreatureStats baseAnimalStats;
+    [SerializeField]
+    private int baseBreedingCost; // Cost in hay to breed animals
+    [SerializeField] private int baseHealCost; // Cost in hay to heal animals
 
     [Header("Alien Settings")] [SerializeField]
     private CreatureStats baseAlienStats;
 
     public CreatureStats BaseFarmer => baseFarmerStats;
     public CreatureStats BaseAnimal => baseAnimalStats;
+    public int BaseBreedingCost => baseBreedingCost;
+    public int BaseHealCost => baseHealCost;
     public CreatureStats BaseAlien => baseAlienStats;
     
     [System.Serializable]
