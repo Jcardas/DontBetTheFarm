@@ -37,7 +37,8 @@ MonoBehaviour:
     maxHealth: 50
     attackSpeed: 1
     team: 1
-  MaxNumberOfBuildings: 0
+  MaxNumberOfBuildings: 100
   baseBuildingStats:
     maxHealth: 100
     buildingCost: 10
+  maxAnimalsInPen: 10

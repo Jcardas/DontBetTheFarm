@@ -2752,63 +2752,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 3940249657317254809, guid: 9d833c5f7f7f75e4aa5141d004a6aa89, type: 3}
   m_PrefabInstance: {fileID: 1503402360}
   m_PrefabAsset: {fileID: 0}
---- !u!1001 &1539003798
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 2233719116610239020, guid: ba1129b3a7f104ba89ff8a4af54cc453, type: 3}
-      propertyPath: m_Name
-      value: AnimalPen
-      objectReference: {fileID: 0}
-    - target: {fileID: 3529509168729342029, guid: ba1129b3a7f104ba89ff8a4af54cc453, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: -10.55
-      objectReference: {fileID: 0}
-    - target: {fileID: 3529509168729342029, guid: ba1129b3a7f104ba89ff8a4af54cc453, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0.19000012
-      objectReference: {fileID: 0}
-    - target: {fileID: 3529509168729342029, guid: ba1129b3a7f104ba89ff8a4af54cc453, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 14.42
-      objectReference: {fileID: 0}
-    - target: {fileID: 3529509168729342029, guid: ba1129b3a7f104ba89ff8a4af54cc453, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 0.707107
-      objectReference: {fileID: 0}
-    - target: {fileID: 3529509168729342029, guid: ba1129b3a7f104ba89ff8a4af54cc453, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3529509168729342029, guid: ba1129b3a7f104ba89ff8a4af54cc453, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: -0.7071066
-      objectReference: {fileID: 0}
-    - target: {fileID: 3529509168729342029, guid: ba1129b3a7f104ba89ff8a4af54cc453, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3529509168729342029, guid: ba1129b3a7f104ba89ff8a4af54cc453, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3529509168729342029, guid: ba1129b3a7f104ba89ff8a4af54cc453, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: -90
-      objectReference: {fileID: 0}
-    - target: {fileID: 3529509168729342029, guid: ba1129b3a7f104ba89ff8a4af54cc453, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: ba1129b3a7f104ba89ff8a4af54cc453, type: 3}
 --- !u!1 &1572670659
 GameObject:
   m_ObjectHideFlags: 0
@@ -3065,17 +3008,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
---- !u!114 &1831651824 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 2085119362929318556, guid: ba1129b3a7f104ba89ff8a4af54cc453, type: 3}
-  m_PrefabInstance: {fileID: 1539003798}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b5a9e4bad7f930842a50fea80472c6e8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::AnimalPen
 --- !u!4 &1995342914 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 7870129620406675401, guid: caa00833de06b4f4bac853340fcf66a4, type: 3}
@@ -3233,7 +3165,7 @@ PrefabInstance:
     - target: {fileID: 6527099474443791008, guid: 8b01b4ba10cf4d14b8515f3be3946a15, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgument
       value: 
-      objectReference: {fileID: 1831651824}
+      objectReference: {fileID: 2085119362929318556, guid: ba1129b3a7f104ba89ff8a4af54cc453, type: 3}
     - target: {fileID: 6527099474443791008, guid: 8b01b4ba10cf4d14b8515f3be3946a15, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
       value: Buildable, Assembly-CSharp
@@ -3252,4 +3184,3 @@ SceneRoots:
   - {fileID: 1467108569}
   - {fileID: 876975541}
   - {fileID: 3658090339585234849}
-  - {fileID: 1539003798}

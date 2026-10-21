@@ -58,6 +58,8 @@ public class ResourceManager : MonoBehaviour
        
     public static bool Spend(ResourceType type, int amount)
     {
+        Debug.Log("Spending " + amount + " " + type);
+        
         if (amount < 0 || Count(type) < amount)
             return false;
 

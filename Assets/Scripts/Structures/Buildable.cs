@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public abstract class Buildable : MonoBehaviour
@@ -6,25 +7,25 @@ public abstract class Buildable : MonoBehaviour
     [SerializeField] protected string buildableName;
     [SerializeField] protected int maxHealth; // Health of the buildable structure
     [SerializeField] protected int buildingCost;
+    [SerializeField] protected ResourceType resourceType; // The type of resource used to build this structure
+    
+    
+    // Var holding cost and resource type for building this structure
+    public virtual (ResourceType, int) CostAndResource { get; private set; }
 
-    private int currentHealth;
-    
-    private Transform groundElement;
-    
     public string BuildableName => buildableName;
     public int MaxHealth => maxHealth;
-    public int BuildingCost => buildingCost;
-    public int CurrentHealth => currentHealth;
-    public Transform GroundElement => groundElement;
-    
-    
-    private void Awake()
+    private int CurrentHealth { get; set; }
+
+    public Transform GroundElement { get; private set; }
+
+    protected virtual void Awake()
     {
         // Get the ground element for this building.
         // This is needed for determining the bounds of the building for placement and other purposes.
         // Note: This assumes that the ground element is a child of the buildable object.
-        groundElement = transform.Find("Ground");
-        if (groundElement == null)
+        GroundElement = transform.Find("Ground");
+        if (GroundElement == null)
         {
             Debug.LogError("Ground element not found for " + buildableName + ". Please ensure that the buildable prefab has a child named 'Ground'.");
         }
@@ -32,6 +33,13 @@ public abstract class Buildable : MonoBehaviour
     
     protected virtual void Reset()
     {
+        CostAndResource = 
+            (GameConstants.Instance.BaseBuilding.ResourceType,
+            GameConstants.Instance.BaseBuilding.BuildingCost);
+        
+        maxHealth = GameConstants.Instance.BaseBuilding.MaxHealth; 
+        buildingCost = GameConstants.Instance.BaseBuilding.BuildingCost;
+        
         // Override this method in derived classes to set default values for stats if needed.
     }
     
@@ -58,16 +66,16 @@ public abstract class Buildable : MonoBehaviour
     
     protected virtual void Repair(int repairAmount)
     {
-        currentHealth += repairAmount;
-        Debug.Log(buildableName + " has been repaired by " + repairAmount + ". Current health: " + currentHealth); // Todo Remove this test
+        CurrentHealth += repairAmount;
+        Debug.Log(buildableName + " has been repaired by " + repairAmount + ". Current health: " + CurrentHealth); // Todo Remove this test
     }
     
     protected virtual void TakeDamage(int damage)
     {
-        currentHealth -= damage;
-        Debug.Log(buildableName + " took " + damage + " damage. Remaining health: " + currentHealth); // Todo Remove this test
+        CurrentHealth -= damage;
+        Debug.Log(buildableName + " took " + damage + " damage. Remaining health: " + CurrentHealth); // Todo Remove this test
 
-        if (currentHealth <= 0)
+        if (CurrentHealth <= 0)
         {
             HandleDestroyed(); // Call the destruction handler when health reaches zero
         }

@@ -3,6 +3,8 @@ using UnityEngine.InputSystem;
 using UnityEngine.EventSystems;
 using UnityEngine.AI;
 using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using Unity.AI.Navigation;
 
 
@@ -29,7 +31,7 @@ public class BuildingManager: MonoBehaviour {
   private Renderer groundRenderer;
   private Material previewMaterial;
 
-  private int selectedWoodCost;
+  private (ResourceType, int) selectedCostAndResource;
   private bool building;
   private bool canBuild;
   
@@ -81,11 +83,10 @@ public class BuildingManager: MonoBehaviour {
   private void Awake(){
     InitSingleton();
   }
-
   
   // accepts one argument for the prefab to build
   public void StartBuilding(Buildable prefab) {
-    BeginBuilding(prefab, prefab.GetComponent<Buildable>().BuildingCost);
+    BeginBuilding(prefab, prefab.GetComponent<Buildable>().CostAndResource);
   }
 
   // Deprecated method for starting to build a wheat field, kept for backward compatibility
@@ -94,7 +95,8 @@ public class BuildingManager: MonoBehaviour {
     Debug.LogError("StartBuildingAnimalPen is deprecated. Use StartBuilding with the appropriate prefab instead.");
   }
 
-  private void BeginBuilding(Buildable buildable, int cost) 
+  // Instead of int cost, get the cost and material type from the Buildable class
+  private void BeginBuilding(Buildable buildable, (ResourceType, int) costAndResource) 
   {
     if (building || buildable == null) {
       Debug.LogWarning("Already building or prefab is null!");
@@ -106,8 +108,9 @@ public class BuildingManager: MonoBehaviour {
       return;
     }
 
-    if (ResourceManager.Count(ResourceType.Wood) < cost) {
-      Debug.Log("Not enough Wood!");
+    // Check if the player has enough resources to build the structure
+    if (ResourceManager.Count(costAndResource.Item1) < costAndResource.Item2) {
+      Debug.Log($"Not enough {costAndResource.Item1}!");
       return;
     }
 
@@ -124,7 +127,7 @@ public class BuildingManager: MonoBehaviour {
     }
 
     selectedPrefab = buildable.gameObject;
-    selectedWoodCost = cost;
+    selectedCostAndResource = costAndResource;
     groundRenderer = renderer;
 
     previewMaterial = new Material(renderer.sharedMaterial);
@@ -238,7 +241,7 @@ public class BuildingManager: MonoBehaviour {
     building = false;
     canBuild = false;
 
-    if (!ResourceManager.Spend(ResourceType.Wood, selectedWoodCost))
+    if (!ResourceManager.Spend( selectedCostAndResource.Item1, selectedCostAndResource.Item2))
     {
       CancelBuilding();
       return;
@@ -273,8 +276,7 @@ public class BuildingManager: MonoBehaviour {
     previewMaterial = null;
     groundRenderer = null;
     selectedPrefab = null;
-
-    selectedWoodCost = 0;
+    
     building = false;
     canBuild = false;
   }

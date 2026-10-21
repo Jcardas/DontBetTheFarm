@@ -93,9 +93,11 @@ public class GameConstants : ScriptableObject
     {
         [SerializeField] private int maxHealth;
         [SerializeField] private int buildingCost;
+        [SerializeField] private ResourceType resourceType;
         
         public int MaxHealth => maxHealth;
         public int BuildingCost => buildingCost;
+        public ResourceType ResourceType => resourceType;
         
     }
     
@@ -107,7 +109,15 @@ public class GameConstants : ScriptableObject
     
     [Header("Animal Pen Settings")]
     [SerializeField] private int maxAnimalsInPen;
+    [SerializeField] private BuildingStats baseAnimalPenStats;
+    
+    public BuildingStats BaseAnimalPen => baseAnimalPenStats;
     public int MaxAnimalsInPen => maxAnimalsInPen;
+    
+    [Header("Wheat Field Settings")]
+    [SerializeField] private BuildingStats baseWheatFieldStats;
+
+    public BuildingStats BaseWheatField => baseWheatFieldStats;
 
 
     public Color GetTeamColor(Team type)
