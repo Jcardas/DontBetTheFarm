@@ -27,6 +27,9 @@ public class BuildingManager: MonoBehaviour {
   [SerializeField] private Color invalidColor = new Color(1f, 0f, 0f, 0.5f);
 
   [SerializeField] private NavMeshSurface navMeshSurface;
+  
+  // List of all buildings in the scene, used for checking spacing between buildings
+  private List<Buildable> buildings = new List<Buildable>();
 
   private GameObject selectedPrefab;
   private Buildable preview;
@@ -37,9 +40,6 @@ public class BuildingManager: MonoBehaviour {
   private (ResourceType, int) selectedCostAndResource;
   private bool building;
   private bool canBuild;
-  
-  // Frame check to prevent double placing
-  private int startBuildingFrame;
   
   // Singleton pattern to ensure only one instance of BuildingManager exists
   public static BuildingManager Instance { get; private set; }
@@ -85,6 +85,24 @@ public class BuildingManager: MonoBehaviour {
 
   private void Awake(){
     InitSingleton();
+    
+    // Check if there are buildings already in the scene and register them
+    Buildable[] existingBuildings = FindObjectsByType<Buildable>(FindObjectsSortMode.None);
+    foreach (Buildable building in existingBuildings) {
+      RegisterBuilding(building);
+    }
+  }
+  
+  private void RegisterBuilding(Buildable building) {
+    if (building != null && !buildings.Contains(building)) {
+      buildings.Add(building);
+    }
+  }
+  
+  private void UnregisterBuilding(Buildable building) {
+    if (building != null && buildings.Contains(building)) {
+      buildings.Remove(building);
+    }
   }
   
   // accepts one argument for the prefab to build
@@ -154,20 +172,21 @@ public class BuildingManager: MonoBehaviour {
 
     building = true;
     canBuild = false;
-  
-    startBuildingFrame = Time.frameCount; // Record the frame when building started to prevent immediate placement
   }
 
   private void Update() {
-    if (!building || Mouse.current == null) return;
     
-    // Prevent placing the building on the same frame it was started
-    if (Time.frameCount == startBuildingFrame) return;
+    // Ensure that the instance is valid and that we are currently in building mode
+    if (Instance != this || !building || Mouse.current == null)
+      return;
+    
+    if (!building || Mouse.current == null) return;
 
     if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame) {
       CancelBuilding();
       return;
     }
+    
 
     Ray ray = mainCamera.ScreenPointToRay(
     Mouse.current.position.ReadValue());
@@ -197,9 +216,7 @@ public class BuildingManager: MonoBehaviour {
 
   private bool IsTooCloseToBuilding(Bounds newBounds)
   {
-      GameObject[] buildings = GameObject.FindGameObjectsWithTag("Building");
-
-      foreach (GameObject building in buildings)
+      foreach (Buildable building in buildings)
       {
           if (building == preview)
               continue;
@@ -323,6 +340,8 @@ public class BuildingManager: MonoBehaviour {
     );
 
     Debug.Log($"[Instance: {GetInstanceID()}] {newBuilding.name} built!");
+    
+    RegisterBuilding(newBuilding.GetComponent<Buildable>());
 
     StartCoroutine(RefreshNavMesh());
   }
@@ -333,7 +352,12 @@ public class BuildingManager: MonoBehaviour {
   }
 
   private void ClearPreview() {
-    if (preview != null) Destroy(preview.gameObject);
+
+    if (preview != null)
+    {
+      preview.gameObject.SetActive(false);
+      Destroy(preview.gameObject);
+    }
 
     if (previewMaterial != null) Destroy(previewMaterial);
 

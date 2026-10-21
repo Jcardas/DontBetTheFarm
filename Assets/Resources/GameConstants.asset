@@ -41,4 +41,13 @@ MonoBehaviour:
   baseBuildingStats:
     maxHealth: 100
     buildingCost: 10
+    resourceType: 0
   maxAnimalsInPen: 10
+  baseAnimalPenStats:
+    maxHealth: 100
+    buildingCost: 10
+    resourceType: 0
+  baseWheatFieldStats:
+    maxHealth: 100
+    buildingCost: 5
+    resourceType: 0
