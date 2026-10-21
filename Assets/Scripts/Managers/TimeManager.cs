@@ -25,6 +25,7 @@ public class TimeManager : MonoBehaviour
     public Light sunLight;
     public Light moonLight;
     public ParticleSystem starSystem;
+    public WaveManager waveManager;
 
 
     void Start()
@@ -77,6 +78,7 @@ public class TimeManager : MonoBehaviour
         isDayTimeFlag = false;
         DayLightOff();
         NightLightOn();
+        waveManager.SpawnWave(currentDay);
     }
 
     void DayLightOn()
