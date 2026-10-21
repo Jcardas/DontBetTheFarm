@@ -7,7 +7,7 @@ using UnityEngine.AI;
 // the fighter goes back to its post like after any other fight.
 // Aliens get a huge guard radius so they march on the whole farm. The farmer is not anchored: his post follows him,
 // so he only defends himself where he stands.
-[RequireComponent(typeof(NavMeshAgent), typeof(Health))]
+[RequireComponent(typeof(NavMeshAgent), typeof(currentHealth))]
 public class Fighter : MonoBehaviour
 {
     [Tooltip("Off for the farmer: the post follows the unit whenever it has no target, so it never walks home.")]
@@ -20,9 +20,9 @@ public class Fighter : MonoBehaviour
     public float secondsBetweenAttacks = 1f;
 
     NavMeshAgent agent;
-    Health self;
+    currentHealth self;
     ToyBob toy;
-    Health target, ordered;
+    currentHealth target, ordered;
     Vector3 post;
     float nextThink, nextAttack, obeyGraceEnds;
     bool obeying;
@@ -30,7 +30,7 @@ public class Fighter : MonoBehaviour
     void Awake()
     {
         agent = GetComponent<NavMeshAgent>();
-        self = GetComponent<Health>();
+        self = GetComponent<currentHealth>();
         toy = GetComponentInChildren<ToyBob>();
     }
 
@@ -55,7 +55,7 @@ public class Fighter : MonoBehaviour
         obeyGraceEnds = Time.time + 0.5f; // Gatherer.Work only sets its path on its next Update
     }
 
-    public void Attack(Health enemy)
+    public void Attack(currentHealth enemy)
     {
         obeying = false;
         target = ordered = enemy;
@@ -78,7 +78,7 @@ public class Fighter : MonoBehaviour
             nextThink = Time.time + 0.25f;
             if (ordered != null && ordered.Down) ordered = null;
             if (!anchored && !Engaged) post = transform.position;
-            target = ordered != null ? ordered : Health.NearestEnemy(self.team, transform.position, post, guardRadius);
+            target = ordered != null ? ordered : currentHealth.NearestEnemy(self.team, transform.position, post, guardRadius);
             if (target == null)
             {
                 if (Vector3.Distance(transform.position, post) > agent.stoppingDistance + 0.5f) agent.SetDestination(post);

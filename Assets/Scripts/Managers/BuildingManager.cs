@@ -8,11 +8,11 @@ using Unity.AI.Navigation;
 
 public class BuildingManager: MonoBehaviour { 
   [Header("Building Prefabs")]
-  [SerializeField] private GameObject wheatFieldPrefab;
-  [SerializeField] private GameObject animalPenPrefab;
-
-  [Header("Building Costs")][SerializeField] private int woodCost = 5;
-  [SerializeField] private int animalPenWoodCost = 10;
+  [SerializeField] private Buildable[] buildingPrefabs;
+  
+  // Replaced by a list of building prefabs for easier management
+  // [SerializeField] private GameObject wheatFieldPrefab;
+  // [SerializeField] private GameObject animalPenPrefab;
 
   [Header("References")][SerializeField] private Camera mainCamera;
   [SerializeField] private LayerMask groundLayer;
@@ -24,7 +24,7 @@ public class BuildingManager: MonoBehaviour {
   [SerializeField] private NavMeshSurface navMeshSurface;
 
   private GameObject selectedPrefab;
-  private GameObject preview;
+  private Buildable preview;
 
   private Renderer groundRenderer;
   private Material previewMaterial;
@@ -33,40 +33,70 @@ public class BuildingManager: MonoBehaviour {
   private bool building;
   private bool canBuild;
   
+  // Frame check to prevent double placing
+  private int startBuildingFrame;
+  
   // Singleton pattern to ensure only one instance of BuildingManager exists
   public static BuildingManager Instance { get; private set; }
   
   private void InitSingleton() {
     if (Instance != null && Instance != this) {
+      enabled = false;
       Destroy(gameObject);
       return;
     }
     Instance = this;
   }
   
+  // initialize main camera and navMeshSurface if they are not assigned in the inspector
+  private void OnValidate()
+  {
+    if (mainCamera == null)
+    {
+      mainCamera = Camera.main;
+    }
+
+    if (navMeshSurface == null)
+    {
+      navMeshSurface = FindFirstObjectByType<NavMeshSurface>();
+    }
+
+    // Check to make sure the prefabs are all buildable and have a Buildable component
+    foreach (Buildable prefab in buildingPrefabs)
+    {
+      if (prefab == null)
+      {
+        Debug.LogError("Building prefab \"" + prefab.name + "\" is not assigned!");
+        continue;
+      }
+
+      if (prefab.GetComponent<Buildable>() == null)
+      {
+        Debug.LogError("Building prefab \"" + prefab.name + "\" does not have a Buildable component!");
+        continue;
+      }
+    }
+  }
+
   private void Awake(){
     InitSingleton();
   }
+
   
-  // Ensure that the instance is set in Start() as well, in case Awake() is called before this script is initialized.
-  private void Start() {
-    InitSingleton();
+  // accepts one argument for the prefab to build
+  public void StartBuilding(Buildable prefab) {
+    BeginBuilding(prefab, prefab.GetComponent<Buildable>().BuildingCost);
   }
 
-
-
-  public void StartBuilding() {
-    BeginBuilding(wheatFieldPrefab, woodCost, "Soil");
-  }
-
+  // Deprecated method for starting to build a wheat field, kept for backward compatibility
   public void StartBuildingAnimalPen() {
-    BeginBuilding(animalPenPrefab, animalPenWoodCost, "Ground");
+    // BeginBuilding(animalPenPrefab, animalPenWoodCost, "Ground");
+    Debug.LogError("StartBuildingAnimalPen is deprecated. Use StartBuilding with the appropriate prefab instead.");
   }
 
-  private void BeginBuilding(
-  GameObject prefab, int cost, string groundName) {
-
-    if (building || prefab == null) {
+  private void BeginBuilding(Buildable buildable, int cost) 
+  {
+    if (building || buildable == null) {
       Debug.LogWarning("Already building or prefab is null!");
       return;
     }
@@ -81,18 +111,19 @@ public class BuildingManager: MonoBehaviour {
       return;
     }
 
-    preview = Instantiate(prefab);
-
-    Transform ground = preview.transform.Find(groundName);
+    preview = Instantiate(buildable.gameObject).GetComponent<Buildable>();
+    
+    Transform ground = preview.GroundElement; // Instead of searching for a child named "Ground",
+                                             // we use the GroundElement property from the Buildable class
 
     if (ground == null || !ground.TryGetComponent(out Renderer renderer)) {
-      Debug.LogError($"Missing Renderer on {groundName}!");
+      Debug.LogError($"Missing Renderer on " + preview.name + "!");
 
       ClearPreview();
       return;
     }
 
-    selectedPrefab = prefab;
+    selectedPrefab = buildable.gameObject;
     selectedWoodCost = cost;
     groundRenderer = renderer;
 
@@ -118,10 +149,14 @@ public class BuildingManager: MonoBehaviour {
     building = true;
     canBuild = false;
   
+    startBuildingFrame = Time.frameCount; // Record the frame when building started to prevent immediate placement
   }
 
   private void Update() {
     if (!building || Mouse.current == null) return;
+    
+    // Prevent placing the building on the same frame it was started
+    if (Time.frameCount == startBuildingFrame) return;
 
     if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame) {
       CancelBuilding();
@@ -199,27 +234,29 @@ public class BuildingManager: MonoBehaviour {
  
   private void PlaceBuilding(Vector3 position)
   {
-      if (!ResourceManager.Spend(
-          ResourceType.Wood, selectedWoodCost))
-      {
-          CancelBuilding();
-          return;
-      }
 
-      GameObject prefabToPlace = selectedPrefab;
+    building = false;
+    canBuild = false;
 
-      ClearPreview();
+    if (!ResourceManager.Spend(ResourceType.Wood, selectedWoodCost))
+    {
+      CancelBuilding();
+      return;
+    }
 
-      GameObject newBuilding = Instantiate(
-          prefabToPlace,
-          position,
-          Quaternion.identity
-      );
+    GameObject prefabToPlace = selectedPrefab;
 
-      Debug.Log($"{newBuilding.name} built!");
+    ClearPreview();
 
-      // Update navigation after placing the building
-      StartCoroutine(RefreshNavMesh());
+    GameObject newBuilding = Instantiate(
+      prefabToPlace,
+      position,
+      Quaternion.identity
+    );
+
+    Debug.Log($"[Instance: {GetInstanceID()}] {newBuilding.name} built!");
+
+    StartCoroutine(RefreshNavMesh());
   }
 
 
@@ -228,7 +265,7 @@ public class BuildingManager: MonoBehaviour {
   }
 
   private void ClearPreview() {
-    if (preview != null) Destroy(preview);
+    if (preview != null) Destroy(preview.gameObject);
 
     if (previewMaterial != null) Destroy(previewMaterial);
 

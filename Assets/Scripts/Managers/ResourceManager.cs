@@ -12,7 +12,7 @@ public enum ResourceType { Wood, Hay, Technology }
 // Put storage close to the resources: the paper prototype found long hauls are the inefficient part.
 public class ResourceManager : MonoBehaviour
 {
-     [SerializeField] private TMP_Text woodValue;
+    [SerializeField] private TMP_Text woodValue;
     [SerializeField] private TMP_Text hayValue;
     [SerializeField] private TMP_Text technologyValue;
     public static ResourceManager Instance { get; private set; }

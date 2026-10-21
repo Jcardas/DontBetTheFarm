@@ -21,6 +21,19 @@ public class WheatField: Buildable { [Header("Wheat Growth")][SerializeField] pr
 
   private List < GameObject > wheatPlants = new List < GameObject > ();
 
+  protected override void Reset()
+  {
+    base.Reset();
+    maxHealth = GameConstants.Instance.BaseBuilding.MaxHealth; 
+    buildingCost = GameConstants.Instance.BaseBuilding.BuildingCost;
+  }
+
+  protected override void HandleDestroyed()
+  {
+    base.HandleDestroyed(); // Remove this when the eventual implementation is added.
+    // TODO: Eventually change the field to a broken / trampled state where it can be repaired later.
+  }
+  
   void Start() {
     buildableName = "Wheat Field";
 

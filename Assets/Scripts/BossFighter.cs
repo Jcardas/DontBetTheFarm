@@ -22,7 +22,7 @@ public class BossFighter : MonoBehaviour
     }
 
     // We will call this from AlienBossBroodmother instead of the standard Fighter
-    public void EngageTarget(Health target)
+    public void EngageTarget(currentHealth target)
     {
         if (target == null || target.Down) return;
 

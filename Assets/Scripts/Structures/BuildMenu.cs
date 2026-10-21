@@ -24,7 +24,6 @@ public class BuildMenu : MonoBehaviour
 
     public void ToggleBuildMenu()
     {
-        Debug.Log("ToggleBuildMenu called");
         bool isOpen = !buildMenu.activeSelf;
 
         buildMenu.SetActive(isOpen);
