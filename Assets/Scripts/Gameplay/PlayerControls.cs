@@ -72,7 +72,13 @@ public class PlayerControls : MonoBehaviour
         Vector2 at = player.Point.ReadValue<Vector2>();
         Ray ray = cam.ScreenPointToRay(at);
         if (player.Fire.WasPressedThisFrame() && shotgun && ground.Raycast(ray, out float along)) shotgun.Fire(ray.GetPoint(along));
-        bool overSomething = Physics.Raycast(ray, out RaycastHit hit);
+        bool overSomething = Physics.Raycast(
+            ray,
+            out RaycastHit hit,
+            Mathf.Infinity,
+            Physics.DefaultRaycastLayers,
+            QueryTriggerInteraction.Ignore
+        );      
         var unit = overSomething ? hit.collider.GetComponentInParent<Selectable>() : null;
         Hover(unit);
         if (player.Command.WasPressedThisFrame() && overSomething) Command(hit);
@@ -103,8 +109,13 @@ public class PlayerControls : MonoBehaviour
 
         Vector2 at = input.Player.Point.ReadValue<Vector2>();
         Ray ray = cam.ScreenPointToRay(at);
-        bool overSomething = Physics.Raycast(ray, out RaycastHit hit);
-        var unit = overSomething
+bool overSomething = Physics.Raycast(
+    ray,
+    out RaycastHit hit,
+    Mathf.Infinity,
+    Physics.DefaultRaycastLayers,
+    QueryTriggerInteraction.Ignore
+);        var unit = overSomething
             ? hit.collider.GetComponentInParent<Selectable>()
             : null;
 
