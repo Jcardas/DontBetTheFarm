@@ -9,34 +9,131 @@ public class TimeManager : MonoBehaviour
     public const int hoursInNight = 12;     // 12 hours of night
     public const int DAY_START_TIME = 6;    // 6am
     public const int NIGHT_START_TIME = 18; // 6pm
-
-    public float lengthOfHour = 10f;        // Length of time an hour takes in seconds
     public const int DayLength = hoursInDay + hoursInNight;
+
+    public bool timePaused = false;         // Is time paused?
+    public int currentDay = 0;              // Current day count
+    public float lengthOfHour = 10f;        // Length of time an hour takes in seconds
     public float timePassed = 0;
-    float currentTime = 0;
+
+ 
+    public float starEmissionRate = 1000f;
+
+    bool isDayTimeFlag = false;
 
     public Transform celestialRig;
     public Light sunLight;
     public Light moonLight;
-
     public ParticleSystem starSystem;
-    public float starEmissionRate = 100f;
 
+
+    void Start()
+    {
+        timePassed = 60f;
+    }
 
     void Update()
     {
-        timePassed += Time.deltaTime;
-
-        if(celestialRig != null)
+        if (!timePaused)
         {
-            float rotationX = getClockDegrees() - 180f;
-            celestialRig.rotation = Quaternion.Euler(rotationX, -30f, 0);
-            UpdateLightIntensities();
-        }
+            timePassed += Time.deltaTime;
 
-        currentTime = timePassed % lengthOfHour;
+            if (celestialRig != null)
+            {
+                float rotationX = getClockDegrees() - 180f;
+                celestialRig.rotation = Quaternion.Euler(rotationX, -30f, 0);
+            }
+
+            int currentHour = (int)getHour();
+
+            if (currentHour >= DAY_START_TIME && currentHour < NIGHT_START_TIME && !isDayTimeFlag)
+            {
+                setDayTime();
+            }
+
+            if ((currentHour >= NIGHT_START_TIME || currentHour < DAY_START_TIME) && isDayTimeFlag)
+            {
+                setNightTime();
+            }
+
+            UpdateStarSystem();
+        }
     }
 
+    void setDayTime()
+    {
+        currentDay++;
+        Debug.Log("Day " + currentDay + " has started.");
+
+        isDayTimeFlag = true;
+        NightLightOff();
+        DayLightOn();
+    }
+
+    void setNightTime()
+    {
+        Debug.Log("Night has started.");
+
+        isDayTimeFlag = false;
+        DayLightOff();
+        NightLightOn();
+    }
+
+    void DayLightOn()
+    {
+        if (sunLight != null)
+        {
+            sunLight.intensity = 1f;
+            sunLight.shadows = LightShadows.Soft;
+            sunLight.shadowStrength = 1f;
+        }
+    }
+
+    void DayLightOff()
+    {
+        if (sunLight != null)
+        {
+            sunLight.intensity = 0f;
+            sunLight.shadows = LightShadows.None;
+            sunLight.shadowStrength = 0f;
+        }
+    }
+
+    void NightLightOn()
+    {
+        if (moonLight != null)
+        {
+            moonLight.intensity = 1f;
+            moonLight.shadows = LightShadows.Soft;
+            moonLight.shadowStrength = 1f;
+        }
+    }
+
+    void NightLightOff()
+    {
+        if (moonLight != null)
+        {
+            moonLight.intensity = 0f;
+            moonLight.shadows = LightShadows.None;
+            moonLight.shadowStrength = 0f;
+        }
+    }
+
+    // Determine if it is dayime (btwn 6am and 6pm) or nighttime (btwn 6pm and 6am)
+    void UpdateStarSystem()
+    { 
+        if (starSystem != null)
+        {
+            var emission = starSystem.emission;
+            float currentEmission = emission.rateOverTime.constant;
+            float targetEmission = isDayTimeFlag ? 0f : starEmissionRate;
+
+            // Lerp gradually moves the current emission toward the target emission
+            emission.rateOverTime = Mathf.Lerp(currentEmission, targetEmission, Time.deltaTime * 0.5f);
+        }
+    }
+
+    // ACCESSORS AND MUTATORS
     public float getHour()
     {
         return (timePassed / lengthOfHour) % DayLength;
@@ -45,55 +142,5 @@ public class TimeManager : MonoBehaviour
     public float getClockDegrees()
     {
         return (getHour() / DayLength) * CIRCLE_DEGREES;
-    }
-
-    // Determine if it is daytime (btwn 6am and 6pm) or nighttime (btwn 6pm and 6am)
-    bool isDayTime()
-    {
-        return getHour() >= DAY_START_TIME && getHour() < NIGHT_START_TIME;
-    }
-
-    // Determine if it is datime (btwn 6am and 6pm) or nighttime (btwn 6pm and 6am)
-    void UpdateLightIntensities()
-    {
-        if (sunLight == null || moonLight == null)
-        {
-            return;
-        }
-
-        if (isDayTime())
-        {
-            // Daytime: Sun is on, Moon is off
-            sunLight.intensity = 1f;
-            moonLight.intensity = 0f;
-
-            sunLight.shadows = LightShadows.Soft;
-            moonLight.shadows = LightShadows.None;
-
-            sunLight.shadowStrength = 1f;
-            moonLight.shadowStrength = 0f;
-        }
-        else
-        {
-            // Nighttime: Sun is off, Moon is on
-            sunLight.intensity = 0f;
-            moonLight.intensity = 1f;
-
-            sunLight.shadows = LightShadows.None;
-            moonLight.shadows = LightShadows.Soft;
-
-            sunLight.shadowStrength = 0f;
-            moonLight.shadowStrength = 1f;
-        }
-
-        if (starSystem != null)
-        {
-            var emission = starSystem.emission;
-            float currentEmission = emission.rateOverTime.constant;
-            float targetEmission = isDayTime() ? 0f : starEmissionRate;
-
-            // Lerp gradually moves the current emission toward the target emission
-            emission.rateOverTime = Mathf.Lerp(currentEmission, targetEmission, Time.deltaTime * 0.5f);
-        }
     }
 }
