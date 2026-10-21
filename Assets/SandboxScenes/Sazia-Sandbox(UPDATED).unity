@@ -4662,6 +4662,18 @@ PrefabInstance:
       propertyPath: m_Name
       value: GameManager
       objectReference: {fileID: 0}
+    - target: {fileID: 4643693465512752493, guid: 59ba79a8fc03547d5999c44065bd285a, type: 3}
+      propertyPath: hayValue
+      value: 
+      objectReference: {fileID: 1498331863}
+    - target: {fileID: 4643693465512752493, guid: 59ba79a8fc03547d5999c44065bd285a, type: 3}
+      propertyPath: woodValue
+      value: 
+      objectReference: {fileID: 386042939}
+    - target: {fileID: 4643693465512752493, guid: 59ba79a8fc03547d5999c44065bd285a, type: 3}
+      propertyPath: technologyValue
+      value: 
+      objectReference: {fileID: 790384460}
     - target: {fileID: 7310202659063792694, guid: 59ba79a8fc03547d5999c44065bd285a, type: 3}
       propertyPath: m_IsActive
       value: 0
