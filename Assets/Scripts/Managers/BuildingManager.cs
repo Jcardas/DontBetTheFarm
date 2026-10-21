@@ -27,6 +27,26 @@ public class BuildingManager: MonoBehaviour {
   private int selectedWoodCost;
   private bool building;
   private bool canBuild;
+  
+  // Singleton pattern to ensure only one instance of BuildingManager exists
+  public static BuildingManager Instance { get; private set; }
+  
+  private void InitSingleton() {
+    if (Instance != null && Instance != this) {
+      Destroy(gameObject);
+      return;
+    }
+    Instance = this;
+  }
+  
+  private void Awake(){
+    InitSingleton();
+  }
+  
+  // Ensure that the instance is set in Start() as well, in case Awake() is called before this script is initialized.
+  private void Start() {
+    InitSingleton();
+  }
 
   public void StartBuilding() {
     BeginBuilding(wheatFieldPrefab, woodCost, "Soil");
