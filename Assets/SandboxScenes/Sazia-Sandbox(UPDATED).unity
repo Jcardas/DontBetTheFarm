@@ -2949,6 +2949,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: WheatField
       objectReference: {fileID: 0}
+    - target: {fileID: 4516886324686475944, guid: 4cd8876d0e2554edabc93d8ec30b9a61, type: 3}
+      propertyPath: m_TagString
+      value: Building
+      objectReference: {fileID: 0}
     - target: {fileID: 5148671154083785666, guid: 4cd8876d0e2554edabc93d8ec30b9a61, type: 3}
       propertyPath: m_LocalPosition.x
       value: 5.2
@@ -3387,6 +3391,10 @@ PrefabInstance:
     - target: {fileID: 1387497180882812563, guid: 9d833c5f7f7f75e4aa5141d004a6aa89, type: 3}
       propertyPath: m_Name
       value: Tree
+      objectReference: {fileID: 0}
+    - target: {fileID: 1387497180882812563, guid: 9d833c5f7f7f75e4aa5141d004a6aa89, type: 3}
+      propertyPath: m_TagString
+      value: Building
       objectReference: {fileID: 0}
     - target: {fileID: 3940249657317254809, guid: 9d833c5f7f7f75e4aa5141d004a6aa89, type: 3}
       propertyPath: m_LocalPosition.x
@@ -4366,6 +4374,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Barn
       objectReference: {fileID: 0}
+    - target: {fileID: 7855829795948042229, guid: 66ae55bbbef0f9049ae982fd26e99722, type: 3}
+      propertyPath: m_TagString
+      value: Building
+      objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 9190490319079997848, guid: 66ae55bbbef0f9049ae982fd26e99722, type: 3}
     - {fileID: 9135603751702638983, guid: 66ae55bbbef0f9049ae982fd26e99722, type: 3}
@@ -4889,6 +4901,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: AnimalPen
       objectReference: {fileID: 0}
+    - target: {fileID: 2233719116610239020, guid: ba1129b3a7f104ba89ff8a4af54cc453, type: 3}
+      propertyPath: m_TagString
+      value: Building
+      objectReference: {fileID: 0}
     - target: {fileID: 3529509168729342029, guid: ba1129b3a7f104ba89ff8a4af54cc453, type: 3}
       propertyPath: m_LocalPosition.x
       value: -2
@@ -4998,6 +5014,10 @@ PrefabInstance:
       propertyPath: animalPenPrefab
       value: 
       objectReference: {fileID: 2233719116610239020, guid: ba1129b3a7f104ba89ff8a4af54cc453, type: 3}
+    - target: {fileID: 7053585842074065778, guid: d5a2ffe84081647a987c825ec060e30d, type: 3}
+      propertyPath: minBuildingSpacing
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
