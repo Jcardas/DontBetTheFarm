@@ -87,6 +87,38 @@ public class GameConstants : ScriptableObject
     public CreatureStats BaseFarmer => baseFarmerStats;
     public CreatureStats BaseAnimal => baseAnimalStats;
     public CreatureStats BaseAlien => baseAlienStats;
+    
+    [System.Serializable]
+    public struct BuildingStats
+    {
+        [SerializeField] private int maxHealth;
+        [SerializeField] private int buildingCost;
+        [SerializeField] private ResourceType resourceType;
+        
+        public int MaxHealth => maxHealth;
+        public int BuildingCost => buildingCost;
+        public ResourceType ResourceType => resourceType;
+        
+    }
+    
+    [Header("Building Settings")] 
+    [SerializeField] private int MaxNumberOfBuildings;
+    [SerializeField] private BuildingStats baseBuildingStats;
+    
+    public BuildingStats BaseBuilding => baseBuildingStats;
+    
+    [Header("Animal Pen Settings")]
+    [SerializeField] private int maxAnimalsInPen;
+    [SerializeField] private BuildingStats baseAnimalPenStats;
+    
+    public BuildingStats BaseAnimalPen => baseAnimalPenStats;
+    public int MaxAnimalsInPen => maxAnimalsInPen;
+    
+    [Header("Wheat Field Settings")]
+    [SerializeField] private BuildingStats baseWheatFieldStats;
+
+    public BuildingStats BaseWheatField => baseWheatFieldStats;
+
 
     public Color GetTeamColor(Team type)
     {

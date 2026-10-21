@@ -7,6 +7,10 @@ public class CreatureManager : MonoBehaviour
 
     // Bucket by team to eliminate checking friendly units entirely
     private readonly Dictionary<GameConstants.Team, List<Creature>> creaturesByTeam = new();
+    
+    // Maintain a list of FarmAnimals and which Pens they are in, so that when a Pen is destroyed, the animals become
+    // unassigned and must be reassigned to a new Pem before they can be healed, etc.
+    // private readonly Dictionary<FarmAnimal, Pen> animalsInPens = new();
 
     private void Awake()
     {

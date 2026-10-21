@@ -2,67 +2,153 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.EventSystems;
 using UnityEngine.AI;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using Unity.AI.Navigation;
+
 
 public class BuildingManager: MonoBehaviour { 
   [Header("Building Prefabs")]
-  [SerializeField] private GameObject wheatFieldPrefab;
-  [SerializeField] private GameObject animalPenPrefab;
-
-  [Header("Building Costs")][SerializeField] private int woodCost = 5;
-  [SerializeField] private int animalPenWoodCost = 10;
+  [SerializeField] private Buildable[] buildingPrefabs;
+  
+  // Replaced by a list of building prefabs for easier management
+  // [SerializeField] private GameObject wheatFieldPrefab;
+  // [SerializeField] private GameObject animalPenPrefab;
 
   [Header("References")][SerializeField] private Camera mainCamera;
   [SerializeField] private LayerMask groundLayer;
+
+  [Header("Placement Settings")]
+  [SerializeField] private float minBuildingSpacing = 1f;
 
   [Header("Preview Colors")][SerializeField] private Color validColor = new Color(0f, 1f, 0f, 0.5f);
 
   [SerializeField] private Color invalidColor = new Color(1f, 0f, 0f, 0.5f);
 
+  [SerializeField] private NavMeshSurface navMeshSurface;
+  
+  // List of all buildings in the scene, used for checking spacing between buildings
+  private List<Buildable> buildings = new List<Buildable>();
+
   private GameObject selectedPrefab;
-  private GameObject preview;
+  private Buildable preview;
 
   private Renderer groundRenderer;
   private Material previewMaterial;
 
-  private int selectedWoodCost;
+  private (ResourceType, int) selectedCostAndResource;
   private bool building;
   private bool canBuild;
+  
+  // Singleton pattern to ensure only one instance of BuildingManager exists
+  public static BuildingManager Instance { get; private set; }
+  
+  private void InitSingleton() {
+    if (Instance != null && Instance != this) {
+      enabled = false;
+      Destroy(gameObject);
+      return;
+    }
+    Instance = this;
+  }
+  
+  // initialize main camera and navMeshSurface if they are not assigned in the inspector
+  private void OnValidate()
+  {
+    if (mainCamera == null)
+    {
+      mainCamera = Camera.main;
+    }
 
-  public void StartBuilding() {
-    BeginBuilding(wheatFieldPrefab, woodCost, "Soil");
+    if (navMeshSurface == null)
+    {
+      navMeshSurface = FindFirstObjectByType<NavMeshSurface>();
+    }
+
+    // Check to make sure the prefabs are all buildable and have a Buildable component
+    foreach (Buildable prefab in buildingPrefabs)
+    {
+      if (prefab == null)
+      {
+        Debug.LogError("Building prefab \"" + prefab.name + "\" is not assigned!");
+        continue;
+      }
+
+      if (prefab.GetComponent<Buildable>() == null)
+      {
+        Debug.LogError("Building prefab \"" + prefab.name + "\" does not have a Buildable component!");
+        continue;
+      }
+    }
   }
 
+  private void Awake(){
+    InitSingleton();
+    
+    // Check if there are buildings already in the scene and register them
+    Buildable[] existingBuildings = FindObjectsByType<Buildable>(FindObjectsSortMode.None);
+    foreach (Buildable building in existingBuildings) {
+      RegisterBuilding(building);
+    }
+  }
+  
+  private void RegisterBuilding(Buildable building) {
+    if (building != null && !buildings.Contains(building)) {
+      buildings.Add(building);
+    }
+  }
+  
+  private void UnregisterBuilding(Buildable building) {
+    if (building != null && buildings.Contains(building)) {
+      buildings.Remove(building);
+    }
+  }
+  
+  // accepts one argument for the prefab to build
+  public void StartBuilding(Buildable prefab) {
+    BeginBuilding(prefab, prefab.GetComponent<Buildable>().CostAndResource);
+  }
+
+  // Deprecated method for starting to build a wheat field, kept for backward compatibility
   public void StartBuildingAnimalPen() {
-    BeginBuilding(animalPenPrefab, animalPenWoodCost, "Ground");
+    // BeginBuilding(animalPenPrefab, animalPenWoodCost, "Ground");
+    Debug.LogError("StartBuildingAnimalPen is deprecated. Use StartBuilding with the appropriate prefab instead.");
   }
 
-  private void BeginBuilding(
-  GameObject prefab, int cost, string groundName) {
-    if (building || prefab == null) return;
+  // Instead of int cost, get the cost and material type from the Buildable class
+  private void BeginBuilding(Buildable buildable, (ResourceType, int) costAndResource) 
+  {
+    if (building || buildable == null) {
+      Debug.LogWarning("Already building or prefab is null!");
+      return;
+    }
 
     if (mainCamera == null) {
       Debug.LogError("Main Camera is not assigned!");
       return;
     }
 
-    if (ResourceManager.Count(ResourceType.Wood) < cost) {
-      Debug.Log("Not enough Wood!");
+    // Check if the player has enough resources to build the structure
+    if (ResourceManager.Count(costAndResource.Item1) < costAndResource.Item2) {
+      Debug.Log($"Not enough {costAndResource.Item1}!");
       return;
     }
 
-    preview = Instantiate(prefab);
-
-    Transform ground = preview.transform.Find(groundName);
+    preview = Instantiate(buildable.gameObject).GetComponent<Buildable>();
+    
+    Transform ground = preview.GroundElement; // Instead of searching for a child named "Ground",
+                                             // we use the GroundElement property from the Buildable class
 
     if (ground == null || !ground.TryGetComponent(out Renderer renderer)) {
-      Debug.LogError($"Missing Renderer on {groundName}!");
+      Debug.LogError($"Missing Renderer on " + preview.name + "!");
 
       ClearPreview();
       return;
     }
 
-    selectedPrefab = prefab;
-    selectedWoodCost = cost;
+    selectedPrefab = buildable.gameObject;
+    selectedCostAndResource = costAndResource;
     groundRenderer = renderer;
 
     previewMaterial = new Material(renderer.sharedMaterial);
@@ -89,12 +175,18 @@ public class BuildingManager: MonoBehaviour {
   }
 
   private void Update() {
+    
+    // Ensure that the instance is valid and that we are currently in building mode
+    if (Instance != this || !building || Mouse.current == null)
+      return;
+    
     if (!building || Mouse.current == null) return;
 
     if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame) {
       CancelBuilding();
       return;
     }
+    
 
     Ray ray = mainCamera.ScreenPointToRay(
     Mouse.current.position.ReadValue());
@@ -121,8 +213,68 @@ public class BuildingManager: MonoBehaviour {
     }
   }
 
+
+  private bool IsTooCloseToBuilding(Bounds newBounds)
+  {
+      foreach (Buildable building in buildings)
+      {
+          if (building == preview)
+              continue;
+
+          Collider[] colliders =
+              building.GetComponentsInChildren<Collider>();
+
+          Bounds existingBounds = default;
+          bool found = false;
+
+          foreach (Collider col in colliders)
+          {
+              if (!col.enabled || col.isTrigger)
+                  continue;
+
+              if (!found)
+              {
+                  existingBounds = col.bounds;
+                  found = true;
+              }
+              else
+              {
+                  existingBounds.Encapsulate(col.bounds);
+              }
+          }
+
+          if (!found) continue;
+
+          float gapX = Mathf.Max(
+              0f,
+              Mathf.Max(
+                  newBounds.min.x - existingBounds.max.x,
+                  existingBounds.min.x - newBounds.max.x
+              )
+          );
+
+          float gapZ = Mathf.Max(
+              0f,
+              Mathf.Max(
+                  newBounds.min.z - existingBounds.max.z,
+                  existingBounds.min.z - newBounds.max.z
+              )
+          );
+
+          float distance = Mathf.Sqrt(gapX * gapX + gapZ * gapZ);
+
+          if (distance < minBuildingSpacing)
+              return true;
+      }
+
+      return false;
+  }
+
   private bool CanPlace(Vector3 position) {
     Bounds bounds = groundRenderer.bounds;
+
+    if (IsTooCloseToBuilding(bounds))
+      return false;
 
     float halfX = Mathf.Max(0f, bounds.extents.x - 0.1f);
     float halfZ = Mathf.Max(0f, bounds.extents.z - 0.1f);
@@ -164,8 +316,15 @@ public class BuildingManager: MonoBehaviour {
     return true;
   }
 
-  private void PlaceBuilding(Vector3 position) {
-    if (!ResourceManager.Spend(ResourceType.Wood, selectedWoodCost)) {
+ 
+  private void PlaceBuilding(Vector3 position)
+  {
+
+    building = false;
+    canBuild = false;
+
+    if (!ResourceManager.Spend( selectedCostAndResource.Item1, selectedCostAndResource.Item2))
+    {
       CancelBuilding();
       return;
     }
@@ -174,18 +333,31 @@ public class BuildingManager: MonoBehaviour {
 
     ClearPreview();
 
-    Instantiate(
-    prefabToPlace, position, Quaternion.identity);
+    GameObject newBuilding = Instantiate(
+      prefabToPlace,
+      position,
+      Quaternion.identity
+    );
 
-    Debug.Log($"{prefabToPlace.name} built!");
+    Debug.Log($"[Instance: {GetInstanceID()}] {newBuilding.name} built!");
+    
+    RegisterBuilding(newBuilding.GetComponent<Buildable>());
+
+    StartCoroutine(RefreshNavMesh());
   }
+
 
   private void CancelBuilding() {
     ClearPreview();
   }
 
   private void ClearPreview() {
-    if (preview != null) Destroy(preview);
+
+    if (preview != null)
+    {
+      preview.gameObject.SetActive(false);
+      Destroy(preview.gameObject);
+    }
 
     if (previewMaterial != null) Destroy(previewMaterial);
 
@@ -193,8 +365,7 @@ public class BuildingManager: MonoBehaviour {
     previewMaterial = null;
     groundRenderer = null;
     selectedPrefab = null;
-
-    selectedWoodCost = 0;
+    
     building = false;
     canBuild = false;
   }
@@ -202,4 +373,30 @@ public class BuildingManager: MonoBehaviour {
   private void OnDisable() {
     ClearPreview();
   }
+
+
+  private IEnumerator RefreshNavMesh()
+  {
+      yield return null;
+
+      if (navMeshSurface == null)
+      {
+          Debug.LogError("NavMeshSurface is not assigned!");
+          yield break;
+      }
+
+      if (navMeshSurface.navMeshData == null)
+      {
+          navMeshSurface.BuildNavMesh();
+      }
+      else
+      {
+          yield return navMeshSurface.UpdateNavMesh(
+              navMeshSurface.navMeshData
+          );
+      }
+
+      Debug.Log("NavMesh updated!");
+  }
+
 }

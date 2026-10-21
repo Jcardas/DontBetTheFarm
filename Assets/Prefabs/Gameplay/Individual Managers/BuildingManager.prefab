@@ -44,13 +44,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bbd56ae5ad3104f5f9a2d0bb5fb02b86, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BuildingManager
-  wheatFieldPrefab: {fileID: 4516886324686475944, guid: 4cd8876d0e2554edabc93d8ec30b9a61, type: 3}
-  animalPenPrefab: {fileID: 4051487371402194607, guid: 4732d7566d68f464ca5619afaf77b72b, type: 3}
-  woodCost: 5
-  animalPenWoodCost: 10
+  buildingPrefabs:
+  - {fileID: 2085119362929318556, guid: ba1129b3a7f104ba89ff8a4af54cc453, type: 3}
+  - {fileID: 234109281797697403, guid: 4cd8876d0e2554edabc93d8ec30b9a61, type: 3}
   mainCamera: {fileID: 0}
   groundLayer:
     serializedVersion: 2
-    m_Bits: 64
+    m_Bits: 8
   validColor: {r: 0, g: 1, b: 0, a: 0.5}
   invalidColor: {r: 1, g: 0, b: 0, a: 0.5}
+  navMeshSurface: {fileID: 0}

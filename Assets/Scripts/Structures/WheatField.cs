@@ -20,7 +20,23 @@ public class WheatField: Buildable { [Header("Wheat Growth")][SerializeField] pr
   private float growthProgress = 0f;
 
   private List < GameObject > wheatPlants = new List < GameObject > ();
+  
+  public override (ResourceType, int) CostAndResource => 
+  
+  // GameConstants base material and base cost for wheat field
+  (GameConstants.Instance.BaseWheatField.ResourceType, GameConstants.Instance.BaseWheatField.BuildingCost);
 
+  protected override void Reset()
+  {
+    base.Reset();
+  }
+
+  protected override void HandleDestroyed()
+  {
+    base.HandleDestroyed(); // Remove this when the eventual implementation is added.
+    // TODO: Eventually change the field to a broken / trampled state where it can be repaired later.
+  }
+  
   void Start() {
     buildableName = "Wheat Field";
 

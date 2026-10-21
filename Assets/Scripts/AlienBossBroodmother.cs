@@ -1,29 +1,29 @@
 using UnityEngine;
 using UnityEngine.AI;
 
-[RequireComponent(typeof(NavMeshAgent), typeof(Health), typeof(BossFighter))]
+[RequireComponent(typeof(NavMeshAgent), typeof(currentHealth), typeof(BossFighter))]
 public class AlienBossBroodmother : MonoBehaviour
 {
     [Header("Boss Settings")]
     public GameObject standardAlienPrefab;
     public int spawnCountOnDeath = 5;
 
-    private Health selfHealth;
+    private currentHealth _selfCurrentHealth;
     private BossFighter bossFighter;
     private bool hasSpawnedMinions = false;
 
-    private Health currentPriorityTarget;
+    private currentHealth currentPriorityTarget;
 
     void Awake()
     {
-        selfHealth = GetComponent<Health>();
+        _selfCurrentHealth = GetComponent<currentHealth>();
         bossFighter = GetComponent<BossFighter>();
     }
 
     void Update()
     {
         // 1. Check for death to trigger the split
-        if (selfHealth != null && selfHealth.Down)
+        if (_selfCurrentHealth != null && _selfCurrentHealth.Down)
         {
             HandleDeathSplit();
             return;
@@ -46,9 +46,9 @@ public class AlienBossBroodmother : MonoBehaviour
     /// Scans Logan's global Health.All list to find the closest target matching the current priority tier.
     /// Priority: 1. WheatField -> 2. Barn -> 3. Player -> 4. Animal
     /// </summary>
-    private Health FindNextPriorityTarget()
+    private currentHealth FindNextPriorityTarget()
     {
-        Health target;
+        currentHealth target;
 
         // Phase 1: Wheat Fields
         target = FindNearestInHealthPool(h => h.GetComponent<WheatField>() != null);
@@ -73,16 +73,16 @@ public class AlienBossBroodmother : MonoBehaviour
     /// <summary>
     /// Helper method to filter the Health list for the closest matching valid target.
     /// </summary>
-    private Health FindNearestInHealthPool(System.Func<Health, bool> condition)
+    private currentHealth FindNearestInHealthPool(System.Func<currentHealth, bool> condition)
     {
-        Health best = null;
+        currentHealth best = null;
         float bestDistance = float.MaxValue;
         Vector3 currentPos = transform.position;
 
-        foreach (Health h in Health.All)
+        foreach (currentHealth h in currentHealth.All)
         {
             // Ignore dead targets or allies
-            if (h.Down || h.team == selfHealth.team) continue;
+            if (h.Down || h.team == _selfCurrentHealth.team) continue;
 
             if (condition(h))
             {

@@ -13,7 +13,8 @@ GameObject:
   - component: {fileID: 4566376447188857352}
   - component: {fileID: 7197212814931991660}
   - component: {fileID: 8198807386989021538}
-  m_Layer: 0
+  - component: {fileID: 636894829888825116}
+  m_Layer: 7
   m_Name: AlienProto (Updated)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -113,6 +114,22 @@ MonoBehaviour:
   attackRange: 1
   guardRadius: 8
   anchored: 0
+--- !u!114 &636894829888825116
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 304660079250710828}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ccd992bef0a6a684c8ebe5f7c4723af9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CombatFeedback
+  flashColor: {r: 1, g: 0.25, b: 0.2, a: 1}
+  flashSeconds: 0.12
+  barGap: 0.25
+  barSize: {x: 0.9, y: 0.1}
 --- !u!1 &1582250672558202170
 GameObject:
   m_ObjectHideFlags: 0
@@ -124,7 +141,7 @@ GameObject:
   - component: {fileID: 7838114949813092719}
   - component: {fileID: 8306874000655249211}
   - component: {fileID: 776087896745954650}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Head
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -214,7 +231,7 @@ GameObject:
   - component: {fileID: 6300347237380627588}
   - component: {fileID: 3336334762399640846}
   - component: {fileID: 144045744767969232}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: EyeR
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -304,7 +321,7 @@ GameObject:
   - component: {fileID: 3487460506395795726}
   - component: {fileID: 2486472004188237854}
   - component: {fileID: 3925771994117920644}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Body
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -393,7 +410,7 @@ GameObject:
   m_Component:
   - component: {fileID: 942746091465570696}
   - component: {fileID: 8418538033823498015}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Model
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -448,7 +465,7 @@ GameObject:
   - component: {fileID: 2070908231783260144}
   - component: {fileID: 3474796643408208889}
   - component: {fileID: 8870762587894740767}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Antenna
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -538,7 +555,7 @@ GameObject:
   - component: {fileID: 7698496201651384988}
   - component: {fileID: 468370844684174593}
   - component: {fileID: 7127225225922508871}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: EyeL
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -628,7 +645,7 @@ GameObject:
   - component: {fileID: 6210401585756151811}
   - component: {fileID: 1324343756194410059}
   - component: {fileID: 343410351526258118}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: AntennaTip
   m_TagString: Untagged
   m_Icon: {fileID: 0}

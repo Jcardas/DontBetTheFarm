@@ -7,10 +7,10 @@ public enum Team { Farm, Alien }
 // Anything that can be attacked: animals, the farmer, aliens, the barn.
 // At 0 health it is knocked out, not destroyed (design: knocked-out animals can be healed or abducted).
 // Needs a collider, on it or a child: attackers measure their reach to it.
-public class Health : MonoBehaviour
+public class currentHealth : MonoBehaviour
 {
-    static readonly List<Health> all = new();
-    public static IReadOnlyList<Health> All => all;
+    static readonly List<currentHealth> all = new();
+    public static IReadOnlyList<currentHealth> All => all;
 
     public Team team;
     public int maxHealth = 50;
@@ -37,9 +37,9 @@ public class Health : MonoBehaviour
 
     // The standing enemy of `team` closest to `from`, counting only enemies within `radius` of `post`. Null if none.
     // ponytail: straight-line distance and a scan of every unit; switch to path length or a spatial grid if waves get big.
-    public static Health NearestEnemy(Team team, Vector3 from, Vector3 post, float radius)
+    public static currentHealth NearestEnemy(Team team, Vector3 from, Vector3 post, float radius)
     {
-        Health best = null;
+        currentHealth best = null;
         float bestDistance = float.MaxValue;
         foreach (var h in all)
         {

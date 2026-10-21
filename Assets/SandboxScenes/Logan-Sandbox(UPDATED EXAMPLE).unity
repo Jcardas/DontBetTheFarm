@@ -497,7 +497,7 @@ MonoBehaviour:
   m_OverrideVoxelSize: 0
   m_VoxelSize: 0.16666667
   m_MinRegionArea: 2
-  m_NavMeshData: {fileID: 23800000, guid: b2438e088baf7bb47b16586cc1c4b728, type: 2}
+  m_NavMeshData: {fileID: 23800000, guid: c24f431f0dee24265bb66a711d44c7c2, type: 2}
   m_BuildHeightMesh: 0
 --- !u!4 &495236933
 Transform:
@@ -1129,8 +1129,7 @@ PrefabInstance:
       propertyPath: m_Name
       value: Barn
       objectReference: {fileID: 0}
-    m_RemovedComponents:
-    - {fileID: 9190490319079997848, guid: 66ae55bbbef0f9049ae982fd26e99722, type: 3}
+    m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
@@ -2103,6 +2102,51 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 981b1fb5ca97847e5a888824f5e0bd09, type: 3}
+--- !u!1 &1999000001
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1999000002}
+  - component: {fileID: 1999000003}
+  m_Layer: 0
+  m_Name: Alien Spawn Key (K)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1999000002
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1999000001}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1999000003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1999000001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7adc1abadff342ce826f62a072a35694, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AlienSpawnKey
+  alien: {fileID: 304660079250710828, guid: 4cb3cf3fc22fcf94c98194a0301d71b8, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -2122,3 +2166,4 @@ SceneRoots:
   - {fileID: 2068911486}
   - {fileID: 373158266}
   - {fileID: 2021304035}
+  - {fileID: 1999000002}

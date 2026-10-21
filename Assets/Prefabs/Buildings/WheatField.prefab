@@ -148,7 +148,7 @@ GameObject:
   - component: {fileID: 6718897558224274969}
   - component: {fileID: 8718194018683166918}
   m_Layer: 0
-  m_Name: Soil
+  m_Name: Ground
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -330,6 +330,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WheatField
   buildableName: Wheat Field
+  maxHealth: 100
+  buildingCost: 5
   growTime: 30
   startHeight: 0.1
   finalHeight: 0.6
