@@ -42,7 +42,7 @@ MonoBehaviour:
     maxHealth: 100
     buildingCost: 10
     resourceType: 0
-  maxAnimalsInPen: 10
+  maxAnimalsInPen: 5
   baseAnimalPenStats:
     maxHealth: 100
     buildingCost: 10

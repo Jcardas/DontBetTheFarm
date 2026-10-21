@@ -929,6 +929,9 @@ MonoBehaviour:
   buildableName: Animal Pen
   maxHealth: 100
   buildingCost: 10
+  resourceType: 0
+  MaxAnimals: 5
+  animalsInPen: []
 --- !u!1 &2614879296198230183
 GameObject:
   m_ObjectHideFlags: 0

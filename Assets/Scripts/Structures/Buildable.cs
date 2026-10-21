@@ -29,10 +29,13 @@ public abstract class Buildable : MonoBehaviour
         {
             Debug.LogError("Ground element not found for " + buildableName + ". Please ensure that the buildable prefab has a child named 'Ground'.");
         }
+        
+        Reset();
     }
     
     protected virtual void Reset()
     {
+        CurrentHealth = maxHealth;
         CostAndResource = 
             (GameConstants.Instance.BaseBuilding.ResourceType,
             GameConstants.Instance.BaseBuilding.BuildingCost);
