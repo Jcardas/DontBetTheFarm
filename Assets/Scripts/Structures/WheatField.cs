@@ -82,7 +82,6 @@ public class WheatField: Buildable { [Header("Wheat Growth")][SerializeField] pr
   }
 
   public override void Build() {
-    Debug.Log("Wheat Field ready.");
   }
 
   void StartNewCrop() {
@@ -95,15 +94,13 @@ public class WheatField: Buildable { [Header("Wheat Growth")][SerializeField] pr
     planted = true;
     mature = false;
     growthProgress = 0f;
-
-    Debug.Log("Wheat started growing.");
   }
 
   void CreateWheat() {
     Renderer soilRenderer = soil.GetComponent < Renderer > ();
 
     if (soilRenderer == null) {
-      Debug.Log("Soil needs a Renderer component.");
+      Debug.LogError("Soil needs a Renderer component.");
       return;
     }
 
@@ -221,8 +218,6 @@ public class WheatField: Buildable { [Header("Wheat Growth")][SerializeField] pr
     }
 
     mature = true;
-
-    Debug.Log("Wheat is ready to harvest!");
   }
 
   void CheckPlayerDistance() {
@@ -253,12 +248,9 @@ public class WheatField: Buildable { [Header("Wheat Growth")][SerializeField] pr
 
   public void HarvestWheat() {
     if (!mature) {
-      Debug.Log("Wheat is not ready to harvest.");
+      Debug.LogError("Wheat is not ready to harvest.");
       return;
     }
-
-    Debug.Log("Wheat harvested!");
-    Debug.Log("Depositing wheat to stockpile.");
 
     foreach(GameObject wheatPlant in wheatPlants) {
       Destroy(wheatPlant);
@@ -274,10 +266,6 @@ public class WheatField: Buildable { [Header("Wheat Growth")][SerializeField] pr
 
     if (store != null) {
       store.Deposit(ResourceType.Hay, wheatPerHarvest);
-      Debug.Log("Added 1 Hay to stockpile.");
-    }
-    else {
-      Debug.LogWarning("No stockpile found!");
     }
 
     if (harvestButton != null) {

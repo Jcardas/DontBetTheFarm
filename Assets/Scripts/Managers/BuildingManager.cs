@@ -217,7 +217,7 @@ public class BuildingManager: MonoBehaviour {
       }
 
       if (canBuild) PlaceBuilding(hit.point);
-      else Debug.Log("Cannot build here!");
+      else Debug.LogWarning("Cannot build here!");
     }
   }
 
