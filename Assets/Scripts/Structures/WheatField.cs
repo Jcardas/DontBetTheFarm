@@ -4,6 +4,7 @@ using UnityEngine;
 public class WheatField: Buildable { [Header("Wheat Growth")][SerializeField] private float growTime = 15f;
   [SerializeField] private float startHeight = 0.1f;
   [SerializeField] private float finalHeight = 0.6f;
+  [SerializeField] private int wheatPerHarvest = 1;
 
   [Header("Field")][SerializeField] private GameObject soil;
   [SerializeField] private float spacing = 0.3f;
@@ -272,7 +273,7 @@ public class WheatField: Buildable { [Header("Wheat Growth")][SerializeField] pr
     ResourceManager store = ResourceManager.Nearest(transform.position);
 
     if (store != null) {
-      store.Deposit(ResourceType.Hay, 1);
+      store.Deposit(ResourceType.Hay, wheatPerHarvest);
       Debug.Log("Added 1 Hay to stockpile.");
     }
     else {
