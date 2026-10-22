@@ -47,7 +47,7 @@ public class AnimalPen : Buildable, IContextInteractable
 
         foreach (var animalPrefab in startingAnimals.Where(animalPrefab => animalPrefab != null))
         {
-            SpawnAnimal(animalPrefab);
+            SpawnAnimal(animalPrefab.SourcePrefab);
         }
     }
 
@@ -115,7 +115,11 @@ public class AnimalPen : Buildable, IContextInteractable
             attempts++;
         } while (!positionFound && attempts < 10);
 
+        // Instantiate the animals original prefab at the calculated position and rotation, and parent it to the pen
         FarmAnimal newAnimal = Instantiate(animalPrefab, spawnPosition, spawnRotation, transform);
+        
+        newAnimal.SourcePrefab = animalPrefab.SourcePrefab; // Ensure the new animal has the correct source prefab reference
+        
         AddAnimal(newAnimal);
     }
 
@@ -134,7 +138,15 @@ public class AnimalPen : Buildable, IContextInteractable
             Debug.LogWarning($"[{name}] Need at least 2 animals of the same species to breed.");
             return;
         }
-
+        
+        // Since there are at least 2 animals of the same species, check to make sure 2 are also alive
+            var aliveAnimals =
+                animalsInPen.Where(a =>
+                    a != null && !a.Down && GetSpeciesKey(a) == GetSpeciesKey(parentTemplate)).ToList();
+        
+        if (aliveAnimals.Count < 2) return;
+        
+        
         int hayCost = parentTemplate.BreedingCost;
         if (!TryConsumeHay(hayCost))
         {
@@ -142,7 +154,7 @@ public class AnimalPen : Buildable, IContextInteractable
             return;
         }
 
-        SpawnAnimal(parentTemplate);
+        SpawnAnimal(parentTemplate.SourcePrefab);
     }
 
     private void HealAllAnimals()
@@ -253,7 +265,8 @@ public class AnimalPen : Buildable, IContextInteractable
         bool hasSpace = animalsInPen.Count < MaxAnimals;
         bool hasBreedingPair = TryGetBreedableAnimal(out FarmAnimal breedableAnimal);
         bool hasHayForBreeding = breedableAnimal != null && currentHay >= breedableAnimal.BreedingCost;
-        bool canBreed = hasSpace && hasBreedingPair && hasHayForBreeding;
+        bool enoughAnimalsToBreed = animalsInPen.Count(a => a != null && !a.Down && GetSpeciesKey(a) == GetSpeciesKey(breedableAnimal)) >= 2;
+        bool canBreed = hasSpace && hasBreedingPair && hasHayForBreeding && enoughAnimalsToBreed;
 
         string breedLabel;
         if (!hasSpace)

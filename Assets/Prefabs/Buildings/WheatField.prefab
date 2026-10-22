@@ -333,7 +333,7 @@ MonoBehaviour:
   maxHealth: 100
   buildingCost: 5
   resourceType: 0
-  growTime: 30
+  growTime: 2
   startHeight: 0.1
   finalHeight: 0.6
   wheatPerHarvest: 10
