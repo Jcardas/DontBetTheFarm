@@ -14,6 +14,12 @@ public class ContextInteractionManager : MonoBehaviour
     [SerializeField] private LayerMask interactableLayers = ~0;
     [SerializeField] private float maxRayDistance = 250f;
 
+    [Header("Click & Drag Filtering")]
+    [Tooltip("Maximum allowed hold time (in seconds) to still count as a click.")]
+    [SerializeField] private float maxHoldDuration = 0.28f;
+    [Tooltip("Maximum pointer movement (in pixels) between press and release.")]
+    [SerializeField] private float maxDragDistance = 12f;
+
 #if ENABLE_INPUT_SYSTEM
     [Header("Input System Actions")]
     [SerializeField] private InputActionReference selectActionRef;
@@ -21,6 +27,11 @@ public class ContextInteractionManager : MonoBehaviour
 #endif
 
     private static readonly List<RaycastResult> s_UiRaycastResults = new(16);
+
+    // Tracking state
+    private float _pressTime;
+    private Vector2 _pressScreenPosition;
+    private bool _isTrackingClick;
 
     private void Reset() => ResolveCamera();
 
@@ -46,7 +57,8 @@ public class ContextInteractionManager : MonoBehaviour
         if (selectActionRef != null && selectActionRef.action != null)
         {
             selectActionRef.action.Enable();
-            selectActionRef.action.performed += OnSelectPerformed;
+            selectActionRef.action.started += OnSelectStarted;
+            selectActionRef.action.canceled += OnSelectCanceled;
         }
 
         if (pointActionRef != null && pointActionRef.action != null)
@@ -59,7 +71,8 @@ public class ContextInteractionManager : MonoBehaviour
     {
         if (selectActionRef != null && selectActionRef.action != null)
         {
-            selectActionRef.action.performed -= OnSelectPerformed;
+            selectActionRef.action.started -= OnSelectStarted;
+            selectActionRef.action.canceled -= OnSelectCanceled;
             selectActionRef.action.Disable();
         }
 
@@ -67,29 +80,75 @@ public class ContextInteractionManager : MonoBehaviour
         {
             pointActionRef.action.Disable();
         }
+
+        _isTrackingClick = false;
     }
 
-    private void OnSelectPerformed(InputAction.CallbackContext context)
+    private void OnSelectStarted(InputAction.CallbackContext context)
     {
-        ExecuteRaycastInteraction();
+        RecordPointerDown();
     }
+
+    private void OnSelectCanceled(InputAction.CallbackContext context)
+    {
+        EvaluatePointerUp();
+    }
+
 #else
     private void Update()
     {
         if (Input.GetButtonDown("Select") || Input.GetMouseButtonDown(1))
         {
-            ExecuteRaycastInteraction();
+            RecordPointerDown();
+        }
+
+        if (_isTrackingClick && (Input.GetButtonUp("Select") || Input.GetMouseButtonUp(1)))
+        {
+            EvaluatePointerUp();
         }
     }
 #endif
 
-    private void ExecuteRaycastInteraction()
+    private void RecordPointerDown()
+    {
+        Vector2 screenPos = GetPointerScreenPosition();
+
+        // If the initial press landed on UI, do not start tracking a world interaction
+        if (IsPointerOverUIElement(screenPos))
+        {
+            _isTrackingClick = false;
+            return;
+        }
+
+        _pressTime = Time.unscaledTime;
+        _pressScreenPosition = screenPos;
+        _isTrackingClick = true;
+    }
+
+    private void EvaluatePointerUp()
+    {
+        if (!_isTrackingClick) return;
+        _isTrackingClick = false;
+
+        Vector2 releasePos = GetPointerScreenPosition();
+        float holdDuration = Time.unscaledTime - _pressTime;
+        float dragDistance = Vector2.Distance(releasePos, _pressScreenPosition);
+
+        // Discard if held too long or dragged past threshold (box selection, camera pan, etc.)
+        if (holdDuration > maxHoldDuration || dragDistance > maxDragDistance)
+        {
+            return;
+        }
+
+        // Execute the interaction using the release position
+        ExecuteRaycastInteraction(releasePos);
+    }
+
+    private void ExecuteRaycastInteraction(Vector2 screenPos)
     {
         if (isometricCamera == null) return;
 
-        Vector2 screenPos = GetPointerScreenPosition();
-
-        // Immediate graphic raycast avoids the EventSystem timing warning
+        // Verify the pointer didn't end over a UI element
         if (IsPointerOverUIElement(screenPos))
         {
             return;
