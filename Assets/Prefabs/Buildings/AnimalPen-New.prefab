@@ -5637,7 +5637,7 @@ GameObject:
   - component: {fileID: 3529509168729342029}
   - component: {fileID: 2085119362929318556}
   m_Layer: 0
-  m_Name: AnimalPen
+  m_Name: AnimalPen-New
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
