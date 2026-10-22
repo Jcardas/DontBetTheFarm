@@ -114,8 +114,9 @@ public abstract class Creature : MonoBehaviour
         Heal(maxHealth - currentHealth);
     }
 
-    private void HandleRevive()
+    protected virtual void HandleRevive()
     {
+        
         if (currentHealth > 0) return;
 
         currentHealth = maxHealth;

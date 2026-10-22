@@ -31,6 +31,11 @@ public abstract class FarmAnimal : Creature
         // Animals do not die, they are knocked out.
         AnimalKnockedOut();
     }
+    
+    protected override void HandleRevive()
+    {
+        
+    }
 
     protected virtual void AnimalKnockedOut()
     {
@@ -39,6 +44,7 @@ public abstract class FarmAnimal : Creature
 
     public override void HealToFull()
     {
-        
+        base.HealToFull();
+        // Additional logic for farm animals when healed, if needed
     }
 }
