@@ -11,6 +11,8 @@ public class CreatureManager : MonoBehaviour
     // Maintain a list of FarmAnimals and which Pens they are in, so that when a Pen is destroyed, the animals become
     // unassigned and must be reassigned to a new Pem before they can be healed, etc.
     // private readonly Dictionary<FarmAnimal, Pen> animalsInPens = new();
+    
+    public static Transform AnimalContainer { get; private set; }
 
     private void Awake()
     {

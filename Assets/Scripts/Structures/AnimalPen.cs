@@ -116,7 +116,7 @@ public class AnimalPen : Buildable, IContextInteractable
         } while (!positionFound && attempts < 10);
 
         // Instantiate the animals original prefab at the calculated position and rotation, and parent it to the pen
-        FarmAnimal newAnimal = Instantiate(animalPrefab, spawnPosition, spawnRotation, transform);
+        FarmAnimal newAnimal = Instantiate(animalPrefab, spawnPosition, spawnRotation, CreatureManager.AnimalContainer);
         
         newAnimal.SourcePrefab = animalPrefab.SourcePrefab; // Ensure the new animal has the correct source prefab reference
         
