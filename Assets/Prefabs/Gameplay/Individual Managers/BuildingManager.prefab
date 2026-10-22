@@ -45,7 +45,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BuildingManager
   buildingPrefabs:
-  - {fileID: 2085119362929318556, guid: ba1129b3a7f104ba89ff8a4af54cc453, type: 3}
+  - {fileID: 2085119362929318556, guid: ee4d69f52d7b847a0b7a8d287d96a878, type: 3}
   - {fileID: 234109281797697403, guid: 4cd8876d0e2554edabc93d8ec30b9a61, type: 3}
   mainCamera: {fileID: 0}
   groundLayer:

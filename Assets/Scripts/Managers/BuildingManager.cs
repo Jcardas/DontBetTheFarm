@@ -73,6 +73,7 @@ public class BuildingManager: MonoBehaviour {
     }
 
     // Check to make sure the prefabs are all buildable and have a Buildable component
+    if (buildingPrefabs == null && buildingPrefabs.Length <= 0) return;
     foreach (Buildable prefab in buildingPrefabs)
     {
       if (prefab == null)
@@ -81,11 +82,8 @@ public class BuildingManager: MonoBehaviour {
         continue;
       }
 
-      if (prefab.GetComponent<Buildable>() == null)
-      {
-        Debug.LogError("Building prefab \"" + prefab.name + "\" does not have a Buildable component!");
-        continue;
-      }
+      if (prefab.GetComponent<Buildable>() != null) continue;
+      Debug.LogError("Building prefab \"" + prefab.name + "\" does not have a Buildable component!");
     }
   }
 
