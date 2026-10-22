@@ -30,7 +30,6 @@ public class PenDoor : MonoBehaviour
     private void Update()
     {
         bool animalApproaching = false;
-
         Vector3 center =
     transform.position +
     transform.parent.TransformVector(detectionCenter);
@@ -50,7 +49,12 @@ public class PenDoor : MonoBehaviour
             if (agent == null || !agent.isOnNavMesh)
                 continue;
 
-            if (agent.GetComponent<PenAnimal>() == null) continue;
+            if (agent == null || !agent.isOnNavMesh)
+                continue;
+            
+            if (agent.GetComponent<FarmAnimal>() == null)
+                continue;
+
             bool moving =
                 agent.pathPending ||
                 (agent.hasPath &&

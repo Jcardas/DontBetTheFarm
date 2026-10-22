@@ -44,6 +44,12 @@ public class BuildingManager: MonoBehaviour {
   // Singleton pattern to ensure only one instance of BuildingManager exists
   public static BuildingManager Instance { get; private set; }
   
+  private void Start()
+  {
+      if (navMeshSurface != null)
+          navMeshSurface.BuildNavMesh();
+  }
+
   private void InitSingleton() {
     if (Instance != null && Instance != this) {
       enabled = false;
@@ -92,6 +98,8 @@ public class BuildingManager: MonoBehaviour {
       RegisterBuilding(building);
     }
   }
+
+
   
   private void RegisterBuilding(Buildable building) {
     if (building != null && !buildings.Contains(building)) {
