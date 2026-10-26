@@ -4,19 +4,18 @@ using UnityEngine;
 
 public class TimeManager : MonoBehaviour
 {
-    public const int CIRCLE_DEGREES = 360;
-    public const int hoursInDay = 12;       // 12 hours of day
-    public const int hoursInNight = 12;     // 12 hours of night
+    public const int CIRCLE_DEGREES = 360;  // 360 degrees in a circle
+    public const int HOURS_IN_DAY = 12;     // 12 hours of day
+    public const int HOURS_IN_NIGHT = 12;   // 12 hours of night
     public const int DAY_START_TIME = 6;    // 6am
     public const int NIGHT_START_TIME = 18; // 6pm
-    public const int DayLength = hoursInDay + hoursInNight;
+    public const int DAY_LENGTH = HOURS_IN_DAY + HOURS_IN_NIGHT;
 
-    public bool timePaused = false;         // Is time paused?
-    public int currentDay = 0;              // Current day count
+    public bool timePaused =    false;      // Is time paused?
+    public int currentDay =     1;          // Current day count
     public float lengthOfHour = 10f;        // Length of time an hour takes in seconds
-    public float timePassed = 0;
-
- 
+    public float currentTime =   0f;
+    public float timePassed =    0f;        // Total time passed in seconds
     public float starEmissionRate = 1000f;
 
     bool isDayTimeFlag = false;
@@ -30,18 +29,19 @@ public class TimeManager : MonoBehaviour
 
     void Start()
     {
-        timePassed = 60f;
+        // On boot up, time starts at 6am on day 1
+        currentTime = DAY_START_TIME;
     }
 
     void Update()
     {
         if (!timePaused)
         {
-            timePassed += Time.deltaTime;
+            PassTime();
 
             if (celestialRig != null)
             {
-                float rotationX = getClockDegrees() - 180f;
+                float rotationX = getClockDegrees() - (CIRCLE_DEGREES / 2);
                 celestialRig.rotation = Quaternion.Euler(rotationX, -30f, 0);
             }
 
@@ -59,6 +59,17 @@ public class TimeManager : MonoBehaviour
 
             UpdateStarSystem();
         }
+    }
+
+    /**
+     * Called Every frame to update the time. It calculates the current time and total time passed based on the length of an hour and the delta time since the last frame.
+     */
+    void PassTime()
+    {
+        currentTime += Time.deltaTime / lengthOfHour;
+        currentTime %= DAY_LENGTH; // Wrap around to 0 after 24 hours
+
+        timePassed += Time.deltaTime;
     }
 
     void setDayTime()
@@ -121,7 +132,6 @@ public class TimeManager : MonoBehaviour
         }
     }
 
-    // Determine if it is dayime (btwn 6am and 6pm) or nighttime (btwn 6pm and 6am)
     void UpdateStarSystem()
     { 
         if (starSystem != null)
@@ -138,11 +148,16 @@ public class TimeManager : MonoBehaviour
     // ACCESSORS AND MUTATORS
     public float getHour()
     {
-        return (timePassed / lengthOfHour) % DayLength;
+        return currentTime;
+    }
+
+    public int getDay()
+    {
+        return currentDay;
     }
 
     public float getClockDegrees()
     {
-        return (getHour() / DayLength) * CIRCLE_DEGREES;
+        return (getHour() / DAY_LENGTH) * CIRCLE_DEGREES;
     }
 }
