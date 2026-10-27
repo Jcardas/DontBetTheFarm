@@ -139,6 +139,16 @@ public abstract class Creature : MonoBehaviour
         }
     }
 
+    // Ranged creatures back away when an enemy gets closer than this, so they keep fighting from range. 0 = stand and fight.
+    public virtual float KeepAwayRange => 0f;
+
+    // How this creature lands a hit once its target is in range. Melee by default; ranged and special creatures override it.
+    public virtual void PerformAttack(Creature target)
+    {
+        target.TakeDamage(attackDamage);
+        TriggerAttackVisual();
+    }
+
     public void TriggerAttackVisual()
     {
         if (toyBob != null) toyBob.Bump();
