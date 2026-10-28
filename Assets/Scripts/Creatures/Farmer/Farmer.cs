@@ -28,7 +28,7 @@ public class Farmer : Creature
 
     // The farmer never melees: his automatic attack is a shotgun blast at any alien inside his attack range.
     // Space (PlayerControls) fires the same gun by hand, out to the gun's full range.
-    public override void PerformAttack(Creature target)
+    public override void PerformAttack(IDamageable target)
     {
         if (shotgun != null) shotgun.Fire(target.Position);
     }

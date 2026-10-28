@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.AI;
 
 [RequireComponent(typeof(NavMeshAgent), typeof(CreatureBrain))]
-public abstract class Creature : MonoBehaviour
+public abstract class Creature : MonoBehaviour, IDamageable
 {
     [Header("Team & Alignment")]
     [SerializeField] protected GameConstants.Team team;
@@ -142,8 +142,14 @@ public abstract class Creature : MonoBehaviour
     // Ranged creatures back away when an enemy gets closer than this, so they keep fighting from range. 0 = stand and fight.
     public virtual float KeepAwayRange => 0f;
 
+    // What this creature fights when it has no orders: the nearest enemy creature near its guard post.
+    public virtual IDamageable FindTarget(Vector3 guardPost) =>
+        CreatureManager.Instance != null
+            ? CreatureManager.Instance.GetNearestEnemy(team, transform.position, guardPost, guardRadius)
+            : null;
+
     // How this creature lands a hit once its target is in range. Melee by default; ranged and special creatures override it.
-    public virtual void PerformAttack(Creature target)
+    public virtual void PerformAttack(IDamageable target)
     {
         target.TakeDamage(attackDamage);
         TriggerAttackVisual();

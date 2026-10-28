@@ -9,11 +9,11 @@ public class Projectile : MonoBehaviour
     [Tooltip("Seconds before it gives up on a target it can't reach.")]
     [SerializeField] private float lifetime = 3f;
 
-    private Creature target;
+    private IDamageable target;
     private int damage;
     private float diesAt;
 
-    public void Launch(Creature target, int damage)
+    public void Launch(IDamageable target, int damage)
     {
         this.target = target;
         this.damage = damage;
@@ -22,13 +22,14 @@ public class Projectile : MonoBehaviour
 
     private void Update()
     {
-        if (target == null || target.Down || Time.time >= diesAt)
+        // Body is a Collider, so == null is Unity's check: it also catches a target destroyed mid-flight.
+        if (target == null || target.Body == null || target.Down || Time.time >= diesAt)
         {
             Destroy(gameObject);
             return;
         }
 
-        Vector3 aim = target.Body != null ? target.Body.bounds.center : target.Position;
+        Vector3 aim = target.Body.bounds.center;
         transform.position = Vector3.MoveTowards(transform.position, aim, speed * Time.deltaTime);
         if ((transform.position - aim).sqrMagnitude > 0.01f) return;
 

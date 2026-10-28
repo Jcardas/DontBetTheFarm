@@ -14,7 +14,7 @@ public class RangedAnimal : FarmAnimal
 
     public override float KeepAwayRange => keepAwayRange;
 
-    public override void PerformAttack(Creature target)
+    public override void PerformAttack(IDamageable target)
     {
         if (projectile == null)
         {

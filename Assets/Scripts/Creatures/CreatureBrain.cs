@@ -8,7 +8,7 @@ public class CreatureBrain : MonoBehaviour
     private NavMeshAgent agent;
     private Gatherer gatherer;
 
-    private Creature currentTarget;
+    private IDamageable currentTarget;
     private Creature playerOrderedTarget;
 
     private Vector3 guardPost;
@@ -132,12 +132,7 @@ public class CreatureBrain : MonoBehaviour
             if (!creature.Anchored && !Engaged)
                 guardPost = transform.position;
 
-            currentTarget = playerOrderedTarget != null
-                ? playerOrderedTarget
-                : (CreatureManager.Instance != null
-                    ? CreatureManager.Instance.GetNearestEnemy(creature.Team, transform.position, guardPost,
-                        creature.GuardRadius)
-                    : null);
+            currentTarget = playerOrderedTarget != null ? playerOrderedTarget : creature.FindTarget(guardPost);
 
             if (currentTarget == null)
             {
@@ -177,7 +172,7 @@ public class CreatureBrain : MonoBehaviour
         if (agent.hasPath && !retreating) agent.ResetPath();
         agent.updateRotation = false;
 
-        Vector3 toTarget = currentTarget.transform.position - transform.position;
+        Vector3 toTarget = currentTarget.Position - transform.position;
         toTarget.y = 0;
         if (toTarget.sqrMagnitude > 0.001f)
         {
@@ -197,9 +192,9 @@ public class CreatureBrain : MonoBehaviour
 
     // Steps straight away from the enemy until it is KeepAwayRange off, still facing and attacking it on the way.
     // A unit with nowhere to back into (wall, map edge) stands and fights.
-    private void BackAwayFrom(Creature enemy, float gap)
+    private void BackAwayFrom(IDamageable enemy, float gap)
     {
-        Vector3 away = transform.position - enemy.transform.position;
+        Vector3 away = transform.position - enemy.Position;
         away.y = 0f;
         if (away.sqrMagnitude < 0.001f) away = -transform.forward;
 

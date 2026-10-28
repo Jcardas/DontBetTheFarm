@@ -30,6 +30,7 @@ public class BuildingManager: MonoBehaviour {
   
   // List of all buildings in the scene, used for checking spacing between buildings
   private List<Buildable> buildings = new List<Buildable>();
+  public IReadOnlyList<Buildable> Buildings => buildings;
 
   private GameObject selectedPrefab;
   private Buildable preview;
