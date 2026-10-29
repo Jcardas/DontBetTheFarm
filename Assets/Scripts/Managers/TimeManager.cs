@@ -80,6 +80,11 @@ public class TimeManager : MonoBehaviour
         isDayTimeFlag = true;
         NightLightOff();
         DayLightOn();
+
+        if (waveManager != null)
+        {
+            waveManager.RetreatWave();
+        }
     }
 
     void setNightTime()

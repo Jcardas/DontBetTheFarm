@@ -133,7 +133,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 71512275860751355, guid: 56df260090dcdd946b7ccf18836d0bd0, type: 3}
       propertyPath: enemyCount
-      value: 5
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 71512275860751355, guid: 56df260090dcdd946b7ccf18836d0bd0, type: 3}
       propertyPath: enemyPrefab
@@ -3136,7 +3136,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8369798137079473527, guid: b443ab66fcdd6496a8ff05f3dfd8caf7, type: 3}
       propertyPath: useEdgeScrolling
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
