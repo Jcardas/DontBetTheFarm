@@ -66,7 +66,7 @@ public class MutationMenuController : MonoBehaviour
 
     private void PopulateInventory()
     {
-        for (int i = 0; i < 12; i++)
+        for (int i = 0; i < 24; i++)
         {
             GameObject newItem = Instantiate(inventoryItemPrefab, rightInventoryContent, false);
             newItem.name = "InventoryItem_" + i;
