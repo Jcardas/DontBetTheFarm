@@ -8,7 +8,7 @@ public class CreatureBrain : MonoBehaviour
     private NavMeshAgent agent;
     private Gatherer gatherer;
 
-    private Creature currentTarget;
+    private IDamageable currentTarget;
     private Creature playerOrderedTarget;
 
     private Vector3 guardPost;
@@ -16,6 +16,7 @@ public class CreatureBrain : MonoBehaviour
     private float nextAttackTime;
     private float obeyGraceEnds;
     private bool isObeying;
+    private bool retreating;
 
     public bool IsPassive { get; set; }
     public bool Engaged => currentTarget != null && !currentTarget.Down;
@@ -131,12 +132,7 @@ public class CreatureBrain : MonoBehaviour
             if (!creature.Anchored && !Engaged)
                 guardPost = transform.position;
 
-            currentTarget = playerOrderedTarget != null
-                ? playerOrderedTarget
-                : (CreatureManager.Instance != null
-                    ? CreatureManager.Instance.GetNearestEnemy(creature.Team, transform.position, guardPost,
-                        creature.GuardRadius)
-                    : null);
+            currentTarget = playerOrderedTarget != null ? playerOrderedTarget : creature.FindTarget(guardPost);
 
             if (currentTarget == null)
             {
@@ -152,11 +148,20 @@ public class CreatureBrain : MonoBehaviour
                 return;
             }
 
-            // Target exists: walk towards it if out of range
-            if (currentTarget.Body != null && Reach.Gap(transform.position, currentTarget.Body) > creature.AttackRange)
+            // Target exists: walk towards it if out of range, or back away if it is too close for a ranged creature
+            retreating = false;
+            if (currentTarget.Body != null)
             {
-                agent.updateRotation = true;
-                Reach.WalkTo(agent, currentTarget.Body);
+                float gap = Reach.Gap(transform.position, currentTarget.Body);
+                if (gap > creature.AttackRange)
+                {
+                    agent.updateRotation = true;
+                    Reach.WalkTo(agent, currentTarget.Body);
+                }
+                else if (gap < creature.KeepAwayRange)
+                {
+                    BackAwayFrom(currentTarget, gap);
+                }
             }
         }
 
@@ -164,10 +169,10 @@ public class CreatureBrain : MonoBehaviour
         if (currentTarget == null || currentTarget.Down || currentTarget.Body == null) return;
         if (Reach.Gap(transform.position, currentTarget.Body) > creature.AttackRange) return;
 
-        if (agent.hasPath) agent.ResetPath();
+        if (agent.hasPath && !retreating) agent.ResetPath();
         agent.updateRotation = false;
 
-        Vector3 toTarget = currentTarget.transform.position - transform.position;
+        Vector3 toTarget = currentTarget.Position - transform.position;
         toTarget.y = 0;
         if (toTarget.sqrMagnitude > 0.001f)
         {
@@ -182,7 +187,21 @@ public class CreatureBrain : MonoBehaviour
         if (Time.time < nextAttackTime) return;
         nextAttackTime = Time.time + creature.AttackSpeed;
 
-        currentTarget.TakeDamage(creature.AttackDamage);
-        creature.TriggerAttackVisual();
+        creature.PerformAttack(currentTarget);
+    }
+
+    // Steps straight away from the enemy until it is KeepAwayRange off, still facing and attacking it on the way.
+    // A unit with nowhere to back into (wall, map edge) stands and fights.
+    private void BackAwayFrom(IDamageable enemy, float gap)
+    {
+        Vector3 away = transform.position - enemy.Position;
+        away.y = 0f;
+        if (away.sqrMagnitude < 0.001f) away = -transform.forward;
+
+        Vector3 to = transform.position + away.normalized * (creature.KeepAwayRange - gap + 1f);
+        if (!agent.isOnNavMesh || !NavMesh.SamplePosition(to, out NavMeshHit hit, 2f, NavMesh.AllAreas)) return;
+
+        agent.SetDestination(hit.position);
+        retreating = true;
     }
 }

@@ -57,6 +57,15 @@ public class CreatureManager : MonoBehaviour
         }
     }
 
+    // Every creature hostile to `myTeam`, standing or not.
+    public IEnumerable<Creature> GetEnemies(GameConstants.Team myTeam)
+    {
+        foreach (var pair in creaturesByTeam)
+            if (GameConstants.IsHostile(myTeam, pair.Key))
+                foreach (var creature in pair.Value)
+                    yield return creature;
+    }
+
     /// <summary>
     /// Finds the closest standing enemy to `fromPos` within `radius` of `guardPost`.
     /// </summary>
