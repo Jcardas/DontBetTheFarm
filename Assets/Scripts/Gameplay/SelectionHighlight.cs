@@ -10,13 +10,14 @@ public class SelectionHighlight : MonoBehaviour
 {
     static readonly Color SelectedColor = new(0.55f, 1f, 0.6f, 0.85f);
     static readonly Color HoverColor = new(0.55f, 1f, 0.6f, 0.35f);
+    static readonly Color TurnedColor = new(1f, 0.3f, 0.25f, 0.7f);
     // The outline is opaque, so hover vs selected is brightness, not alpha.
     static readonly Color OutlineSelected = new(0.6f, 1f, 0.65f, 1f);
     static readonly Color OutlineHover = new(0.35f, 0.65f, 0.4f, 1f);
     static readonly int BaseColor = Shader.PropertyToID("_BaseColor");
     static Material ringMaterial, outlineMaterial;
 
-    bool hovered, selected;
+    bool hovered, selected, turned;
     Creature creature;
     NavMeshAgent agent;
     Transform ring;
@@ -35,7 +36,14 @@ public class SelectionHighlight : MonoBehaviour
         set { selected = value; Refresh(); }
     }
 
-    public bool Showing => hovered || selected;
+    // A stolen animal fighting for the aliens (SideMark). Its red ring stays on, under any hover or select glow.
+    public bool Turned
+    {
+        get => turned;
+        set { turned = value; Refresh(); }
+    }
+
+    public bool Showing => hovered || selected || turned;
 
     void Awake()
     {
@@ -52,7 +60,7 @@ public class SelectionHighlight : MonoBehaviour
 
     void Refresh()
     {
-        bool show = hovered || selected;
+        bool show = Showing;
         if (show && ring == null && outlines.Count == 0) Build();
         if (ring) ring.gameObject.SetActive(show);
         foreach (var r in outlines) if (r) r.gameObject.SetActive(show);
@@ -72,7 +80,7 @@ public class SelectionHighlight : MonoBehaviour
         float pulse = selected ? 0.8f + 0.2f * Mathf.Sin(Time.time * 3f) : 1f;
         if (ring)
         {
-            Color c = selected ? SelectedColor : HoverColor;
+            Color c = selected ? SelectedColor : hovered ? HoverColor : TurnedColor;
             c.a *= pulse;
             block.SetColor(BaseColor, c);
             ring.GetComponent<Renderer>().SetPropertyBlock(block);

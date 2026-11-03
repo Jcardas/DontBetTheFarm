@@ -36,12 +36,15 @@ public class UFO : Alien
     public static readonly List<Creature> Abducted = new();
     static readonly HashSet<Creature> claimed = new();
     public static bool IsClaimed(Creature c) => claimed.Contains(c);
+    // An enemy saucer carried the farmer off the map. The game-over screen hangs off this.
+    public static event System.Action FarmerTaken;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
     static void ResetStatics()
     {
         Abducted.Clear();
         claimed.Clear();
+        FarmerTaken = null;
     }
 
     State state;
@@ -63,6 +66,24 @@ public class UFO : Alien
         home = transform.position - Vector3.up * hoverHeight; // the ground spot it hovers over when idle
         exitPoint = home;
         if (beam) beam.SetActive(false);
+        if (!IsEnemy) PaintBlue();
+    }
+
+    // The player's saucer is Justin's model with blue lights and a blue beam, so it never reads as an enemy.
+    void PaintBlue()
+    {
+        Color blue = new(0.15f, 0.55f, 1f);
+        var block = new MaterialPropertyBlock();
+        block.SetColor("_BaseColor", blue);
+        block.SetColor("_EmissionColor", blue);
+        foreach (var r in GetComponentsInChildren<MeshRenderer>(true))
+            if (r.sharedMaterials.Length > 1) r.SetPropertyBlock(block, 1); // slot 1 is UFO Lights
+        foreach (var l in GetComponentsInChildren<Light>(true)) l.color = blue;
+        foreach (var ps in GetComponentsInChildren<ParticleSystem>(true))
+        {
+            var main = ps.main;
+            main.startColor = new Color(blue.r, blue.g, blue.b, main.startColor.color.a);
+        }
     }
 
     // Saucers stay out of the CreatureManager so nothing targets or fights them.
@@ -236,6 +257,7 @@ public class UFO : Alien
         {
             c.gameObject.SetActive(false);
             Abducted.Add(c);
+            if (c is Farmer) FarmerTaken?.Invoke();
             state = State.Leave;
             return;
         }

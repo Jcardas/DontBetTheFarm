@@ -139,12 +139,13 @@ public abstract class Creature : MonoBehaviour, IDamageable
         }
     }
 
-    // Switches sides (an alien the player's saucer brought in) and re-files it with the CreatureManager under the new team.
+    // Switches sides (an alien the player's saucer brought in, a stolen animal sent back) and re-files it with the CreatureManager under the new team.
     public void SetTeam(GameConstants.Team newTeam)
     {
         if (CreatureManager.Instance != null) CreatureManager.Instance.Unregister(this);
         team = newTeam;
         if (isActiveAndEnabled && CreatureManager.Instance != null) CreatureManager.Instance.Register(this);
+        SideMark.Refresh(this);
     }
 
     // Ranged creatures back away when an enemy gets closer than this, so they keep fighting from range. 0 = stand and fight.
