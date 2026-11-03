@@ -22,7 +22,7 @@ public class Shotgun : MonoBehaviour
     [Tooltip("Extra pellets angled upward, spread across the same cone, so a shot can hit flying enemies.")]
     public int raisedPellets = 3;
     [Tooltip("How far the raised pellets angle up, in degrees.")]
-    public float raisedDegrees = 15f;
+    public float raisedDegrees = 20f;
     [Tooltip("How far a pellet flies, from the muzzle.")]
     public float range = 12f;
     [Tooltip("Damage each pellet does to the first enemy it hits.")]
