@@ -28,6 +28,7 @@ public class PlayerControls : MonoBehaviour
     Shotgun shotgun;
     CameraController cameraController;
     Selectable hovered, lastClicked;
+    SelectionHighlight hoveredThing, pickedThing; // a building under the mouse / the one last clicked (pens)
     CursorType cursor;
     float lastClickAt;
     readonly List<Selectable>[] groups = { new(), new(), new() };
@@ -81,6 +82,7 @@ public class PlayerControls : MonoBehaviour
         );      
         var unit = overSomething ? hit.collider.GetComponentInParent<Selectable>() : null;
         Hover(unit);
+        HoverThing(unit == null && overSomething ? hit.collider.GetComponentInParent<SelectionHighlight>() : null);
         if (player.Command.WasPressedThisFrame() && overSomething) Command(hit);
 
         if (left == LeftButton.Idle && player.Select.WasPressedThisFrame())
@@ -92,7 +94,11 @@ public class PlayerControls : MonoBehaviour
         if (left == LeftButton.Idle || !player.Select.WasReleasedThisFrame()) return;
 
         if (left == LeftButton.Dragging) Pick(Selectable.All.Where(s => OnScreen(cam, s, Box(pressedAt, at))), shift, ctrl);
-        else Click(cam, unit, shift, ctrl);
+        else
+        {
+            Click(cam, unit, shift, ctrl);
+            PickThing(unit == null ? hoveredThing : null);
+        }
         left = LeftButton.Idle;
     }
 
@@ -149,6 +155,24 @@ bool overSomething = Physics.Raycast(
         if (hovered) hovered.Hovered = false;
         hovered = unit;
         if (unit) unit.Hovered = true;
+    }
+
+    // Buildings (pens) light up the same way units do: an outline while hovered, a stronger one once clicked
+    // until the next click.
+    void HoverThing(SelectionHighlight thing)
+    {
+        if (thing != null && thing.TryGetComponent<Selectable>(out _)) thing = null;
+        if (thing == hoveredThing) return;
+        if (hoveredThing) hoveredThing.Hovered = false;
+        hoveredThing = thing;
+        if (thing) thing.Hovered = true;
+    }
+
+    void PickThing(SelectionHighlight thing)
+    {
+        if (pickedThing) pickedThing.Selected = false;
+        pickedThing = thing;
+        if (thing) thing.Selected = true;
     }
 
     // Same precedence as Order.From, so the cursor always previews the order a right-click would give.

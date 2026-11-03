@@ -12,14 +12,9 @@ public class Selectable : MonoBehaviour
 
     // [Tooltip("Double-clicking a unit picks every standing unit of the same type on screen.")]
     // public UnitType unitType;
-    [Tooltip("Flat ring under the unit, shown only while it is selected.")]
-    public GameObject ring;
-
-    [Tooltip("Fainter ring shown while the mouse is over the unit, unless it is selected.")]
-    public GameObject hoverRing;
-
     private Creature creature;
     private CreatureBrain brain;
+    private SelectionHighlight highlight;
     private bool selected;
     private bool hovered;
 
@@ -50,7 +45,10 @@ public class Selectable : MonoBehaviour
     {
         creature = GetComponent<Creature>();
         brain = GetComponent<CreatureBrain>();
+        if (!TryGetComponent(out highlight)) highlight = gameObject.AddComponent<SelectionHighlight>();
     }
+
+    public SelectionHighlight Highlight => highlight;
 
     private void OnEnable() => all.Add(this);
     private void OnDisable() => all.Remove(this);
@@ -64,8 +62,8 @@ public class Selectable : MonoBehaviour
 
     private void ShowRings()
     {
-        if (ring) ring.SetActive(selected);
-        if (hoverRing) hoverRing.SetActive(hovered && !selected);
+        highlight.Selected = selected;
+        highlight.Hovered = hovered;
     }
 
     public void Command(Order order)
