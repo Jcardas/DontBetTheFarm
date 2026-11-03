@@ -245,7 +245,8 @@ public class UFO : Alien
         Land(c, dropSpot);
         c.SetTeam(GameConstants.Team.Farm);
         c.HealToFull();
-        if (!c.TryGetComponent<Selectable>(out _)) c.gameObject.AddComponent<Selectable>();
+        if (c.TryGetComponent(out Selectable selectable)) selectable.enabled = true;
+        else c.gameObject.AddComponent<Selectable>();
         c.CreatureBrain.SetGuardPost(c.Position);
         state = State.Idle;
     }
