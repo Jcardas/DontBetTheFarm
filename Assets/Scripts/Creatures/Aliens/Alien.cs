@@ -42,7 +42,8 @@ public class Alien : Creature
 
         if (CreatureManager.Instance != null)
             foreach (Creature enemy in CreatureManager.Instance.GetEnemies(Team)) Consider(enemy);
-        if (BuildingManager.Instance != null)
+        // Buildings belong to the farm, so an alien that changed sides leaves them alone.
+        if (GameConstants.IsHostile(Team, GameConstants.Team.Farm) && BuildingManager.Instance != null)
             foreach (Buildable building in BuildingManager.Instance.Buildings)
                 if (building != null) Consider(building);
 

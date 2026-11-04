@@ -277,7 +277,7 @@ MonoBehaviour:
   pellets: 7
   coneDegrees: 30
   raisedPellets: 3
-  raisedDegrees: 15
+  raisedDegrees: 20
   range: 12
   pelletDamage: 5
   knockback: 1.5

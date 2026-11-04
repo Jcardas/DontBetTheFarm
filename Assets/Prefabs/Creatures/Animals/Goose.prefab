@@ -53,8 +53,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5cebb61462041924cb1d3b676309d252, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Selectable
-  ring: {fileID: 3955051385189414511}
-  hoverRing: {fileID: 1646378341514672209}
 --- !u!195 &3157063618407328192
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -112,7 +110,7 @@ MonoBehaviour:
   sourcePrefab: {fileID: 0}
   breedingCost: 5
   healCost: 1
-  flightHeight: 1.5
+  flightHeight: 2.25
 --- !u!65 &4709323681059249495
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -262,11 +260,6 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 3e74716dada74f241869f9dd75e36d2d, type: 3}
---- !u!1 &1646378341514672209 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 3313410516953446276, guid: 3e74716dada74f241869f9dd75e36d2d, type: 3}
-  m_PrefabInstance: {fileID: 4261114637206769621}
-  m_PrefabAsset: {fileID: 0}
 --- !u!114 &1902964790627588856 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 2398788346232149293, guid: 3e74716dada74f241869f9dd75e36d2d, type: 3}
@@ -278,11 +271,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
---- !u!1 &3955051385189414511 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 991266254667708858, guid: 3e74716dada74f241869f9dd75e36d2d, type: 3}
-  m_PrefabInstance: {fileID: 4261114637206769621}
-  m_PrefabAsset: {fileID: 0}
 --- !u!4 &4489398018237517856 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 391547745540677621, guid: 3e74716dada74f241869f9dd75e36d2d, type: 3}
