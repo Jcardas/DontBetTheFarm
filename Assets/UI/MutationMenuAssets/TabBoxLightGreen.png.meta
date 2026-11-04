@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 7fa5b5ab9bf2858438ba15a7b9165ea0
+guid: 0278a6ffb4c07794b89724e6c7d7333d
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -4957777159581652907
-    second: MutationSlot_0
+      213: 7117210893164561491
+    second: TabBoxLightGreen_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -100,13 +100,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: MutationSlot_0
+      name: TabBoxLightGreen_0
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 56
-        height: 56
+        width: 176
+        height: 42
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -115,8 +115,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 5582797d0ff623bb0800000000000000
-      internalID: -4957777159581652907
+      spriteID: 3544d96499965c260800000000000000
+      internalID: 7117210893164561491
       vertices: []
       indices: 
       edges: []
@@ -135,7 +135,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      MutationSlot_0: -4957777159581652907
+      TabBoxLightGreen_0: 7117210893164561491
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
