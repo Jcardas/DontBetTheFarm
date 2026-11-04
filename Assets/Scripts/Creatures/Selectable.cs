@@ -71,6 +71,10 @@ public class Selectable : MonoBehaviour
     public void Command(Order order)
     {
         if (Down || brain == null) return;
+        // Turn to the clicked spot at once; the NavMeshAgent alone eases round over half a second as it sets off.
+        Vector3 toward = order.point - transform.position;
+        toward.y = 0f;
+        if (toward.sqrMagnitude > 0.01f) transform.rotation = Quaternion.LookRotation(toward);
         brain.ExecuteCommand(order);
     }
 
