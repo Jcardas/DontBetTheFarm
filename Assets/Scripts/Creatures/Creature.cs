@@ -2,6 +2,16 @@ using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEngine.AI;
 
+public enum CreatureCapabilities
+{
+    None           = 0,
+    CanChopWood    = 1 << 0, // Axe
+    CanHarvestCrops = 1 << 1, // Scythe
+    CanRepair      = 1 << 2, // Hammer
+    CanFly         = 1 << 3, // Wings
+    CanHover       = 1 << 4  // Hover Boots
+}
+
 [RequireComponent(typeof(NavMeshAgent), typeof(CreatureBrain))]
 public abstract class Creature : MonoBehaviour
 {
