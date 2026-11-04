@@ -451,12 +451,12 @@ NavMeshAgent:
   m_AgentTypeID: 0
   m_Radius: 0.65
   m_Speed: 3.5
-  m_Acceleration: 8
+  m_Acceleration: 100
   avoidancePriority: 50
-  m_AngularSpeed: 120
+  m_AngularSpeed: 1440
   m_StoppingDistance: 0
   m_AutoTraverseOffMeshLink: 1
-  m_AutoBraking: 1
+  m_AutoBraking: 0
   m_AutoRepath: 1
   m_Height: 1.75
   m_BaseOffset: 0
@@ -491,11 +491,15 @@ MonoBehaviour:
   moveSpeed: 5
   attackDamage: 10
   attackSpeed: 1
-  attackRange: 1
+  attackRange: 6
   guardRadius: 8
   anchored: 1
+  sourcePrefab: {fileID: 0}
   breedingCost: 5
   healCost: 10
+  projectile: {fileID: 567345593106106381, guid: 8588e2a7464d6ff45a9220c0f8c302bb, type: 3}
+  launchHeight: 1.4
+  keepAwayRange: 3
 --- !u!65 &7739518994544259854
 BoxCollider:
   m_ObjectHideFlags: 0
