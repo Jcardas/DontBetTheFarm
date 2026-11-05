@@ -3,6 +3,8 @@ using System.Collections;
 
 public class Alien : Creature
 {
+    public GameObject beamEffectPrefab;
+
     private Vector3 despawnPoint;
     public bool isRetreating = false;
 
@@ -52,15 +54,13 @@ public class Alien : Creature
 
     private IEnumerator RetreatRoutine()
     {
+        float retreatTolerance = Mathf.Max(NavMeshAgent.stoppingDistance, 1.5f); // Ensure a minimum tolerance)
         while (NavMeshAgent != null && NavMeshAgent.enabled)
         {
-            if (!NavMeshAgent.pathPending && NavMeshAgent.remainingDistance <= NavMeshAgent.stoppingDistance)
+            if (!NavMeshAgent.pathPending && NavMeshAgent.remainingDistance <= retreatTolerance)
             {
-                if (!NavMeshAgent.hasPath || NavMeshAgent.velocity.sqrMagnitude == 0f)
-                {
-                    BeamUp();
-                    yield break;
-                }
+                BeamUp();
+                yield break; 
             }
             yield return null;
         }
@@ -68,6 +68,10 @@ public class Alien : Creature
 
     private void BeamUp()
     {
+        if (beamEffectPrefab != null)
+        {
+            Instantiate(beamEffectPrefab, transform.position, Quaternion.identity);
+        }
         Destroy(gameObject);
     }
 }

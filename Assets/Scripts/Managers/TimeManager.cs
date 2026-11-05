@@ -42,7 +42,7 @@ public class TimeManager : MonoBehaviour
             if (celestialRig != null)
             {
                 float rotationX = getClockDegrees() - (CIRCLE_DEGREES / 2);
-                celestialRig.rotation = Quaternion.Euler(rotationX, -30f, 0);
+                celestialRig.rotation = Quaternion.Euler(rotationX, -30f, 0f);
             }
 
             int currentHour = (int)getHour();
@@ -84,6 +84,7 @@ public class TimeManager : MonoBehaviour
         if (waveManager != null)
         {
             waveManager.RetreatWave();
+            waveManager.CloakMotherships();
         }
     }
 
@@ -94,7 +95,11 @@ public class TimeManager : MonoBehaviour
         isDayTimeFlag = false;
         DayLightOff();
         NightLightOn();
-        waveManager.SpawnWave(currentDay);
+        if (waveManager != null)
+        {
+            waveManager.UncloakMotherships();
+            waveManager.SpawnWave(currentDay);
+        }
     }
 
     void DayLightOn()

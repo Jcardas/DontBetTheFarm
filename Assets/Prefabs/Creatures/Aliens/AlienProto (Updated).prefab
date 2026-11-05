@@ -114,6 +114,8 @@ MonoBehaviour:
   attackRange: 1
   guardRadius: 8
   anchored: 0
+  beamEffectPrefab: {fileID: 6513492497273295794, guid: efbfd504153af464d949dab00121ca2a, type: 3}
+  isRetreating: 0
 --- !u!114 &636894829888825116
 MonoBehaviour:
   m_ObjectHideFlags: 0
