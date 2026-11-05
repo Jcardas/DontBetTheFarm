@@ -107,6 +107,7 @@ GameObject:
   - component: {fileID: 7855260496075631928}
   - component: {fileID: 7528430850132707700}
   - component: {fileID: -1807932057669856012}
+  - component: {fileID: 137285043343942539}
   m_Layer: 0
   m_Name: Small_Alien_Base
   m_TagString: Untagged
@@ -223,6 +224,53 @@ MonoBehaviour:
   flashSeconds: 0.12
   barGap: 0.25
   barSize: {x: 2, y: 0.2}
+--- !u!114 &137285043343942539
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1989022934381298033}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c640b80ccd2fd804fb20c51e3b464b13, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CreatureMutator
+  socketBindings:
+  - slotType: 1
+    sockets:
+    - transform: {fileID: 6441492118263379201}
+      defaultVisualPrefab: {fileID: 0}
+  - slotType: 2
+    sockets:
+    - transform: {fileID: 9041459963847022917}
+      defaultVisualPrefab: {fileID: 0}
+    - transform: {fileID: 7894100082345318518}
+      defaultVisualPrefab: {fileID: 0}
+  - slotType: 4
+    sockets:
+    - transform: {fileID: 4930370666321947982}
+      defaultVisualPrefab: {fileID: 0}
+    - transform: {fileID: 6587082554305681616}
+      defaultVisualPrefab: {fileID: 0}
+    - transform: {fileID: 5008203606206017629}
+      defaultVisualPrefab: {fileID: 0}
+    - transform: {fileID: 4217756183579253362}
+      defaultVisualPrefab: {fileID: 0}
+    - transform: {fileID: 3897661251255253947}
+      defaultVisualPrefab: {fileID: 0}
+    - transform: {fileID: 2985952345592975136}
+      defaultVisualPrefab: {fileID: 0}
+  - slotType: 8
+    sockets:
+    - transform: {fileID: 5038671724603542510}
+      defaultVisualPrefab: {fileID: 0}
+  socketScaleFactor: 1
+  defaultMutations:
+  - mutation: {fileID: 11400000, guid: d072a8806c873c449a05b6d3f15b93a7, type: 2}
+    slot: 4
+  - mutation: {fileID: 11400000, guid: f730b7380f49e134c8aa7347bc062467, type: 2}
+    slot: 1
 --- !u!1 &4650746187239923855
 GameObject:
   m_ObjectHideFlags: 0
@@ -452,7 +500,6 @@ GameObject:
   - component: {fileID: 3587386320745149391}
   - component: {fileID: 6170866778481026739}
   - component: {fileID: 730317229847114250}
-  - component: {fileID: 4654676868893220162}
   m_Layer: 0
   m_Name: Core
   m_TagString: Untagged
@@ -559,40 +606,3 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7552088721773785459}
   m_Mesh: {fileID: -5293335269154574413, guid: 4554fa6f57762e8458b41fc753fe343d, type: 3}
---- !u!114 &4654676868893220162
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7552088721773785459}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c640b80ccd2fd804fb20c51e3b464b13, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::CreatureMutator
-  socketBindings:
-  - slotType: 1
-    socketTransforms:
-    - {fileID: 6441492118263379201}
-  - slotType: 2
-    socketTransforms:
-    - {fileID: 9041459963847022917}
-    - {fileID: 7894100082345318518}
-  - slotType: 4
-    socketTransforms:
-    - {fileID: 4930370666321947982}
-    - {fileID: 6587082554305681616}
-    - {fileID: 5008203606206017629}
-    - {fileID: 4217756183579253362}
-    - {fileID: 3897661251255253947}
-    - {fileID: 2985952345592975136}
-  - slotType: 8
-    socketTransforms:
-    - {fileID: 5038671724603542510}
-  socketScaleFactor: 0.1
-  defaultMutations:
-  - mutation: {fileID: 11400000, guid: f730b7380f49e134c8aa7347bc062467, type: 2}
-    slot: 1
-  - mutation: {fileID: 11400000, guid: d072a8806c873c449a05b6d3f15b93a7, type: 2}
-    slot: 4
