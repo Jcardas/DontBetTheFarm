@@ -8,8 +8,7 @@ public enum CreatureCapabilities
     CanChopWood    = 1 << 0, // Axe
     CanHarvestCrops = 1 << 1, // Scythe
     CanRepair      = 1 << 2, // Hammer
-    CanFly         = 1 << 3, // Wings
-    CanHover       = 1 << 4  // Hover Boots
+    CanFly         = 1 << 3 // Wings
 }
 
 [RequireComponent(typeof(NavMeshAgent), typeof(CreatureBrain))]
@@ -35,6 +34,15 @@ public abstract class Creature : MonoBehaviour, IDamageable
     private Gatherer gatherer;
 
     // Public properties
+    
+    // These are the calculated stats after applying mutations. They are read-only and updated whenever mutations change.
+    public int CalculatedMaxHealth { get; private set; }
+    public float CalculatedMoveSpeed { get; private set; }
+    public int CalculatedAttackDamage { get; private set; }
+    public float CalculatedAttackRange { get; private set; }
+    public float CalculatedAttackSpeed { get; private set; }
+    public float CalculatedDamageResistance { get; private set; }
+    
     // "Cow", "Cow (1)" and "Cow(Clone)" are all a Cow: drops Unity's duplicate numbers and spawn suffixes.
     public string CreatureName => Regex.Replace(gameObject.name, @"(\s*\(\d+\)|\s*\(Clone\))+$", "").Trim();
     public GameConstants.Team Team => team;
@@ -53,6 +61,11 @@ public abstract class Creature : MonoBehaviour, IDamageable
     public NavMeshAgent NavMeshAgent => navMeshAgent;
     public CreatureBrain CreatureBrain => creatureBrain;
     public Vector3 Position => transform.position;
+
+    private CreatureMutator mutator;
+    
+    public CreatureCapabilities ActiveCapabilites {get; private set;}
+    public float DamageResistance {get; private set;}
     
     protected virtual void Awake()
     {
@@ -61,11 +74,56 @@ public abstract class Creature : MonoBehaviour, IDamageable
         bodyCollider = GetComponentInChildren<Collider>();
         toyBob = GetComponentInChildren<ToyBob>();
         gatherer = GetComponentInChildren<Gatherer>();
+        
+        // Mutator is a child of the creature, so we can get it here.
+        mutator = GetComponent<CreatureMutator>();
 
-        if (navMeshAgent != null)
-            navMeshAgent.speed = moveSpeed;
+        OnMutationsChanged();
+        currentHealth = CalculatedMaxHealth;
 
-        currentHealth = maxHealth;
+        // if (navMeshAgent != null)
+        //     navMeshAgent.speed = moveSpeed;
+        //
+        // currentHealth = maxHealth;
+    }
+
+    /// <summary>
+    /// This method gets called by the CreatureMutator whenever a mutation is equipped or unequipped,
+    /// so the creature can recalculate its stats.
+    /// </summary>
+    public void OnMutationsChanged()
+    {
+        int bonusHealth = 0;
+        float bonusSpeed = 0f;
+        int bonusDamage = 0;
+        float bonusRange = 0f;
+        float bonusGuard = 0f;
+        float attackSpeedMultiplier = 1f;
+        float resistance= 0f;
+        CreatureCapabilities caps = CreatureCapabilities.None;
+        
+        if (mutator != null)
+        {
+            foreach (var mutation in mutator.EquippedMutations.Values)
+            {
+                bonusHealth += mutation.bonusMaxHealth;
+                bonusSpeed += mutation.bonusMoveSpeed;
+                bonusDamage += mutation.bonusAttackDamage;
+                bonusRange += mutation.bonusAttackRange;
+                bonusGuard += mutation.bonusGuardRadius;
+                attackSpeedMultiplier *= mutation.attackSpeedMultiplier;
+                resistance = Mathf.Max(resistance, mutation.damageResistance);
+                caps |= mutation.grantedCapabilities;
+            }
+        }
+
+        CalculatedMaxHealth = Mathf.Max(1, maxHealth + bonusHealth);
+        CalculatedMoveSpeed = Mathf.Max(0.1f, moveSpeed + bonusSpeed);
+        CalculatedAttackDamage = Mathf.Max(0, attackDamage + bonusDamage);
+        CalculatedAttackRange = Mathf.Max(0.5f, attackRange + bonusRange);
+        CalculatedAttackSpeed = Mathf.Max(0.05f, attackSpeed * attackSpeedMultiplier);
+        CalculatedDamageResistance = resistance;
+        guardRadius = Mathf.Max(1f, guardRadius + bonusGuard);
     }
 
     protected virtual void Reset()
@@ -161,8 +219,21 @@ public abstract class Creature : MonoBehaviour, IDamageable
     // How this creature lands a hit once its target is in range. Melee by default; ranged and special creatures override it.
     public virtual void PerformAttack(IDamageable target)
     {
-        target.TakeDamage(attackDamage);
+        if (target == null || target.Down) return;
+
         TriggerAttackVisual();
+
+        // Deal damage directly to target (TakeDamage handles resistance internally on Creatures)
+        target.TakeDamage(CalculatedAttackDamage);
+
+        // Notify attached mutation behaviors if target is a creature
+        if (mutator != null && target is Creature targetCreature)
+        {
+            foreach (var behavior in mutator.ActiveBehaviors)
+            {
+                behavior.OnCreatureAttack(targetCreature);
+            }
+        }
     }
 
     public void TriggerAttackVisual()

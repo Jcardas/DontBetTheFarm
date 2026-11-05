@@ -31,7 +31,7 @@ public class MutationData : ScriptableObject
     public float bonusMoveSpeed = 0f;
     public int bonusAttackDamage = 0;
     public float bonusAttackRange = 0f;       // Tentacles
-    public float attackSpeedMultiplier = 1f;  // Tentacles (e.g., 0.8 = 20% faster)
+    public float attackSpeedMultiplier = 1f;  // (e.g., 0.8 = 20% faster)
     public float bonusGuardRadius = 0f;       // Antenna (spot enemies from further away)
 
     [Header("Attack Replacement (Optional)")]

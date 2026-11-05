@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 648ab8f84157c384ba07347834213586, type: 3}
+  m_Name: Tentacles
+  m_EditorClassIdentifier: Assembly-CSharp::MutationData
+  mutationName: Tentacles
+  allowedSlots: -1
+  prefab: {fileID: 5632547008824762036, guid: 9b6b594a81d059f49947e55c72ffba34, type: 3}
+  localScale: 1
+  grantedCapabilities: 0
+  bonusMaxHealth: 0
+  damageResistance: 0
+  bonusMoveSpeed: 0
+  bonusAttackDamage: 0
+  bonusAttackRange: 2
+  attackSpeedMultiplier: 1
+  bonusGuardRadius: 0
+  overridesAttack: 0
