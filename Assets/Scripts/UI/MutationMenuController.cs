@@ -31,6 +31,7 @@ public class MutationMenuController : MonoBehaviour
         if (isActive)
         {
             // When the menu opens, default to showing the first slot (e.g., Head)
+            Canvas.ForceUpdateCanvases();
             OnSlotSelected(0);
         }
     }
