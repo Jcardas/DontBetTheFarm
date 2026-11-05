@@ -70,7 +70,10 @@ public class Alien : Creature
     {
         if (beamEffectPrefab != null)
         {
-            Instantiate(beamEffectPrefab, transform.position, Quaternion.identity);
+            Vector3 beamDespawnPosition = transform.position;
+            beamDespawnPosition.y -= 2.5f;
+
+            Instantiate(beamEffectPrefab, beamDespawnPosition, Quaternion.identity);
         }
         Destroy(gameObject);
     }

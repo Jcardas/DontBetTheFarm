@@ -98,14 +98,19 @@ public class Spawner : MonoBehaviour
     {
         if (platform != null && currentWave != null)
         {
-            if(beamEffectPrefab != null)
+            Vector3 spawnPosition = platform.GetRandomSpawnPosition();
+
+            if (beamEffectPrefab != null)
             {
-                Instantiate(beamEffectPrefab, platform.transform.position, Quaternion.identity);
+                Vector3 beamSpawnPosition = spawnPosition;
+                beamSpawnPosition.y -= 2.5f;
+                Instantiate(beamEffectPrefab, beamSpawnPosition, Quaternion.identity);
             }
 
-            Vector3 spawnPosition = platform.transform.position + Vector3.up * 1.5f; // Adjust the height as needed, stops aliens from trying to path to flying motherships
             GameObject enemy = Instantiate(currentWave.enemyPrefab, spawnPosition, platform.transform.rotation);
             Alien alien = enemy.GetComponent<Alien>();
+
+
             if (alien != null)
             {
                 alien.SetDespawnPoint(spawnPosition);
