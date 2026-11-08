@@ -5,13 +5,18 @@ public class MutationMenuController : MonoBehaviour
 {
     [Header("UI References")]
     public GameObject mutationMenuPanel;
-    public Transform rightMutationContent; // The Content object inside your BodyPartPanel > Scroll View
+    public Transform rightMutationContent;
 
     [Header("Prefabs")]
-    public GameObject mutationCardPrefab; // The new Figma-style mutation card we will build tomorrow
+    public GameObject mutationCardPrefab;
 
     void Start()
     {
+        mutationMenuPanel.SetActive(true);
+
+        OnSlotSelected(0);
+        Canvas.ForceUpdateCanvases();
+
         mutationMenuPanel.SetActive(false);
     }
 
@@ -30,9 +35,8 @@ public class MutationMenuController : MonoBehaviour
 
         if (isActive)
         {
-            // When the menu opens, default to showing the first slot (e.g., Head)
-            Canvas.ForceUpdateCanvases();
             OnSlotSelected(0);
+            Canvas.ForceUpdateCanvases();
         }
     }
 
@@ -47,18 +51,31 @@ public class MutationMenuController : MonoBehaviour
     {
         ClearContainer(rightMutationContent);
         PopulateMutations(slotIndex);
+
+        // Forces the layout to calculate instantly when a tab is clicked
+        Canvas.ForceUpdateCanvases();
     }
 
     private void PopulateMutations(int slotIndex)
     {
-        // Tomorrow we can update this to pull real game data based on the slotIndex.
-        // For now, it spawns 5 placeholder cards so you can test the Scroll View.
-        for (int i = 0; i < 5; i++)
+        for (int i = 0; i < 15; i++)
         {
             if (mutationCardPrefab != null)
             {
                 GameObject newCard = Instantiate(mutationCardPrefab, rightMutationContent, false);
                 newCard.name = "MutationCard_" + slotIndex + "_" + i;
+
+                // DIAGNOSTICS: Only log the first card so we don't spam the console
+                if (i == 0)
+                {
+                    RectTransform rt = newCard.GetComponent<RectTransform>();
+                    Debug.Log($"--- HUNTING CARD 0 ---");
+                    Debug.Log($"Local Position (Inside Container): {rt.localPosition}");
+                    Debug.Log($"World Position (On Screen): {rt.position}");
+                    Debug.Log($"Scale: {rt.localScale}");
+                    Debug.Log($"Size: {rt.rect.width} x {rt.rect.height}");
+                    Debug.Log($"Layer: {LayerMask.LayerToName(newCard.layer)}");
+                }
             }
         }
     }
