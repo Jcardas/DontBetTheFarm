@@ -979,7 +979,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 118856110267699512, guid: c0cbaa3ed21d4d74bb32425207b4b985, type: 3}
       propertyPath: m_ScrollSensitivity
-      value: 20
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 494728935716780988, guid: c0cbaa3ed21d4d74bb32425207b4b985, type: 3}
       propertyPath: m_Size
@@ -1341,6 +1341,10 @@ PrefabInstance:
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 2052475885}
+    - target: {fileID: 4009329563943053724, guid: c0cbaa3ed21d4d74bb32425207b4b985, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 4048415136304735788, guid: c0cbaa3ed21d4d74bb32425207b4b985, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
