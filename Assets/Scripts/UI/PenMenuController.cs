@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.InputSystem;
 
 public class PenMenuController : MonoBehaviour
@@ -9,11 +10,30 @@ public class PenMenuController : MonoBehaviour
     public GameObject breedingView;
 
     [Header("Grid References")]
-    public Transform penListGrid; // Drag your PenList_Grid object here
-    public GameObject animalCardPrefab; // Drag your saved prefab here
+    public Transform penListGrid;
+    public GameObject animalCardPrefab;
+
+    [Header("Tab Buttons")]
+    public Image btnAnimalsBackground;
+    public Image btnBreedingBackground;
+
+    private Color activeColor;
+    private Color inactiveColor;
+
+    public RectTransform tabNavigationContainer;
+
 
     void Start()
     {
+        ColorUtility.TryParseHtmlString("#2A4835", out activeColor);
+        inactiveColor = new Color(0, 0, 0, 0);
+
+        masterMenuRoot.SetActive(true);
+
+        ShowAnimalsTab();
+
+        Canvas.ForceUpdateCanvases();
+
         masterMenuRoot.SetActive(false);
     }
 
@@ -41,14 +61,16 @@ public class PenMenuController : MonoBehaviour
     {
         animalsView.SetActive(true);
         breedingView.SetActive(false);
-        Debug.Log("Tab Switched: Now viewing the ANIMALS menu.");
+        btnAnimalsBackground.color = activeColor;
+        btnBreedingBackground.color = inactiveColor;
     }
 
     public void ShowBreedingTab()
     {
         animalsView.SetActive(false);
         breedingView.SetActive(true);
-        Debug.Log("Tab Switched: Now viewing the BREEDING menu.");
+        btnAnimalsBackground.color = inactiveColor;
+        btnBreedingBackground.color = activeColor;
     }
 
     private void PopulatePenGrid()
@@ -64,5 +86,10 @@ public class PenMenuController : MonoBehaviour
         {
             Instantiate(animalCardPrefab, penListGrid, false);
         }
+    }
+
+    public void CloseMenu()
+    {
+        masterMenuRoot.SetActive(false);
     }
 }
