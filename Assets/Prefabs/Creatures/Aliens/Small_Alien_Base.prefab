@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5038671724603542510}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Socket_Tail
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -40,7 +40,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4217756183579253362}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Socket_Limb.005
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -71,7 +71,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4930370666321947982}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Socket_Limb.002
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -108,7 +108,7 @@ GameObject:
   - component: {fileID: 7528430850132707700}
   - component: {fileID: -1807932057669856012}
   - component: {fileID: 137285043343942539}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Small_Alien_Base
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -220,6 +220,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ccd992bef0a6a684c8ebe5f7c4723af9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CombatFeedback
+  mutator: {fileID: 0}
   flashColor: {r: 1, g: 0.25, b: 0.2, a: 1}
   flashSeconds: 0.12
   barGap: 0.25
@@ -280,7 +281,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 9041459963847022917}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Socket_Back_L
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -311,7 +312,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6587082554305681616}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Socket_Limb.003
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -342,7 +343,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5008203606206017629}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Socket_Limb.004
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -373,7 +374,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6441492118263379201}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Socket_Head
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -404,7 +405,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3897661251255253947}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Socket_Limb.006
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -435,7 +436,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2985952345592975136}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Socket_Limb.007
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -466,7 +467,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7894100082345318518}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Socket_Back_R
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -500,7 +501,7 @@ GameObject:
   - component: {fileID: 3587386320745149391}
   - component: {fileID: 6170866778481026739}
   - component: {fileID: 730317229847114250}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Core
   m_TagString: Untagged
   m_Icon: {fileID: 0}

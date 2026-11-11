@@ -42,6 +42,9 @@ public class CreatureMutator : MonoBehaviour
     private readonly List<IMutationBehavior> activeBehaviors = new List<IMutationBehavior>();
 
     private Creature ownerCreature;
+    
+    // Whenever a mutation is equipped or unequipped, this event is triggered to notify listeners (e.g., Creature) that the mutations have changed.
+    public event Action OnMutationsUpdated;
 
     public IReadOnlyDictionary<SlotType, MutationData> EquippedMutations => equippedMutations;
     public IReadOnlyList<IMutationBehavior> ActiveBehaviors => activeBehaviors;
@@ -129,6 +132,10 @@ public class CreatureMutator : MonoBehaviour
         equippedMutations[targetSlot] = mutation;
         activePartObjects[targetSlot] = spawnedParts;
 
+        // Notify listeners that the visuals have changed, so they can update any relevant state (e.g., Creature recalculating stats)
+        OnMutationsUpdated?.Invoke();
+      
+        //TODO: Use the event instead of calling the method directly, but for now we can call it directly to ensure the creature updates its stats immediately.
         if (ownerCreature != null) ownerCreature.OnMutationsChanged();
     }
 
@@ -185,11 +192,7 @@ public class CreatureMutator : MonoBehaviour
         {
             if (socketSlot.transform == null || socketSlot.defaultVisualPrefab == null) continue;
 
-            GameObject defaultPart = Instantiate(socketSlot.defaultVisualPrefab, socketSlot.transform);
-            defaultPart.transform.localPosition = Vector3.zero;
-            defaultPart.transform.localRotation = Quaternion.identity;
-            defaultPart.transform.localScale = Vector3.one; // Dont multiply by socket scale factor, since the default prefab is already scaled correctly for the socket.
-
+            GameObject defaultPart = SpawnMutationObject(socketSlot.defaultVisualPrefab, socketSlot.transform, true);
             spawnedDefaults.Add(defaultPart);
         }
 
@@ -197,6 +200,9 @@ public class CreatureMutator : MonoBehaviour
         {
             activePartObjects[targetSlot] = spawnedDefaults;
         }
+        
+        // Notify listeners that the visuals have changed, so they can update any relevant state (e.g., Creature recalculating stats)
+        OnMutationsUpdated?.Invoke();
     }
 
     private void RestoreAllDefaults()
@@ -288,5 +294,33 @@ public class CreatureMutator : MonoBehaviour
         }
 
         bool socketSlotIsValid(SocketSlot s) => s.transform != null;
+    }
+
+    private GameObject SpawnMutationObject(GameObject visualObject, Transform parentPosition, bool defaultPart = false)
+    {
+        if (visualObject == null || parentPosition == null) return null;
+
+        GameObject part = Instantiate(visualObject, parentPosition);
+        
+        // Get the layer of the parent and apply it to the spawned part and all its children recursively
+        int parentLayer = parentPosition.gameObject.layer;
+        void SetLayerRecursively(GameObject obj, int layer)
+        {
+            obj.layer = layer;
+            foreach (Transform child in obj.transform)
+            {
+                SetLayerRecursively(child.gameObject, layer);
+            }
+        }
+        SetLayerRecursively(part, parentLayer);
+        
+        part.transform.localPosition = Vector3.zero;
+        part.transform.localRotation = Quaternion.identity;
+        
+        // Scale the part based on whether it's a default part or a mutation part
+        part.transform.localScale = Vector3.one * (defaultPart ? 1.0f : socketScaleFactor);
+        
+        
+        return part;
     }
 }
