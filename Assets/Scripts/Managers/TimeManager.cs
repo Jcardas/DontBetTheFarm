@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class TimeManager : MonoBehaviour
 {
+    public static TimeManager Instance { get; private set; }
+
     public const int CIRCLE_DEGREES = 360;  // 360 degrees in a circle
     public const int HOURS_IN_DAY = 12;     // 12 hours of day
     public const int HOURS_IN_NIGHT = 12;   // 12 hours of night
@@ -24,8 +26,21 @@ public class TimeManager : MonoBehaviour
     public Light sunLight;
     public Light moonLight;
     public ParticleSystem starSystem;
-    public WaveManager waveManager;
 
+    private void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else
+        {
+            Destroy(gameObject);
+            return;
+        }
+        // Ensure that the TimeManager persists across scenes
+        DontDestroyOnLoad(gameObject);
+    }
 
     void Start()
     {
@@ -83,11 +98,10 @@ public class TimeManager : MonoBehaviour
         NightLightOff();
         DayLightOn();
 
-        if (waveManager != null)
-        {
-            waveManager.RetreatWave();
-            waveManager.CloakMotherships();
-        }
+        
+        WaveManager.Instance.RetreatWave();
+        WaveManager.Instance.CloakMotherships();
+        
     }
 
     void setNightTime()
@@ -97,11 +111,10 @@ public class TimeManager : MonoBehaviour
         isDayTimeFlag = false;
         DayLightOff();
         NightLightOn();
-        if (waveManager != null)
-        {
-            waveManager.UncloakMotherships();
-            waveManager.SpawnWave(currentDay);
-        }
+        
+        WaveManager.Instance.UncloakMotherships();
+        WaveManager.Instance.SpawnWave(currentDay);
+       
     }
 
     void DayLightOn()

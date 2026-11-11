@@ -4,11 +4,29 @@ using UnityEngine;
 
 public class WaveManager : MonoBehaviour
 {
+    public static WaveManager Instance { get; private set; }
+
+
     public Wave[] waves;
     public Spawner[] motherships; // Alien Motherships that will spawn the waves
 
 
     private List<Alien> activeAliens = new List<Alien>();
+
+    private void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else
+        {
+            Destroy(gameObject);
+            return;
+        }
+        // Ensure that the WaveManager persists across scenes
+        DontDestroyOnLoad(gameObject);
+    }
 
     public void SpawnWave(int currentDay)
     {
