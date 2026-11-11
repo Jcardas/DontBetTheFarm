@@ -110,6 +110,7 @@ public class CreatureMutator : MonoBehaviour
             GameObject part = Instantiate(mutation.prefab, socketSlot.transform);
             part.transform.localPosition = Vector3.zero;
             part.transform.localRotation = Quaternion.identity;
+            
             part.transform.localScale = Vector3.Scale(Vector3.one * mutation.localScale, Vector3.one * socketScaleFactor);
 
             
@@ -187,7 +188,7 @@ public class CreatureMutator : MonoBehaviour
             GameObject defaultPart = Instantiate(socketSlot.defaultVisualPrefab, socketSlot.transform);
             defaultPart.transform.localPosition = Vector3.zero;
             defaultPart.transform.localRotation = Quaternion.identity;
-            defaultPart.transform.localScale = Vector3.one * socketScaleFactor;
+            defaultPart.transform.localScale = Vector3.one; // Dont multiply by socket scale factor, since the default prefab is already scaled correctly for the socket.
 
             spawnedDefaults.Add(defaultPart);
         }
