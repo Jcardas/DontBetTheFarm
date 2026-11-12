@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public enum OrderKind { Move, Work, Harvest, Attack }
+public enum OrderKind { Move, Work, Harvest, Attack, Repair }
 
 // One player order, read once from what was clicked so every picked unit gets the same order.
 // Each unit's Selectable decides what it means for that unit: a cow can't attack, so it walks there instead.
@@ -10,6 +10,7 @@ public readonly struct Order
     public readonly Vector3 point;
     public readonly ResourceNode node;
     public readonly WheatField field;
+    public readonly Buildable building;
     public readonly Creature enemy;
 
     Order(
@@ -17,12 +18,14 @@ public readonly struct Order
         Vector3 point,
         ResourceNode node = null,
         WheatField field = null,
+        Buildable building = null,
         Creature enemy = null)
     {
         this.kind = kind;
         this.point = point;
         this.node = node;
         this.field = field;
+        this.building = building;
         this.enemy = enemy;
     }
 
@@ -51,5 +54,5 @@ public readonly struct Order
     }
 
     public Order Offset(Vector3 by) =>
-        new(kind, point + by, node, field, enemy);
+        new(kind, point + by, node, field, building, enemy);
 }

@@ -1,279 +1,409 @@
+using UnityEngine;
+using UnityEngine.InputSystem;
+using UnityEngine.EventSystems;
+using UnityEngine.AI;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Unity.AI.Navigation;
-using UnityEngine;
-using UnityEngine.AI;
-using UnityEngine.EventSystems;
-using UnityEngine.InputSystem;
 
-public class BuildingManager : MonoBehaviour
-{
-    [Header("Building Prefabs")]
-    [SerializeField] private Buildable[] buildingPrefabs;
 
-    [Header("References")]
-    [SerializeField] private Camera mainCamera;
-    [SerializeField] private LayerMask groundLayer;
-    [SerializeField] private NavMeshSurface navMeshSurface;
+public class BuildingManager: MonoBehaviour { 
+  [Header("Building Prefabs")]
+  [SerializeField] private Buildable[] buildingPrefabs;
+  
+  // Replaced by a list of building prefabs for easier management
+  // [SerializeField] private GameObject wheatFieldPrefab;
+  // [SerializeField] private GameObject animalPenPrefab;
 
-    [Header("Placement Settings")]
-    [SerializeField] private float minBuildingSpacing = 1f;
-    [SerializeField] private Color validColor = new Color(0, 1, 0, 0.5f);
-    [SerializeField] private Color invalidColor = new Color(1, 0, 0, 0.5f);
+  [Header("References")][SerializeField] private Camera mainCamera;
+  [SerializeField] private LayerMask groundLayer;
 
-    public static BuildingManager Instance { get; private set; }
+  [Header("Placement Settings")]
+  [SerializeField] private float minBuildingSpacing = 1f;
 
-    private readonly List<Bounds> occupiedBounds = new List<Bounds>();
-    private Buildable preview;
-    private GameObject selectedPrefab;
-    private Renderer groundRenderer;
-    private Material previewMaterial;
-    private (ResourceType, int) selectedCostAndResource;
-    private bool building, canBuild;
+  [Header("Preview Colors")][SerializeField] private Color validColor = new Color(0f, 1f, 0f, 0.5f);
 
-    private void Awake()
+  [SerializeField] private Color invalidColor = new Color(1f, 0f, 0f, 0.5f);
+
+  [SerializeField] private NavMeshSurface navMeshSurface;
+  
+  // List of all buildings in the scene, used for checking spacing between buildings
+  private List<Buildable> buildings = new List<Buildable>();
+  public IReadOnlyList<Buildable> Buildings => buildings;
+
+  private GameObject selectedPrefab;
+  private Buildable preview;
+
+  private Renderer groundRenderer;
+  private Material previewMaterial;
+
+  private (ResourceType, int) selectedCostAndResource;
+  private bool building;
+  private bool canBuild;
+  
+  // Singleton pattern to ensure only one instance of BuildingManager exists
+  public static BuildingManager Instance { get; private set; }
+  
+  private void Start()
+  {
+      if (navMeshSurface != null)
+          navMeshSurface.BuildNavMesh();
+  }
+
+  private void InitSingleton() {
+    if (Instance != null && Instance != this) {
+      enabled = false;
+      Destroy(gameObject);
+      return;
+    }
+    Instance = this;
+  }
+  
+  // initialize main camera and navMeshSurface if they are not assigned in the inspector
+  private void OnValidate()
+  {
+    if (mainCamera == null)
     {
-        if (Instance != null && Instance != this)
-        {
-            enabled = false;
-            Destroy(gameObject);
-            return;
-        }
-
-        Instance = this;
-        if (!mainCamera) mainCamera = Camera.main;
-        if (!navMeshSurface) navMeshSurface = FindFirstObjectByType<NavMeshSurface>();
-        RefreshBuildings();
+      mainCamera = Camera.main;
     }
 
-    private void Start()
+    if (navMeshSurface == null)
     {
-        if (navMeshSurface) navMeshSurface.BuildNavMesh();
+      navMeshSurface = FindFirstObjectByType<NavMeshSurface>();
     }
 
-    private void OnValidate()
+    // Check to make sure the prefabs are all buildable and have a Buildable component
+    if (buildingPrefabs == null && buildingPrefabs.Length <= 0) return;
+    foreach (Buildable prefab in buildingPrefabs)
     {
-        if (!mainCamera) mainCamera = Camera.main;
-        if (!navMeshSurface) navMeshSurface = FindFirstObjectByType<NavMeshSurface>();
+      if (prefab == null)
+      {
+        Debug.LogError("Building prefab \"" + prefab.name + "\" is not assigned!");
+        continue;
+      }
+
+      if (prefab.GetComponent<Buildable>() != null) continue;
+      Debug.LogError("Building prefab \"" + prefab.name + "\" does not have a Buildable component!");
+    }
+  }
+
+  private void Awake(){
+    InitSingleton();
+    
+    // Check if there are buildings already in the scene and register them
+    Buildable[] existingBuildings = FindObjectsByType<Buildable>(FindObjectsSortMode.None);
+    foreach (Buildable building in existingBuildings) {
+      RegisterBuilding(building);
+    }
+  }
+
+
+  
+  private void RegisterBuilding(Buildable building) {
+    if (building != null && !buildings.Contains(building)) {
+      buildings.Add(building);
+    }
+  }
+  
+  private void UnregisterBuilding(Buildable building) {
+    if (building != null && buildings.Contains(building)) {
+      buildings.Remove(building);
+    }
+  }
+  
+  // accepts one argument for the prefab to build
+  public void StartBuilding(Buildable prefab) {
+    BeginBuilding(prefab, prefab.GetComponent<Buildable>().CostAndResource);
+  }
+
+  // Deprecated method for starting to build a wheat field, kept for backward compatibility
+  public void StartBuildingAnimalPen() {
+    // BeginBuilding(animalPenPrefab, animalPenWoodCost, "Ground");
+    Debug.LogError("StartBuildingAnimalPen is deprecated. Use StartBuilding with the appropriate prefab instead.");
+  }
+
+  // Instead of int cost, get the cost and material type from the Buildable class
+  private void BeginBuilding(Buildable buildable, (ResourceType, int) costAndResource) 
+  {
+    if (building || buildable == null) {
+      Debug.LogWarning("Already building or prefab is null!");
+      return;
     }
 
-    private void RefreshBuildings()
-    {
-        occupiedBounds.Clear();
-        foreach (GameObject obj in GameObject.FindGameObjectsWithTag("Building"))
-            if (TryGetBounds(obj, out Bounds bounds)) occupiedBounds.Add(bounds);
+    if (mainCamera == null) {
+      Debug.LogError("Main Camera is not assigned!");
+      return;
     }
 
-    public void StartBuilding(Buildable prefab)
-    {
-        if (building || !prefab) return;
-
-        var cost = prefab.CostAndResource;
-        if (ResourceManager.Count(cost.Item1) < cost.Item2)
-        {
-            Debug.Log($"Not enough {cost.Item1}!");
-            return;
-        }
-
-        if (!mainCamera) mainCamera = Camera.main;
-        if (!mainCamera) return;
-
-        RefreshBuildings();
-        if (!prefab.CompareTag("Building"))
-            Debug.LogWarning($"Set the root of {prefab.name} to Tag = Building.");
-
-        preview = Instantiate(prefab);
-        Transform ground = preview.GroundElement;
-        groundRenderer = ground ? ground.GetComponent<Renderer>() : null;
-
-        if (!groundRenderer)
-        {
-            Debug.LogError($"{prefab.name} needs a renderer on GroundElement.");
-            ClearPreview();
-            return;
-        }
-
-        selectedPrefab = prefab.gameObject;
-        selectedCostAndResource = cost;
-        previewMaterial = new Material(groundRenderer.sharedMaterial);
-        groundRenderer.material = previewMaterial;
-
-        foreach (MonoBehaviour script in preview.GetComponentsInChildren<MonoBehaviour>())
-            script.enabled = false;
-        foreach (Collider collider in preview.GetComponentsInChildren<Collider>())
-            collider.enabled = false;
-        foreach (NavMeshObstacle obstacle in preview.GetComponentsInChildren<NavMeshObstacle>())
-            obstacle.enabled = false;
-        foreach (Canvas canvas in preview.GetComponentsInChildren<Canvas>())
-            canvas.enabled = false;
-
-        building = true;
-        canBuild = false;
+    // Check if the player has enough resources to build the structure
+    if (ResourceManager.Count(costAndResource.Item1) < costAndResource.Item2) {
+      Debug.Log($"Not enough {costAndResource.Item1}!");
+      return;
     }
 
-    public void StartBuildingAnimalPen()
-    {
-        Debug.LogError("Use StartBuilding with the AnimalPen prefab instead.");
+    preview = Instantiate(buildable.gameObject).GetComponent<Buildable>();
+    
+    Transform ground = preview.GroundElement; // Instead of searching for a child named "Ground",
+                                             // we use the GroundElement property from the Buildable class
+
+    if (ground == null || !ground.TryGetComponent(out Renderer renderer)) {
+      Debug.LogError($"Missing Renderer on " + preview.name + "!");
+
+      ClearPreview();
+      return;
     }
 
-    private void Update()
-    {
-        if (Instance != this || !building || Mouse.current == null) return;
+    selectedPrefab = buildable.gameObject;
+    selectedCostAndResource = costAndResource;
+    groundRenderer = renderer;
 
-        if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
-        {
-            ClearPreview();
-            return;
-        }
+    previewMaterial = new Material(renderer.sharedMaterial);
+    renderer.material = previewMaterial;
 
-        Ray ray = mainCamera.ScreenPointToRay(Mouse.current.position.ReadValue());
-        bool hitGround = Physics.Raycast(ray, out RaycastHit hit, 100f, groundLayer);
-        canBuild = false;
-
-        if (hitGround)
-        {
-            preview.transform.position = hit.point;
-            canBuild = CanPlace(hit.point);
-        }
-
-        previewMaterial.color = canBuild ? validColor : invalidColor;
-
-        if (Mouse.current.leftButton.wasPressedThisFrame &&
-            !(EventSystem.current && EventSystem.current.IsPointerOverGameObject()))
-        {
-            if (canBuild) PlaceBuilding(hit.point);
-            else Debug.LogWarning("Cannot build here!");
-        }
-    }
-    private static bool TryGetBounds(GameObject obj, out Bounds bounds)
-    {
-        bounds = default;
-        if (!obj) return false;
-
-        Buildable buildable = obj.GetComponent<Buildable>();
-        if (buildable && buildable.GroundElement)
-        {
-            Renderer ground = buildable.GroundElement.GetComponentInChildren<Renderer>(true);
-            if (ground)
-            {
-                bounds = ground.bounds;
-                return true;
-            }
-        }
-
-        bool found = false;
-        foreach (Renderer r in obj.GetComponentsInChildren<Renderer>(true))
-        {
-            if (r is ParticleSystemRenderer || r is LineRenderer || r is TrailRenderer) continue;
-            AddBounds(ref bounds, r.bounds, ref found);
-        }
-        foreach (NavMeshObstacle o in obj.GetComponentsInChildren<NavMeshObstacle>(true))
-        {
-            if (o.shape != NavMeshObstacleShape.Box) continue;
-            Vector3 x = o.transform.TransformVector(Vector3.right * o.size.x * 0.5f);
-            Vector3 z = o.transform.TransformVector(Vector3.forward * o.size.z * 0.5f);
-            Bounds area = new Bounds(o.transform.TransformPoint(o.center), new Vector3(
-                2 * (Mathf.Abs(x.x) + Mathf.Abs(z.x)), 1f,
-                2 * (Mathf.Abs(x.z) + Mathf.Abs(z.z))));
-            AddBounds(ref bounds, area, ref found);
-        }
-
-        if (!found)
-            foreach (Collider col in obj.GetComponentsInChildren<Collider>(true))
-                if (!col.isTrigger) AddBounds(ref bounds, col.bounds, ref found);
-
-        return found;
+    foreach(MonoBehaviour script in preview.GetComponentsInChildren < MonoBehaviour > ()) {
+      script.enabled = false;
     }
 
-    private static void AddBounds(ref Bounds all, Bounds next, ref bool found)
-    {
-        if (found) all.Encapsulate(next);
-        else { all = next; found = true; }
+    foreach(Collider col in preview.GetComponentsInChildren < Collider > ()) {
+      col.enabled = false;
     }
 
-    private bool TooCloseToBuilding(Bounds bounds)
-    {
-        foreach (Bounds other in occupiedBounds)
-        {
-            float dx = Mathf.Max(0f, Mathf.Max(bounds.min.x - other.max.x,
-                                               other.min.x - bounds.max.x));
-            float dz = Mathf.Max(0f, Mathf.Max(bounds.min.z - other.max.z,
-                                               other.min.z - bounds.max.z));
-            if (dx * dx + dz * dz < minBuildingSpacing * minBuildingSpacing)
-                return true;
-        }
+    foreach(NavMeshObstacle obstacle in preview.GetComponentsInChildren < NavMeshObstacle > ()) {
+      obstacle.enabled = false;
+    }
+
+    foreach(Canvas canvas in preview.GetComponentsInChildren < Canvas > ()) {
+      canvas.enabled = false;
+    }
+
+    building = true;
+    canBuild = false;
+  }
+
+  private void Update() {
+    
+    // Ensure that the instance is valid and that we are currently in building mode
+    if (Instance != this || !building || Mouse.current == null)
+      return;
+    
+    if (!building || Mouse.current == null) return;
+
+    if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame) {
+      CancelBuilding();
+      return;
+    }
+    
+
+    Ray ray = mainCamera.ScreenPointToRay(
+    Mouse.current.position.ReadValue());
+
+    bool hitGround = Physics.Raycast(
+    ray, out RaycastHit hit, 100f, groundLayer);
+
+    canBuild = false;
+
+    if (hitGround) {
+      preview.transform.position = hit.point;
+      canBuild = CanPlace(hit.point);
+    }
+
+    previewMaterial.color = canBuild ? validColor: invalidColor;
+
+    if (Mouse.current.leftButton.wasPressedThisFrame) {
+      if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject()) {
+        return;
+      }
+
+      if (canBuild) PlaceBuilding(hit.point);
+      else Debug.LogWarning("Cannot build here!");
+    }
+  }
+
+
+  private bool IsTooCloseToBuilding(Bounds newBounds)
+  {
+      foreach (Buildable building in buildings)
+      {
+          if (building == preview)
+              continue;
+
+          Collider[] colliders =
+              building.GetComponentsInChildren<Collider>();
+
+          Bounds existingBounds = default;
+          bool found = false;
+
+          foreach (Collider col in colliders)
+          {
+              if (!col.enabled || col.isTrigger)
+                  continue;
+
+              if (!found)
+              {
+                  existingBounds = col.bounds;
+                  found = true;
+              }
+              else
+              {
+                  existingBounds.Encapsulate(col.bounds);
+              }
+          }
+
+          if (!found) continue;
+
+          float gapX = Mathf.Max(
+              0f,
+              Mathf.Max(
+                  newBounds.min.x - existingBounds.max.x,
+                  existingBounds.min.x - newBounds.max.x
+              )
+          );
+
+          float gapZ = Mathf.Max(
+              0f,
+              Mathf.Max(
+                  newBounds.min.z - existingBounds.max.z,
+                  existingBounds.min.z - newBounds.max.z
+              )
+          );
+
+          float distance = Mathf.Sqrt(gapX * gapX + gapZ * gapZ);
+
+          if (distance < minBuildingSpacing)
+              return true;
+      }
+
+      return false;
+  }
+
+  private bool CanPlace(Vector3 position) {
+    Bounds bounds = groundRenderer.bounds;
+
+    if (IsTooCloseToBuilding(bounds))
+      return false;
+
+    float halfX = Mathf.Max(0f, bounds.extents.x - 0.1f);
+    float halfZ = Mathf.Max(0f, bounds.extents.z - 0.1f);
+
+    Vector3[] corners = {
+      new Vector3( - halfX, 0, -halfZ),
+      new Vector3(halfX, 0, -halfZ),
+      new Vector3( - halfX, 0, halfZ),
+      new Vector3(halfX, 0, halfZ)
+    };
+
+    foreach(Vector3 corner in corners) {
+      Vector3 start = bounds.center + corner + Vector3.up * 10f;
+
+      if (!Physics.Raycast(start, Vector3.down, out RaycastHit groundHit, 20f, groundLayer)) {
         return false;
+      }
+
+      if (Mathf.Abs(groundHit.point.y - position.y) > 0.2f) return false;
     }
 
-    private bool CanPlace(Vector3 position)
+    Vector3 center = new Vector3(
+    bounds.center.x, position.y + 1f, bounds.center.z);
+
+    Vector3 halfSize = new Vector3(
+    bounds.extents.x, 0.95f, bounds.extents.z);
+
+    Collider[] overlaps = Physics.OverlapBox(
+    center, halfSize, Quaternion.identity, ~0, QueryTriggerInteraction.Ignore);
+
+    foreach(Collider col in overlaps) {
+      if (col.transform.IsChildOf(preview.transform)) continue;
+
+      if (((1 << col.gameObject.layer) & groundLayer.value) != 0) continue;
+
+      return false;
+    }
+
+    return true;
+  }
+
+ 
+  private void PlaceBuilding(Vector3 position)
+  {
+
+    building = false;
+    canBuild = false;
+
+    if (!ResourceManager.Spend( selectedCostAndResource.Item1, selectedCostAndResource.Item2))
     {
-        Bounds b = groundRenderer.bounds;
-        if (TooCloseToBuilding(b)) return false;
-
-        float x = Mathf.Max(0, b.extents.x - 0.1f);
-        float z = Mathf.Max(0, b.extents.z - 0.1f);
-        Vector3[] corners = { new Vector3(-x, 0, -z), new Vector3(x, 0, -z),
-                              new Vector3(-x, 0, z), new Vector3(x, 0, z) };
-
-        foreach (Vector3 corner in corners)
-        {
-            if (!Physics.Raycast(b.center + corner + Vector3.up * 10f,
-                                 Vector3.down, out RaycastHit hit, 20f, groundLayer) ||
-                Mathf.Abs(hit.point.y - position.y) > 0.2f) return false;
-        }
-
-        Vector3 center = new Vector3(b.center.x, position.y + 1f, b.center.z);
-        Vector3 half = new Vector3(b.extents.x, 0.95f, b.extents.z);
-        foreach (Collider col in Physics.OverlapBox(center, half, Quaternion.identity,
-                                                    ~0, QueryTriggerInteraction.Ignore))
-        {
-            if (col.transform.IsChildOf(preview.transform)) continue;
-            if (((1 << col.gameObject.layer) & groundLayer.value) != 0) continue;
-            return false;
-        }
-        return true;
+      CancelBuilding();
+      return;
     }
 
-    private void PlaceBuilding(Vector3 position)
+    GameObject prefabToPlace = selectedPrefab;
+
+    ClearPreview();
+
+    GameObject newBuilding = Instantiate(
+      prefabToPlace,
+      position,
+      Quaternion.identity
+    );
+
+    Debug.Log($"[Instance: {GetInstanceID()}] {newBuilding.name} built!");
+    
+    RegisterBuilding(newBuilding.GetComponent<Buildable>());
+
+    StartCoroutine(RefreshNavMesh());
+  }
+
+
+  private void CancelBuilding() {
+    ClearPreview();
+  }
+
+  private void ClearPreview() {
+
+    if (preview != null)
     {
-        if (!ResourceManager.Spend(selectedCostAndResource.Item1, selectedCostAndResource.Item2))
-        {
-            ClearPreview();
-            return;
-        }
-
-        GameObject prefab = selectedPrefab;
-        ClearPreview();
-        GameObject placed = Instantiate(prefab, position, Quaternion.identity);
-        if (placed.CompareTag("Building") && TryGetBounds(placed, out Bounds bounds))
-            occupiedBounds.Add(bounds);
-        StartCoroutine(RefreshNavMesh());
+      preview.gameObject.SetActive(false);
+      Destroy(preview.gameObject);
     }
 
-    private void ClearPreview()
-    {
-        if (preview)
-        {
-            preview.gameObject.SetActive(false);
-            Destroy(preview.gameObject);
-        }
-        if (previewMaterial) Destroy(previewMaterial);
+    if (previewMaterial != null) Destroy(previewMaterial);
 
-        preview = null;
-        selectedPrefab = null;
-        previewMaterial = null;
-        groundRenderer = null;
-        building = canBuild = false;
-    }
+    preview = null;
+    previewMaterial = null;
+    groundRenderer = null;
+    selectedPrefab = null;
+    
+    building = false;
+    canBuild = false;
+  }
 
-    private void OnDisable() => ClearPreview();
+  private void OnDisable() {
+    ClearPreview();
+  }
 
-    private IEnumerator RefreshNavMesh()
-    {
-        yield return null;
-        if (!navMeshSurface) yield break;
 
-        if (!navMeshSurface.navMeshData) navMeshSurface.BuildNavMesh();
-        else yield return navMeshSurface.UpdateNavMesh(navMeshSurface.navMeshData);
-    }
+  private IEnumerator RefreshNavMesh()
+  {
+      yield return null;
+
+      if (navMeshSurface == null)
+      {
+          Debug.LogError("NavMeshSurface is not assigned!");
+          yield break;
+      }
+
+      if (navMeshSurface.navMeshData == null)
+      {
+          navMeshSurface.BuildNavMesh();
+      }
+      else
+      {
+          yield return navMeshSurface.UpdateNavMesh(
+              navMeshSurface.navMeshData
+          );
+      }
+
+      Debug.Log("NavMesh updated!");
+  }
+
 }

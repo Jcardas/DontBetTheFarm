@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public abstract class Buildable : RepairableStructure
+public abstract class Buildable : RepairableStructure, IDamageable
 {
     [Header("Buildable Settings")]
     [SerializeField] protected string buildableName;
@@ -15,6 +15,9 @@ public abstract class Buildable : RepairableStructure
     public string BuildableName => buildableName;
     public int MaxHealth => maxHealth;
     private int CurrentHealth { get; set; }
+    public bool Down => CurrentHealth <= 0;
+    public Vector3 Position => transform.position;
+    public Collider Body { get; private set; }
 
     public Transform GroundElement { get; private set; }
 
@@ -37,6 +40,11 @@ public abstract class Buildable : RepairableStructure
         {
             Debug.LogError("Ground element not found for " + buildableName + ". Please ensure that the buildable prefab has a child named 'Ground'.");
         }
+
+        // The ground plate covers the whole footprint, so attackers measure their reach to the building's edge.
+        Body = GroundElement != null && GroundElement.TryGetComponent(out Collider ground)
+            ? ground
+            : GetComponentInChildren<Collider>();
         
         Reset();
 
@@ -47,9 +55,12 @@ public abstract class Buildable : RepairableStructure
     protected virtual void Reset()
     {
         maxHealth = GameConstants.Instance.BaseBuilding.MaxHealth;
+        CurrentHealth = maxHealth;
         buildingCost = GameConstants.Instance.BaseBuilding.BuildingCost;
         resourceType = GameConstants.Instance.BaseBuilding.ResourceType;
-        CostAndResource = (resourceType, buildingCost);
+        CostAndResource = 
+            (GameConstants.Instance.BaseBuilding.ResourceType,
+                GameConstants.Instance.BaseBuilding.BuildingCost);
 
         
         // Override this method in derived classes to set default values for stats if needed.
@@ -91,8 +102,8 @@ public abstract class Buildable : RepairableStructure
     {
         TakeDamage(damage);
     }
-
-    protected virtual void TakeDamage(int damage)
+    
+    public virtual void TakeDamage(int damage)
     {
         if (IsBroken || damage <= 0) return;
 

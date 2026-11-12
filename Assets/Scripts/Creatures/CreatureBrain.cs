@@ -8,7 +8,7 @@ public class CreatureBrain : MonoBehaviour
     private NavMeshAgent agent;
     private Gatherer gatherer;
 
-    private Creature currentTarget;
+    private IDamageable currentTarget;
     private Creature playerOrderedTarget;
 
     private Vector3 guardPost;
@@ -16,6 +16,7 @@ public class CreatureBrain : MonoBehaviour
     private float nextAttackTime;
     private float obeyGraceEnds;
     private bool isObeying;
+    private bool retreating;
 
     public bool IsPassive { get; set; }
     public bool Engaged => currentTarget != null && !currentTarget.Down;
@@ -27,57 +28,62 @@ public class CreatureBrain : MonoBehaviour
         gatherer = GetComponent<Gatherer>();
     }
 
-    private void Start()
-    {
-        guardPost = transform.position;
-    }
+    private void Start() => guardPost = transform.position;
 
     public void ExecuteCommand(Order order)
     {
         if (creature == null || creature.Down) return;
 
-        // An incoming attack command
-        if (order.kind == OrderKind.Attack && creature.AttackDamage > 0)
+        if (order.kind == OrderKind.Attack && creature.CalculatedAttackDamage > 0)
         {
             if (gatherer != null) gatherer.AbortWork();
             Attack(order.enemy);
             return;
         }
 
-        // Work / Harvest commands
-        if (order.kind == OrderKind.Work && gatherer != null)
+        if (gatherer != null)
         {
-            currentTarget = playerOrderedTarget = null;
-            isObeying = false;
-            gatherer.Work(order.node);
-            return;
+            if (order.kind == OrderKind.Work && gatherer.CanWork(order.node))
+            {
+                ClearCombatAndObey();
+                gatherer.Work(order.node);
+                return;
+            }
+
+            if (order.kind == OrderKind.Harvest && creature.HasCapability(CreatureCapabilities.CanHarvestCrops))
+            {
+                ClearCombatAndObey();
+                gatherer.Harvest(order.field);
+                return;
+            }
+
+            if (order.kind == OrderKind.Repair && creature.HasCapability(CreatureCapabilities.CanRepair))
+            {
+                ClearCombatAndObey();
+                gatherer.Repair(order.building);
+                return;
+            }
+
+            gatherer.AbortWork();
         }
 
-        if (order.kind == OrderKind.Harvest && gatherer != null && gatherer.harvestsFields)
-        {
-            currentTarget = playerOrderedTarget = null;
-            isObeying = false;
-            gatherer.Harvest(order.field);
-            return;
-        }
-
-        // Generic Move / Guard command: immediately cancel gathering
-        if (gatherer != null) gatherer.AbortWork();
         Guard(order.point);
+    }
+
+    private void ClearCombatAndObey()
+    {
+        currentTarget = playerOrderedTarget = null;
+        isObeying = false;
     }
 
     public void Guard(Vector3 point)
     {
         if (gatherer != null) gatherer.AbortWork();
-
         currentTarget = playerOrderedTarget = null;
         isObeying = true;
         obeyGraceEnds = Time.time + 0.5f;
 
-        guardPost = NavMesh.SamplePosition(point, out NavMeshHit hit, 3f, NavMesh.AllAreas)
-            ? hit.position
-            : point;
-
+        guardPost = NavMesh.SamplePosition(point, out NavMeshHit hit, 3f, NavMesh.AllAreas) ? hit.position : point;
         if (agent.isOnNavMesh)
         {
             agent.updateRotation = true;
@@ -101,25 +107,19 @@ public class CreatureBrain : MonoBehaviour
         nextThinkTime = 0f;
     }
 
-    public void SetGuardPost(Vector3 point)
-    {
-        guardPost = point;
-    }
+    public void SetGuardPost(Vector3 point) => guardPost = point;
 
     private void Update()
     {
         if (creature == null || creature.Down || IsPassive) return;
 
-        // Player move commands take precedence until destination is reached
         if (isObeying)
         {
-            bool arrived = !agent.pathPending &&
-                           (!agent.hasPath || agent.remainingDistance <= agent.stoppingDistance + 0.2f);
+            bool arrived = !agent.pathPending && (!agent.hasPath || agent.remainingDistance <= agent.stoppingDistance + 0.2f);
             if (Time.time < obeyGraceEnds || !arrived) return;
             isObeying = false;
         }
 
-        // AI decision tick (4 Hz)
         if (Time.time >= nextThinkTime)
         {
             nextThinkTime = Time.time + 0.25f;
@@ -127,62 +127,69 @@ public class CreatureBrain : MonoBehaviour
             if (playerOrderedTarget != null && playerOrderedTarget.Down)
                 playerOrderedTarget = null;
 
-            // Unanchored units (like the player/farmer) drag their guard post with them
             if (!creature.Anchored && !Engaged)
                 guardPost = transform.position;
 
-            currentTarget = playerOrderedTarget != null
-                ? playerOrderedTarget
-                : (CreatureManager.Instance != null
-                    ? CreatureManager.Instance.GetNearestEnemy(creature.Team, transform.position, guardPost,
-                        creature.GuardRadius)
-                    : null);
+            currentTarget = playerOrderedTarget != null ? playerOrderedTarget : creature.FindTarget(guardPost);
 
             if (currentTarget == null)
             {
-                if (Vector3.Distance(transform.position, guardPost) > agent.stoppingDistance + 0.5f)
+                if (Vector3.Distance(transform.position, guardPost) > agent.stoppingDistance + 0.5f && agent.isOnNavMesh)
                 {
-                    if (agent.isOnNavMesh)
-                    {
-                        agent.updateRotation = true;
-                        agent.SetDestination(guardPost);
-                    }
+                    agent.updateRotation = true;
+                    agent.SetDestination(guardPost);
                 }
-
                 return;
             }
 
-            // Target exists: walk towards it if out of range
-            if (currentTarget.Body != null && Reach.Gap(transform.position, currentTarget.Body) > creature.AttackRange)
+            retreating = false;
+            if (currentTarget.Body != null)
             {
-                agent.updateRotation = true;
-                Reach.WalkTo(agent, currentTarget.Body);
+                float gap = Reach.Gap(transform.position, currentTarget.Body);
+                if (gap > creature.CalculatedAttackRange)
+                {
+                    agent.updateRotation = true;
+                    Reach.WalkTo(agent, currentTarget.Body);
+                }
+                else if (gap < creature.KeepAwayRange)
+                {
+                    BackAwayFrom(currentTarget, gap);
+                }
             }
         }
 
-        // Combat execution
         if (currentTarget == null || currentTarget.Down || currentTarget.Body == null) return;
-        if (Reach.Gap(transform.position, currentTarget.Body) > creature.AttackRange) return;
+        if (Reach.Gap(transform.position, currentTarget.Body) > creature.CalculatedAttackRange) return;
 
-        if (agent.hasPath) agent.ResetPath();
+        if (agent.hasPath && !retreating) agent.ResetPath();
         agent.updateRotation = false;
 
-        Vector3 toTarget = currentTarget.transform.position - transform.position;
+        Vector3 toTarget = currentTarget.Position - transform.position;
         toTarget.y = 0;
         if (toTarget.sqrMagnitude > 0.001f)
         {
-            Quaternion targetRotation = Quaternion.LookRotation(toTarget);
             transform.rotation = Quaternion.RotateTowards(
                 transform.rotation,
-                targetRotation,
+                Quaternion.LookRotation(toTarget),
                 agent.angularSpeed * Time.deltaTime
             );
         }
 
         if (Time.time < nextAttackTime) return;
-        nextAttackTime = Time.time + creature.AttackSpeed;
+        nextAttackTime = Time.time + 1f / creature.CalculatedAttackSpeed;
+        creature.PerformAttack(currentTarget);
+    }
 
-        currentTarget.TakeDamage(creature.AttackDamage);
-        creature.TriggerAttackVisual();
+    private void BackAwayFrom(IDamageable enemy, float gap)
+    {
+        Vector3 away = transform.position - enemy.Position;
+        away.y = 0f;
+        if (away.sqrMagnitude < 0.001f) away = -transform.forward;
+
+        Vector3 to = transform.position + away.normalized * (creature.KeepAwayRange - gap + 1f);
+        if (!agent.isOnNavMesh || !NavMesh.SamplePosition(to, out NavMeshHit hit, 2f, NavMesh.AllAreas)) return;
+
+        agent.SetDestination(hit.position);
+        retreating = true;
     }
 }

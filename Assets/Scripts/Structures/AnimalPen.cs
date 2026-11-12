@@ -9,13 +9,13 @@ public class AnimalPen : Buildable, IContextInteractable
     private bool isStartingPen; // Determines if this pen is a starting pen for the player
 
     [SerializeField]
-    private List<FarmAnimal> startingAnimals = new(); // Animals to spawn if starting pen
+    private List<Animal> startingAnimals = new(); // Animals to spawn if starting pen
 
     [SerializeField]
     private int MaxAnimals; // Limit for the maximum number of animals in the pen
 
     [SerializeField]
-    private List<FarmAnimal> animalsInPen = new(); // Active animals in the pen
+    private List<Animal> animalsInPen = new(); // Active animals in the pen
 
     [Header("Context Menu Styling")]
     [SerializeField] private Sprite breedIcon;
@@ -35,27 +35,27 @@ public class AnimalPen : Buildable, IContextInteractable
             MaxAnimals = GameConstants.Instance.MaxAnimalsInPen;
         }
 
-        animalsInPen ??= new List<FarmAnimal>(MaxAnimals);
+        animalsInPen ??= new List<Animal>(MaxAnimals);
     }
 
     protected override void Awake()
     {
         base.Awake();
-        animalsInPen ??= new List<FarmAnimal>(MaxAnimals);
+        animalsInPen ??= new List<Animal>(MaxAnimals);
 
         if (!isStartingPen || startingAnimals == null) return;
 
         foreach (var animalPrefab in startingAnimals.Where(animalPrefab => animalPrefab != null))
         {
-            SpawnAnimal(animalPrefab.SourcePrefab);
+            SpawnAnimal(animalPrefab);
         }
     }
 
-    private void AddAnimal(FarmAnimal animal)
+    private void AddAnimal(Animal animal)
     {
         if (animal == null) return;
 
-        PruneNullAnimals();
+        PruneGoneAnimals();
 
         if (animalsInPen.Count < MaxAnimals)
         {
@@ -66,7 +66,7 @@ public class AnimalPen : Buildable, IContextInteractable
         Debug.LogWarning($"[{name}] No space in the pen to add animal: {animal.name}.");
     }
 
-    private void RemoveAnimal(FarmAnimal animal)
+    private void RemoveAnimal(Animal animal)
     {
         if (animalsInPen.Remove(animal))
         {
@@ -76,7 +76,7 @@ public class AnimalPen : Buildable, IContextInteractable
         Debug.LogWarning($"[{name}] Animal {animal.name} not found in pen.");
     }
 
-    private void SpawnAnimal(FarmAnimal animalPrefab)
+    private void SpawnAnimal(Animal animalPrefab)
     {
         if (animalPrefab == null)
         {
@@ -84,7 +84,7 @@ public class AnimalPen : Buildable, IContextInteractable
             return;
         }
 
-        PruneNullAnimals();
+        PruneGoneAnimals();
 
         if (animalsInPen.Count >= MaxAnimals)
         {
@@ -116,7 +116,7 @@ public class AnimalPen : Buildable, IContextInteractable
         } while (!positionFound && attempts < 10);
 
         // Instantiate the animals original prefab at the calculated position and rotation, and parent it to the pen
-        FarmAnimal newAnimal = Instantiate(animalPrefab, spawnPosition, spawnRotation, CreatureManager.AnimalContainer);
+        Animal newAnimal = Instantiate(animalPrefab, spawnPosition, spawnRotation, CreatureManager.AnimalContainer);
         
         newAnimal.SourcePrefab = animalPrefab.SourcePrefab; // Ensure the new animal has the correct source prefab reference
         
@@ -125,7 +125,7 @@ public class AnimalPen : Buildable, IContextInteractable
 
     private void BreedAnimals()
     {
-        PruneNullAnimals();
+        PruneGoneAnimals();
 
         if (animalsInPen.Count >= MaxAnimals)
         {
@@ -133,7 +133,7 @@ public class AnimalPen : Buildable, IContextInteractable
             return;
         }
 
-        if (!TryGetBreedableAnimal(out FarmAnimal parentTemplate))
+        if (!TryGetBreedableAnimal(out Animal parentTemplate))
         {
             Debug.LogWarning($"[{name}] Need at least 2 animals of the same species to breed.");
             return;
@@ -159,9 +159,9 @@ public class AnimalPen : Buildable, IContextInteractable
 
     private void HealAllAnimals()
     {
-        PruneNullAnimals();
+        PruneGoneAnimals();
 
-        List<FarmAnimal> injuredAnimals = GetInjuredAnimals();
+        List<Animal> injuredAnimals = GetInjuredAnimals();
         if (injuredAnimals.Count == 0)
         {
             Debug.Log($"[{name}] All animals are healthy.");
@@ -176,7 +176,7 @@ public class AnimalPen : Buildable, IContextInteractable
             return;
         }
 
-        foreach (FarmAnimal animal in injuredAnimals)
+        foreach (Animal animal in injuredAnimals)
         {
             HealAnimal(animal);
         }
@@ -184,10 +184,10 @@ public class AnimalPen : Buildable, IContextInteractable
         Debug.Log($"[{name}] Healed {injuredAnimals.Count} animals for {totalHayCost} Hay.");
     }
 
-    private List<FarmAnimal> GetInjuredAnimals()
+    private List<Animal> GetInjuredAnimals()
     {
-        var injured = new List<FarmAnimal>();
-        foreach (FarmAnimal animal in animalsInPen)
+        var injured = new List<Animal>();
+        foreach (Animal animal in animalsInPen)
         {
             if (animal != null && IsAnimalInjured(animal))
             {
@@ -197,20 +197,20 @@ public class AnimalPen : Buildable, IContextInteractable
         return injured;
     }
 
-    private static bool IsAnimalInjured(FarmAnimal animal) => animal.CurrentHealth < animal.MaxHealth;
+    private static bool IsAnimalInjured(Animal animal) => animal.CurrentHealth < animal.MaxHealth;
 
-    private static void HealAnimal(FarmAnimal animal) => animal.HealToFull();
+    private static void HealAnimal(Animal animal) => animal.HealToFull();
 
-    private static int CalculateHealingHayCost(List<FarmAnimal> injuredAnimals)
+    private static int CalculateHealingHayCost(List<Animal> injuredAnimals)
     {
         return injuredAnimals.Sum(animal => animal.HealCost);
     }
 
-    private bool TryGetBreedableAnimal(out FarmAnimal breedableTemplate)
+    private bool TryGetBreedableAnimal(out Animal breedableTemplate)
     {
-        var speciesCounts = new Dictionary<string, (int count, FarmAnimal template)>();
+        var speciesCounts = new Dictionary<string, (int count, Animal template)>();
 
-        foreach (FarmAnimal animal in animalsInPen)
+        foreach (Animal animal in animalsInPen)
         {
             if (animal == null) continue;
 
@@ -237,7 +237,7 @@ public class AnimalPen : Buildable, IContextInteractable
         return false;
     }
 
-    private static string GetSpeciesKey(FarmAnimal animal)
+    private static string GetSpeciesKey(Animal animal)
     {
         return animal.name.Replace("(Clone)", string.Empty).Trim();
     }
@@ -247,25 +247,27 @@ public class AnimalPen : Buildable, IContextInteractable
         return ResourceManager.Spend(ResourceType.Hay, hayCost);
     }
 
-    private void PruneNullAnimals()
+    // Drops animals that are no longer here: destroyed, carried off by a saucer (switched off), or sent back by the
+    // aliens as an enemy. Keeps the pen's counts true.
+    private void PruneGoneAnimals()
     {
-        animalsInPen.RemoveAll(a => a == null);
+        animalsInPen.RemoveAll(a => a == null || !a.isActiveAndEnabled || a.Team != GameConstants.Team.Farm);
     }
 
     #region IContextInteractable Implementation
 
     public IReadOnlyList<ContextActionData> GetContextActions()
     {
-        PruneNullAnimals();
+        PruneGoneAnimals();
 
         var actions = new List<ContextActionData>();
         int currentHay = ResourceManager.Count(ResourceType.Hay);
 
         // Breed Action
         bool hasSpace = animalsInPen.Count < MaxAnimals;
-        bool hasBreedingPair = TryGetBreedableAnimal(out FarmAnimal breedableAnimal);
+        bool hasBreedingPair = TryGetBreedableAnimal(out Animal breedableAnimal);
         bool hasHayForBreeding = breedableAnimal != null && currentHay >= breedableAnimal.BreedingCost;
-        bool enoughAnimalsToBreed = animalsInPen.Count(a => a != null && !a.Down && GetSpeciesKey(a) == GetSpeciesKey(breedableAnimal)) >= 2;
+        bool enoughAnimalsToBreed = hasBreedingPair && animalsInPen.Count(a => a != null && !a.Down && GetSpeciesKey(a) == GetSpeciesKey(breedableAnimal)) >= 2;
         bool canBreed = hasSpace && hasBreedingPair && hasHayForBreeding && enoughAnimalsToBreed;
 
         string breedLabel;
@@ -294,7 +296,7 @@ public class AnimalPen : Buildable, IContextInteractable
         ));
 
         // Heal Action
-        List<FarmAnimal> injuredAnimals = GetInjuredAnimals();
+        List<Animal> injuredAnimals = GetInjuredAnimals();
         bool hasInjured = injuredAnimals.Count > 0;
         int healHayCost = hasInjured ? CalculateHealingHayCost(injuredAnimals) : 0;
         bool hasHayForHeal = currentHay >= healHayCost;

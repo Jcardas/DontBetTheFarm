@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 648ab8f84157c384ba07347834213586, type: 3}
+  m_Name: Wings
+  m_EditorClassIdentifier: Assembly-CSharp::MutationData
+  mutationName: Wings
+  allowedSlots: 2
+  pairedPrefab: 1
+  prefab: {fileID: 7851528953947801171, guid: f3931ae5f3e2530499e8067d629ad512, type: 3}
+  localScale: 2
+  grantedCapabilities: 8
+  bonusMaxHealth: 0
+  damageResistance: 0
+  bonusMoveSpeed: 0
+  bonusAttackDamage: 0
+  bonusAttackRange: 0
+  bonusAttackSpeed: 0
+  bonusViewRadius: 0
+  overridesAttack: 0
