@@ -29,8 +29,6 @@ public class SoundManager : MonoBehaviour
             Destroy(gameObject);
             return;
         }
-        // Ensure that the SoundManager persists across scenes
-        DontDestroyOnLoad(gameObject);
         InitalizeSoundLibrary();
     }
 

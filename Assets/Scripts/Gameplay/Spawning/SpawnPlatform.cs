@@ -31,7 +31,7 @@ public class SpawnPlatform : MonoBehaviour
 
         NavMeshHit hit;
 
-        if (NavMesh.SamplePosition(randomPoint, out hit, 1.0f, NavMesh.AllAreas))
+        if (NavMesh.SamplePosition(randomPoint, out hit, 5.0f, NavMesh.AllAreas))
         {
             return hit.position;
         }

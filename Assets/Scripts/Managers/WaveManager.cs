@@ -24,8 +24,6 @@ public class WaveManager : MonoBehaviour
             Destroy(gameObject);
             return;
         }
-        // Ensure that the WaveManager persists across scenes
-        DontDestroyOnLoad(gameObject);
     }
 
     public void SpawnWave(int currentDay)

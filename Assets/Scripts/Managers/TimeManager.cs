@@ -38,8 +38,6 @@ public class TimeManager : MonoBehaviour
             Destroy(gameObject);
             return;
         }
-        // Ensure that the TimeManager persists across scenes
-        DontDestroyOnLoad(gameObject);
     }
 
     void Start()
