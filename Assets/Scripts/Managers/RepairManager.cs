@@ -6,6 +6,7 @@ using UnityEngine.AI;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
+using Unity.AI.Navigation;
 
 public class RepairManager : MonoBehaviour
 {
@@ -257,18 +258,26 @@ public class RepairManager : MonoBehaviour
         if (CanFinishRepair(target, repairer) && GetWorkerAgent())
         {
             yield return ClearArea(area, ok => cleared = ok);
-            if (cleared && CanFinishRepair(target, repairer))
-            {
-                yield return PlayHammerAnimation(target);
-                cleared = false;
-                yield return ClearArea(area, ok => cleared = ok);
-                if (cleared && CanFinishRepair(target, repairer) && target.TryRepair())
-                {
-                    ClearBuilding();
-                    exiting = false;
-                    yield break;
-                }
-            }
+            // if (cleared && CanFinishRepair(target, repairer))
+            // {
+            //     yield return PlayHammerAnimation(target);
+            //     cleared = false;
+            //     yield return ClearArea(area, ok => cleared = ok);
+            //     if (cleared && CanFinishRepair(target, repairer) && target.TryRepair())
+            //     {
+            //         ClearBuilding();
+            //         exiting = false;
+            //         yield break;
+            //     }
+            // }
+            if (cleared && CanFinishRepair(target, repairer) && target.TryRepair())
+{
+    RebuildNavMesh();
+
+    ClearBuilding();
+    exiting = false;
+    yield break;
+}
         }
 
         statusText.text = "Repair cancelled: not enough wood or a creature could not leave";
@@ -331,5 +340,15 @@ public class RepairManager : MonoBehaviour
             yield return null;
         }
         Destroy(hammer);
+    }
+
+    private void RebuildNavMesh()
+    {
+        foreach (NavMeshSurface surface in
+            FindObjectsByType<NavMeshSurface>(FindObjectsSortMode.None))
+        {
+            if (surface.isActiveAndEnabled)
+                surface.BuildNavMesh();
+        }
     }
 }

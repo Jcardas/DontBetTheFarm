@@ -48,7 +48,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AnimalPen
   repairWoodCost: 10
-  startsBroken: 0
+  startsBroken: 1
   repairedVisual: {fileID: 1812767030430000979}
   brokenVisual: {fileID: 5285555361507221328}
   buildableName: Animal Pen
@@ -295,6 +295,10 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 8
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 2bed9938009e58143ba2e404cc6a3e0f, type: 3}
+      propertyPath: m_TagString
+      value: Untagged
+      objectReference: {fileID: 0}
     - target: {fileID: 1094559010302358929, guid: 2bed9938009e58143ba2e404cc6a3e0f, type: 3}
       propertyPath: m_Layer
       value: 8
@@ -533,6 +537,10 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: a15492586ae74c1428902663e41d8a33, type: 3}
       propertyPath: m_IsActive
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: a15492586ae74c1428902663e41d8a33, type: 3}
+      propertyPath: m_TagString
+      value: Untagged
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

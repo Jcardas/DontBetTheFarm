@@ -239,6 +239,10 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 51508bb91e96be54b9a974289c6f520a, type: 3}
+      propertyPath: m_TagString
+      value: Building
+      objectReference: {fileID: 0}
     - target: {fileID: 1094559010302358929, guid: 51508bb91e96be54b9a974289c6f520a, type: 3}
       propertyPath: m_Layer
       value: 8
@@ -410,6 +414,10 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: 1ca79baee8e55f041a7e61ae0c67c1f5, type: 3}
       propertyPath: m_IsActive
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 1ca79baee8e55f041a7e61ae0c67c1f5, type: 3}
+      propertyPath: m_TagString
+      value: Building
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

@@ -3739,6 +3739,10 @@ PrefabInstance:
       propertyPath: wheatVisual
       value: 
       objectReference: {fileID: 1223803883}
+    - target: {fileID: 1856471574083397070, guid: 2f79dd79499133c49b34a75a771883eb, type: 3}
+      propertyPath: startsBroken
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 4304144612023501590, guid: 2f79dd79499133c49b34a75a771883eb, type: 3}
       propertyPath: m_Name
       value: WheatField_NEW
