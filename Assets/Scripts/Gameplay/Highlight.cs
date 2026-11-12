@@ -13,7 +13,7 @@ public class Highlight : MonoBehaviour
     static readonly Color SelectedColor = new(0.2f, 0.55f, 1f, 0.85f);
     static readonly Color EnemyHidden = new(1f, 0.35f, 0.3f, 0.35f);
     static readonly Color EnemyHover = new(1f, 0.5f, 0.45f, 0.7f);
-    const float HiddenWidth = 1.5f, LitWidth = 2f;
+    const float HiddenWidth = 2f, LitWidth = 2f;
 
     Outline outline;
     Creature creature;
