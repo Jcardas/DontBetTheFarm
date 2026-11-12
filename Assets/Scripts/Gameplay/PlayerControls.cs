@@ -27,7 +27,8 @@ public class PlayerControls : MonoBehaviour
     Vector2 pressedAt;
     Shotgun shotgun;
     CameraController cameraController;
-    Selectable hovered, lastClicked;
+    Selectable lastClicked;
+    HashSet<Selectable> lit = new();
     CursorType cursor;
     float lastClickAt;
     readonly List<Selectable>[] groups = { new(), new(), new() };
@@ -80,7 +81,6 @@ public class PlayerControls : MonoBehaviour
             QueryTriggerInteraction.Ignore
         );      
         var unit = overSomething ? hit.collider.GetComponentInParent<Selectable>() : null;
-        Hover(unit);
         if (player.Command.WasPressedThisFrame() && overSomething) Command(hit);
 
         if (left == LeftButton.Idle && player.Select.WasPressedThisFrame())
@@ -89,6 +89,7 @@ public class PlayerControls : MonoBehaviour
             pressedAt = at;
         }
         if (left == LeftButton.Pressed && (at - pressedAt).magnitude > DragPixels) left = LeftButton.Dragging;
+        Hover(left == LeftButton.Dragging ? Selectable.All.Where(s => OnScreen(cam, s, Box(pressedAt, at))) : new[] { unit });
         if (left == LeftButton.Idle || !player.Select.WasReleasedThisFrame()) return;
 
         if (left == LeftButton.Dragging) Pick(Selectable.All.Where(s => OnScreen(cam, s, Box(pressedAt, at))), shift, ctrl);
@@ -143,12 +144,13 @@ bool overSomething = Physics.Raycast(
         foreach (var s in Selectable.All) s.Selected = false;
     }
 
-    void Hover(Selectable unit)
+    // Lights the unit under the mouse or, while dragging, every unit the box would pick.
+    void Hover(IEnumerable<Selectable> units)
     {
-        if (unit == hovered) return;
-        if (hovered) hovered.Hovered = false;
-        hovered = unit;
-        if (unit) unit.Hovered = true;
+        var now = units.Where(s => s != null).ToHashSet();
+        foreach (var s in lit) if (s && !now.Contains(s)) s.Hovered = false;
+        foreach (var s in now) if (!lit.Contains(s)) s.Hovered = true;
+        lit = now;
     }
 
     // Same precedence as Order.From, so the cursor always previews the order a right-click would give.
