@@ -1,6 +1,8 @@
 using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEngine.AI;
+using System.Collections;
+
 
 [RequireComponent(typeof(NavMeshAgent), typeof(CreatureBrain))]
 public abstract class Creature : MonoBehaviour, IDamageable
@@ -43,7 +45,12 @@ public abstract class Creature : MonoBehaviour, IDamageable
     public NavMeshAgent NavMeshAgent => navMeshAgent;
     public CreatureBrain CreatureBrain => creatureBrain;
     public Vector3 Position => transform.position;
-    
+
+    [Header("Retreat & Despawn")]
+    [SerializeField] protected GameObject beamEffectPrefab;
+    protected Vector3 despawnPoint;
+    protected bool isRetreating = false;
+
     protected virtual void Awake()
     {
         navMeshAgent = GetComponent<NavMeshAgent>();
@@ -158,5 +165,53 @@ public abstract class Creature : MonoBehaviour, IDamageable
     public void TriggerAttackVisual()
     {
         if (toyBob != null) toyBob.Bump();
+    }
+    public void SetDespawnPoint(Vector3 point)
+    {
+        despawnPoint = point;
+    }
+
+    public void Retreat()
+    {
+        if (Down || isRetreating) return;
+
+        isRetreating = true;
+
+        if (CreatureBrain != null)
+        {
+            CreatureBrain.enabled = false; // Disable the AI behavior
+        }
+
+        if (NavMeshAgent != null && NavMeshAgent.enabled)
+        {
+            NavMeshAgent.SetDestination(despawnPoint);
+            StartCoroutine(RetreatRoutine());
+        }
+    }
+
+    private IEnumerator RetreatRoutine()
+    {
+        float retreatTolerance = Mathf.Max(NavMeshAgent.stoppingDistance, 1.5f); // Ensure a minimum tolerance)
+        while (NavMeshAgent != null && NavMeshAgent.enabled)
+        {
+            if (!NavMeshAgent.pathPending && NavMeshAgent.remainingDistance <= retreatTolerance)
+            {
+                BeamUp();
+                yield break;
+            }
+            yield return null;
+        }
+    }
+
+    private void BeamUp()
+    {
+        if (beamEffectPrefab != null)
+        {
+            Vector3 beamDespawnPosition = transform.position;
+            beamDespawnPosition.y -= 2.5f;
+
+            Instantiate(beamEffectPrefab, beamDespawnPosition, Quaternion.identity);
+        }
+        Destroy(gameObject);
     }
 }

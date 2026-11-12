@@ -3,17 +3,38 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class WaveManager : MonoBehaviour
-{ 
+{
+    public static WaveManager Instance { get; private set; }
+
+
     public Wave[] waves;
-    public Transform[] spawnPoints;
+    public Spawner[] motherships; // Alien Motherships that will spawn the waves
+
+
+    private List<Creature> activeEnemies = new List<Creature>();
+
+    private void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else
+        {
+            Destroy(gameObject);
+            return;
+        }
+    }
 
     public void SpawnWave(int currentDay)
     {
-        if(waves.Length == 0)
+        if (waves.Length == 0)
         {
             Debug.LogWarning("No waves defined in WaveManager.");
             return;
         }
+
+        activeEnemies.Clear();
 
         int waveIndex = (currentDay - 1) % waves.Length;
 
@@ -24,19 +45,66 @@ public class WaveManager : MonoBehaviour
         //}
 
         Wave currentWave = waves[waveIndex];
-
-        StartCoroutine(SpawnWaveRoutine(currentWave));
+        
+        foreach (Spawner ship in motherships)
+        {
+            if (ship != null)
+            {
+                ship.StartNightRoutine(currentWave, this);
+            }
+        }
     }
 
-    private IEnumerator SpawnWaveRoutine(Wave wave)
+    public void RetreatWave()
     {
-        for (int i = 0; i < wave.enemyCount; i++)
+        foreach (Spawner ship in motherships)
         {
-            Transform spawnPoint = spawnPoints[Random.Range(0, spawnPoints.Length)];
-            Vector3 spawnPosition = spawnPoint.position + Vector3.up * 1.5f;
+            if (ship != null)
+            {
+                ship.StopSpawning();
+            }
+        }
 
-            Instantiate(wave.enemyPrefab, spawnPosition, spawnPoint.rotation);
-            yield return new WaitForSeconds(wave.spawnDelay); // Adjust the spawn delay as needed
+        foreach (Creature enemy in activeEnemies)
+        {
+            if (enemy != null && !enemy.Down)
+            {
+                enemy.Retreat();
+            }
+        }
+
+    }
+
+    public void RegisterEnemy(Creature enemy)
+    { 
+        activeEnemies.Add(enemy);
+    }
+
+    public int GetActiveAlienCount()
+    {
+        activeEnemies.RemoveAll(enemy => enemy == null || enemy.Down);
+        return activeEnemies.Count;
+    }
+
+    public void CloakMotherships()
+    {
+        foreach (Spawner ship in motherships)
+        {
+            if (ship != null)
+            {
+                ship.SetCloak(true);
+            }
+        }
+    }
+
+    public void UncloakMotherships()
+    {
+        foreach (Spawner ship in motherships)
+        {
+            if (ship != null)
+            {
+                ship.SetCloak(false);
+            }
         }
     }
 }
