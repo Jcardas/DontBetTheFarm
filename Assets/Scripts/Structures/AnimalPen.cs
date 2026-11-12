@@ -55,7 +55,7 @@ public class AnimalPen : Buildable, IContextInteractable
     {
         if (animal == null) return;
 
-        PruneNullAnimals();
+        PruneGoneAnimals();
 
         if (animalsInPen.Count < MaxAnimals)
         {
@@ -84,7 +84,7 @@ public class AnimalPen : Buildable, IContextInteractable
             return;
         }
 
-        PruneNullAnimals();
+        PruneGoneAnimals();
 
         if (animalsInPen.Count >= MaxAnimals)
         {
@@ -123,7 +123,7 @@ public class AnimalPen : Buildable, IContextInteractable
 
     private void BreedAnimals()
     {
-        PruneNullAnimals();
+        PruneGoneAnimals();
 
         if (animalsInPen.Count >= MaxAnimals)
         {
@@ -157,7 +157,7 @@ public class AnimalPen : Buildable, IContextInteractable
 
     private void HealAllAnimals()
     {
-        PruneNullAnimals();
+        PruneGoneAnimals();
 
         List<Animal> injuredAnimals = GetInjuredAnimals();
         if (injuredAnimals.Count == 0)
@@ -245,16 +245,18 @@ public class AnimalPen : Buildable, IContextInteractable
         return ResourceManager.Spend(ResourceType.Hay, hayCost);
     }
 
-    private void PruneNullAnimals()
+    // Drops animals that are no longer here: destroyed, carried off by a saucer (switched off), or sent back by the
+    // aliens as an enemy. Keeps the pen's counts true.
+    private void PruneGoneAnimals()
     {
-        animalsInPen.RemoveAll(a => a == null);
+        animalsInPen.RemoveAll(a => a == null || !a.isActiveAndEnabled || a.Team != GameConstants.Team.Farm);
     }
 
     #region IContextInteractable Implementation
 
     public IReadOnlyList<ContextActionData> GetContextActions()
     {
-        PruneNullAnimals();
+        PruneGoneAnimals();
 
         var actions = new List<ContextActionData>();
         int currentHay = ResourceManager.Count(ResourceType.Hay);
