@@ -266,6 +266,14 @@ public abstract class Creature : MonoBehaviour, IDamageable
         }
     }
 
+    // Switches sides (a stolen animal the aliens send back) and re-files it with the CreatureManager under the new team.
+    public void SetTeam(GameConstants.Team newTeam)
+    {
+        if (CreatureManager.Instance != null) CreatureManager.Instance.Unregister(this);
+        team = newTeam;
+        if (isActiveAndEnabled && CreatureManager.Instance != null) CreatureManager.Instance.Register(this);
+    }
+
     // Ranged creatures back away when an enemy gets closer than this, so they keep fighting from range. 0 = stand and fight.
     public virtual float KeepAwayRange => 0f;
 
