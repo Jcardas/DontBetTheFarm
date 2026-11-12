@@ -103,14 +103,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FlyingAnimal
   team: 0
+  baseCapabilities: 0
   maxHealth: 50
   moveSpeed: 5
   attackDamage: 10
   attackSpeed: 1
   attackRange: 1
-  guardRadius: 8
+  viewRadius: 8
   anchored: 1
-  sourcePrefab: {fileID: 0}
   breedingCost: 5
   healCost: 1
   flightHeight: 1.5
@@ -147,12 +147,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 80c74e6182afa2a418f71c753b71cd81, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Gatherer
-  collects: 0
-  loadSize: 5
-  secondsPerLoad: 2
   reach: 1
-  harvestsFields: 0
   secondsPerHarvest: 1.5
+  repairAmount: 10
+  secondsPerRepair: 1.5
 --- !u!114 &2380666779268161952
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -203,9 +201,9 @@ MonoBehaviour:
   - slotType: 2
     sockets:
     - transform: {fileID: 7454433509537761755}
-      defaultVisualPrefab: {fileID: 919132149155446097, guid: 24ebd1380f73d7848874eea699b217b6, type: 3}
+      defaultVisualPrefab: {fileID: 0}
     - transform: {fileID: 975446490534439095}
-      defaultVisualPrefab: {fileID: 919132149155446097, guid: 31f9f45b257e4f24484056372be3e0c9, type: 3}
+      defaultVisualPrefab: {fileID: 0}
   - slotType: 4
     sockets:
     - transform: {fileID: 9161533081893460823}
@@ -217,7 +215,9 @@ MonoBehaviour:
     - transform: {fileID: 1584891496869257270}
       defaultVisualPrefab: {fileID: 919132149155446097, guid: e8d42765fb4d2274b92e893b42ed8cfb, type: 3}
   socketScaleFactor: 0.5
-  defaultMutations: []
+  defaultMutations:
+  - mutation: {fileID: 11400000, guid: ed6ed41f8168ec342ae8e012a8262beb, type: 2}
+    slot: 2
 --- !u!1001 &4261114637206769621
 PrefabInstance:
   m_ObjectHideFlags: 0

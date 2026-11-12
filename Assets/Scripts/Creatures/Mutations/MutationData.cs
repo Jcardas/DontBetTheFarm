@@ -19,6 +19,9 @@ public class MutationData : ScriptableObject
     public string mutationName;
     [Tooltip("Bitmask of slots where this part can legally attach (e.g. Limbs + Tail for Scythe)")]
     public SlotType allowedSlots; // Uses Flags enum
+
+    public bool pairedPrefab; // True if the prefab has two meshes (One named "Name"_L and one named "Name"_R) for left/right limbs like wings, false if the prefab has a single mesh for head, back, tail, or a single limb like a tentacle.
+    
     public GameObject prefab;
     
     public float localScale = 1f;

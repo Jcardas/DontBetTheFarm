@@ -134,7 +134,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1445823891545769242}
   m_Layer: 6
-  m_Name: Socket_Back
+  m_Name: Socket_Back.001
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -148,13 +148,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2188565276152587742}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.00000008618316, y: 0.00000007348991, z: -0.9914449, w: -0.1305262}
+  m_LocalRotation: {x: 0.8191521, y: -0.5735764, z: 0, w: 0}
   m_LocalPosition: {x: -0.14999998, y: -1.3942266, z: -0.039443374}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1324355656439033427}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 180, y: 0, z: 70}
 --- !u!1 &2227624899568481145
 GameObject:
   m_ObjectHideFlags: 0
@@ -376,7 +376,7 @@ GameObject:
   m_Component:
   - component: {fileID: 9145286410636059766}
   m_Layer: 6
-  m_Name: Socket_Back.001
+  m_Name: Socket_Back
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -390,13 +390,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4062006398904182714}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.00000006647425, y: 0.000000076214114, z: -0.9914449, w: 0.1305262}
+  m_LocalRotation: {x: 0.8191521, y: 0.5735764, z: -0, w: 0}
   m_LocalPosition: {x: 0.14999998, y: -1.3942266, z: -0.039443374}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1324355656439033427}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 180, y: 0, z: -70}
 --- !u!1001 &2239892875298553315
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -934,7 +934,7 @@ MonoBehaviour:
   attackDamage: 10
   attackSpeed: 1
   attackRange: 1
-  guardRadius: 8
+  viewRadius: 8
   anchored: 1
   breedingCost: 5
   healCost: 10
@@ -1071,9 +1071,7 @@ MonoBehaviour:
     - transform: {fileID: 7394141514268568823}
       defaultVisualPrefab: {fileID: 919132149155446097, guid: 6b12bcdb500bed943b9d0483f8625276, type: 3}
   socketScaleFactor: 1
-  defaultMutations:
-  - mutation: {fileID: 11400000, guid: d072a8806c873c449a05b6d3f15b93a7, type: 2}
-    slot: 1
+  defaultMutations: []
 --- !u!114 &-3630713254175371433
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1093,7 +1091,7 @@ MonoBehaviour:
   attackDamage: 10
   attackSpeed: 1
   attackRange: 1
-  guardRadius: 8
+  viewRadius: 8
   anchored: 1
   breedingCost: 5
   healCost: 10

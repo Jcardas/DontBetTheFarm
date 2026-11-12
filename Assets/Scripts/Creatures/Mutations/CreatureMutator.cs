@@ -102,21 +102,32 @@ public class CreatureMutator : MonoBehaviour
         ClearSlotVisuals(targetSlot);
 
         int bindingIndex = socketBindings.FindIndex(b => b.slotType == targetSlot);
-        var binding = socketBindings[bindingIndex];
+        if (bindingIndex == -1) return;
 
+        var binding = socketBindings[bindingIndex];
         List<GameObject> spawnedParts = new List<GameObject>();
 
-        foreach (var socketSlot in binding.sockets)
+        for (int i = 0; i < binding.sockets.Count; i++)
         {
+            var socketSlot = binding.sockets[i];
             if (socketSlot.transform == null || mutation.prefab == null) continue;
 
             GameObject part = SpawnMutationObject(
                 mutation.prefab,
                 socketSlot.transform,
-                false,
-                mutation.localScale > 0f ? Vector3.one * mutation.localScale : null
-                );
-            
+                defaultPart: false,
+                mutationScale: mutation.localScale
+            );
+
+            // If the mutation prefab is paired (e.g., wings, legs), determine which side to keep based on the socket's local X position relative to the creature's origin.
+            if (mutation.pairedPrefab)
+            {
+                // Local X < 0 is Left (_L), Local X >= 0 is Right (_R)
+                float localX = transform.InverseTransformPoint(socketSlot.transform.position).x;
+                bool useLeftSide = localX < -0.01f;
+                FilterPairedSide(part, useLeftSide);
+            }
+
             // Hook behaviors (e.g. venom slow, spores aura)
             var behaviors = part.GetComponentsInChildren<IMutationBehavior>();
             foreach (var behavior in behaviors)
@@ -134,6 +145,41 @@ public class CreatureMutator : MonoBehaviour
 
         // Notify all listeners (Creature stat calculations, CombatFeedback visuals, etc.)
         OnMutationsUpdated?.Invoke();
+    }
+    
+    /// <summary>
+    /// Destroys the unused side (_L or _R) of a paired mutation prefab instance using Regex
+    /// to safely handle trailing suffixes like (Clone) or .001.
+    /// </summary>
+    private void FilterPairedSide(GameObject partInstance, bool keepLeft)
+    {
+        // Matches "_R" or "_L" at the end of the base name, allowing optional Blender (.001) or Unity ((Clone)) suffixes
+        string sideToRemove = keepLeft ? "R" : "L";
+        string sideToKeep   = keepLeft ? "L" : "R";
+
+        Regex removeRegex = new Regex($@"_{sideToRemove}(?:[.\s_-]\d+|\s*\(Clone\))*$", RegexOptions.IgnoreCase);
+        Regex keepRegex   = new Regex($@"_{sideToKeep}(?:[.\s_-]\d+|\s*\(Clone\))*$", RegexOptions.IgnoreCase);
+
+        List<GameObject> toDestroy = new List<GameObject>();
+
+        foreach (Transform child in partInstance.GetComponentsInChildren<Transform>(true))
+        {
+            if (child == partInstance.transform) continue;
+
+            if (removeRegex.IsMatch(child.name))
+            {
+                toDestroy.Add(child.gameObject);
+            }
+            else if (keepRegex.IsMatch(child.name))
+            {
+                child.gameObject.SetActive(true);
+            }
+        }
+
+        foreach (var obj in toDestroy)
+        {
+            DestroyImmediate(obj);
+        }
     }
 
     /// <summary>
@@ -299,14 +345,12 @@ public class CreatureMutator : MonoBehaviour
         GameObject visualObject,
         Transform parentPosition,
         bool defaultPart = false,
-        Vector3? customScale = null
-        )
+        float mutationScale = 1f)
     {
         if (visualObject == null || parentPosition == null) return null;
 
         GameObject part = Instantiate(visualObject, parentPosition);
-        
-        // Get the layer of the parent and apply it to the spawned part and all its children recursively
+    
         int parentLayer = parentPosition.gameObject.layer;
         void SetLayerRecursively(GameObject obj, int layer)
         {
@@ -317,17 +361,14 @@ public class CreatureMutator : MonoBehaviour
             }
         }
         SetLayerRecursively(part, parentLayer);
-        
+    
         part.transform.localPosition = Vector3.zero;
         part.transform.localRotation = Quaternion.identity;
-        
-        // Scale the part based on whether it's a default part or a mutation part
-        part.transform.localScale = Vector3.one * (defaultPart ? 1.0f : socketScaleFactor);
-        
-        if (customScale.HasValue)
-        {
-            part.transform.localScale = customScale.Value;
-        }
+    
+        // Combine the mutation's base scale with the creature's socket scale factor
+        float finalScale = defaultPart ? 1.0f : (mutationScale * socketScaleFactor);
+        part.transform.localScale = Vector3.one * finalScale;
+    
         return part;
     }
 }
