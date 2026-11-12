@@ -156,7 +156,7 @@ public class ContextInteractionManager : MonoBehaviour
 
         Ray ray = isometricCamera.ScreenPointToRay(screenPos);
 
-        if (Physics.Raycast(ray, out RaycastHit hit, maxRayDistance, interactableLayers, QueryTriggerInteraction.Ignore))
+        if (MouseTarget.Find(ray, out RaycastHit hit, maxRayDistance, interactableLayers))
         {
             if (hit.collider.GetComponentInParent<IContextInteractable>() is { } interactable)
             {
