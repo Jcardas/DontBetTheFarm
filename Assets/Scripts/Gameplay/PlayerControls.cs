@@ -85,7 +85,7 @@ public class PlayerControls : MonoBehaviour
         }
         if (left == LeftButton.Pressed && (at - pressedAt).magnitude > DragPixels) left = LeftButton.Dragging;
         Hover(left == LeftButton.Dragging ? Selectable.All.Where(s => OnScreen(cam, s, Box(pressedAt, at))) : new[] { unit });
-        HoverTarget(overSomething && left != LeftButton.Dragging ? MouseTarget.Building(ray, hit) : null);
+        HoverTarget(overSomething && left != LeftButton.Dragging ? Target(ray, hit) : null);
         if (left == LeftButton.Idle || !player.Select.WasReleasedThisFrame()) return;
 
         if (left == LeftButton.Dragging) Pick(Selectable.All.Where(s => OnScreen(cam, s, Box(pressedAt, at))), shift, ctrl);
@@ -144,7 +144,24 @@ public class PlayerControls : MonoBehaviour
         lit = now;
     }
 
-    // Lights a building under the mouse the way units light up; it gets its Highlight the first time.
+    // What lights up under the mouse besides units: what a right-click would act on, when a picked unit can do it
+    // (an alien to attack, a tree to chop, a field to harvest), or else a building with its own menu (a pen).
+    static Component Target(Ray ray, RaycastHit hit)
+    {
+        var order = Order.From(hit);
+        if (AnyPickedCan(order))
+        {
+            if (order.enemy) return order.enemy;
+            if (order.node) return order.node;
+            if (order.field) return order.field;
+        }
+        var building = MouseTarget.Building(ray, hit);
+        return building is IContextInteractable ? building : null;
+    }
+
+    static bool AnyPickedCan(Order order) => Selectable.All.Any(s => s.Selected && s.CanObey(order));
+
+    // Lights the target the way units light up; it gets its Highlight the first time.
     void HoverTarget(Component target)
     {
         Highlight next = null;
@@ -155,14 +172,19 @@ public class PlayerControls : MonoBehaviour
         if (next) next.Hovered = true;
     }
 
-    // Same precedence as Order.From, so the cursor always previews the order a right-click would give.
-    static CursorType CursorFor(RaycastHit hit, Selectable unit) => Order.From(hit).kind switch
+    // Same precedence as Order.From, so the cursor always previews the order a right-click would give, and only
+    // when a picked unit can carry it out: with just cows picked, a tree shows the plain cursor.
+    static CursorType CursorFor(RaycastHit hit, Selectable unit)
     {
-        OrderKind.Attack => CursorType.Attack,
-        OrderKind.Harvest => CursorType.Harvest,
-        OrderKind.Work => CursorType.Chop,
-        _ => unit && !unit.Down ? CursorType.Interact : CursorType.Default,
-    };
+        var order = Order.From(hit);
+        return (AnyPickedCan(order) ? order.kind : OrderKind.Move) switch
+        {
+            OrderKind.Attack => CursorType.Attack,
+            OrderKind.Harvest => CursorType.Harvest,
+            OrderKind.Work => CursorType.Chop,
+            _ => unit && !unit.Down ? CursorType.Interact : CursorType.Default,
+        };
+    }
 
     // Quarter steps. Reload100 is never shown: the frame the reload completes, the hover cursor comes back.
     static CursorType ReloadCursor(float progress) => CursorType.Reload0 + Mathf.Min(3, (int)(progress * 4f));

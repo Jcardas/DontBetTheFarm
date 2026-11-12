@@ -81,6 +81,8 @@ public class Selectable : MonoBehaviour
         brain.ExecuteCommand(order);
     }
 
+    public bool CanObey(Order order) => !Down && brain != null && brain.CanObey(order);
+
     public string GetCreatureName()
     {
         return creature != null ? creature.CreatureName : gameObject.name;
