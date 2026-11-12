@@ -185,8 +185,9 @@ public class CreatureBrain : MonoBehaviour
         }
 
         if (Time.time < nextAttackTime) return;
-        nextAttackTime = Time.time + creature.AttackSpeed;
-
+        nextAttackTime = Time.time + 1 / creature.CalculatedAttackSpeed; // Calculate the time for the next attack based on the creature's calculated attack speed
+        //Default = 1 per second, so 1 / attackSpeed = seconds per attack. If attackSpeed = 2, then 1/2 = 0.5 seconds per attack.
+        
         creature.PerformAttack(currentTarget);
     }
 

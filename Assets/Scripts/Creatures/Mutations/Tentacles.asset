@@ -22,6 +22,6 @@ MonoBehaviour:
   bonusMoveSpeed: 0
   bonusAttackDamage: 0
   bonusAttackRange: 0
-  attackSpeedMultiplier: 1
+  bonusAttackSpeed: 0
   bonusGuardRadius: 0
   overridesAttack: 0

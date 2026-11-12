@@ -28,11 +28,11 @@ public class MutationData : ScriptableObject
 
     [Header("Stat Modifiers")]
     public int bonusMaxHealth = 0;
-    [Range(0f, 1f)] public float damageResistance = 0f; // e.g. 0.2 = 20% damage reduction (Metal Armour)
-    public float bonusMoveSpeed = 0f;
+    [Range(0f, 100f)] public float damageResistance = 0f; // e.g. 20 = 20% damage reduction
+    public float bonusMoveSpeed = 0f;       // eg 2 = 2x faster
     public int bonusAttackDamage = 0;
     public float bonusAttackRange = 0f;       // Tentacles (e.g., 0.5 = 50% longer)
-    public float attackSpeedMultiplier = 1f;  // Tentacles (e.g., 0.8 = 20% faster)
+    public float bonusAttackSpeed = 0f;  // Tentacles (e.g., 0.8 = 20% faster)
     public float bonusGuardRadius = 0f;       // Antenna (spot enemies from further away)
 
     [Header("Attack Replacement (Optional)")]

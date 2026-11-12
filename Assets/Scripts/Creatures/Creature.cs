@@ -112,7 +112,7 @@ public abstract class Creature : MonoBehaviour, IDamageable
         float bonusSpeed = 0f;
         int bonusDamage = 0;
         float bonusRange = 0f;
-        float attackSpeedMultiplier = 1f;
+        float bonusAttackSpeed = 0f;
         float bonusGuardRadius = 0f;
 
         if (creatureMutator != null)
@@ -125,8 +125,8 @@ public abstract class Creature : MonoBehaviour, IDamageable
                 bonusDamage += mutation.bonusAttackDamage;
                 bonusRange += mutation.bonusAttackRange;
                 bonusGuardRadius += mutation.bonusGuardRadius;
-                attackSpeedMultiplier *= mutation.attackSpeedMultiplier;
-                resistance = Mathf.Max(resistance, mutation.damageResistance);
+                bonusAttackSpeed += mutation.bonusAttackSpeed;
+                resistance += mutation.damageResistance;
                 caps |= mutation.grantedCapabilities;
             }
         }
@@ -137,8 +137,8 @@ public abstract class Creature : MonoBehaviour, IDamageable
         CalculatedMoveSpeed = Mathf.Max(0.1f, moveSpeed + bonusSpeed);
         CalculatedAttackDamage = Mathf.Max(0, attackDamage + bonusDamage);
         CalculatedAttackRange = Mathf.Max(0.5f, attackRange + bonusRange);
-        CalculatedAttackSpeed = Mathf.Max(0.05f, attackSpeed * attackSpeedMultiplier);
-        CalculatedDamageResistance = resistance;
+        CalculatedAttackSpeed = Mathf.Max(0.05f, attackSpeed + bonusAttackSpeed);
+        CalculatedDamageResistance = Mathf.Max(0f, Mathf.Min(100f, resistance)); // Clamp to 0-100%
         ActiveCapabilites = caps;
         guardRadius = Mathf.Max(1f, guardRadius + bonusGuardRadius);
 
@@ -198,7 +198,8 @@ public abstract class Creature : MonoBehaviour, IDamageable
     {
         if (Down) return;
 
-        currentHealth = Mathf.Max(0, currentHealth - amount);
+        // e.g if the creature has 20% damage resistance, it takes 80% of the incoming damage.
+        currentHealth = Mathf.Max(0, currentHealth - Mathf.RoundToInt(amount * (1f - CalculatedDamageResistance / 100f)));
 
         if (currentHealth <= 0)
         {
@@ -212,7 +213,7 @@ public abstract class Creature : MonoBehaviour, IDamageable
         {
             HandleRevive();
         }
-        currentHealth = Mathf.Min(maxHealth, currentHealth + amount);
+        currentHealth = Mathf.Min(CalculatedMaxHealth, currentHealth + amount);
     }
     
     public virtual void HealToFull()
@@ -221,7 +222,7 @@ public abstract class Creature : MonoBehaviour, IDamageable
         {
             HandleRevive();
         }
-        Heal(maxHealth - currentHealth);
+        Heal(CalculatedMaxHealth - currentHealth);
     }
 
     protected virtual void HandleRevive()
@@ -229,7 +230,7 @@ public abstract class Creature : MonoBehaviour, IDamageable
         
         if (currentHealth > 0) return;
 
-        currentHealth = maxHealth;
+        currentHealth = CalculatedMaxHealth;
 
         // Re-enable the NavMeshAgent if it was disabled
         if (navMeshAgent != null && !navMeshAgent.enabled)

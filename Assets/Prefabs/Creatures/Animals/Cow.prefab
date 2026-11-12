@@ -935,7 +935,6 @@ MonoBehaviour:
   attackRange: 1
   guardRadius: 8
   anchored: 1
-  sourcePrefab: {fileID: 0}
   breedingCost: 5
   healCost: 10
 --- !u!114 &2008345416212060268
@@ -1094,6 +1093,5 @@ MonoBehaviour:
   attackRange: 1
   guardRadius: 8
   anchored: 1
-  sourcePrefab: {fileID: 0}
   breedingCost: 5
   healCost: 10
