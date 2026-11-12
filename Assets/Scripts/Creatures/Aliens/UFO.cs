@@ -9,14 +9,14 @@ public class UFO : MonoBehaviour
     protected enum State { Idle, Approach, Beam, Carry, Leave }
 
     [Header("Flight")]
-    [SerializeField] protected float flySpeed = 7f;
+    [SerializeField] protected float flySpeed = 2f;
     [SerializeField] protected float hoverHeight = 3.5f;
 
     [Header("Beam")]
     [Tooltip("Turned on while the saucer lifts and carries a body.")]
     [SerializeField] protected GameObject beam;
     [Tooltip("Seconds to lift a body into the ship.")]
-    [SerializeField] protected float liftTime = 2.5f;
+    [SerializeField] protected float liftTime = 5f;
     [Tooltip("Where a body rides under the hull, and how much it shrinks to fit.")]
     [SerializeField] protected Vector3 storedOffset = new(0f, -0.4f, 0f);
     [SerializeField] protected float storedScale = 0.5f;

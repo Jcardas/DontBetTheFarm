@@ -8,7 +8,7 @@ public class AbductionManager : MonoBehaviour
     [SerializeField] UFO saucerPrefab;
     [Tooltip("Seconds a farm creature lies knocked out before a saucer comes for it.")]
     [SerializeField] float delay = 4f;
-    [SerializeField] int maxSaucers = 3;
+    [SerializeField] int maxSaucers = 1;
 
     readonly Dictionary<Creature, float> downSince = new();
     readonly List<UFO> saucers = new();

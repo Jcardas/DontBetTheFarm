@@ -5009,10 +5009,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5360991dc7aa242b495fa8e208210882, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UFO
-  flySpeed: 7
+  flySpeed: 2
   hoverHeight: 3.5
   beam: {fileID: 8076097286781388867}
-  liftTime: 2.5
+  liftTime: 5
   storedOffset: {x: 0, y: -1.2141303, z: 0}
   storedScale: 0.5
 --- !u!1 &8076097286781388867
