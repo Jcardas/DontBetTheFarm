@@ -4990,7 +4990,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.4, y: 0.4, z: 0.4}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 368586255928473731}
@@ -5009,10 +5009,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c5d472a72028427eabb4362ea14ebf71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerSaucer
-  flySpeed: 14
+  flySpeed: 7
   hoverHeight: 3.5
   beam: {fileID: 8076097286781388867}
-  liftTime: 1.25
+  liftTime: 2.5
   storedOffset: {x: 0, y: -1.2141303, z: 0}
   storedScale: 0.5
 --- !u!1 &8076097286781388867
