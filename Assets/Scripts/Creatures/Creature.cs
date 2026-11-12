@@ -49,7 +49,6 @@ public abstract class Creature : MonoBehaviour, IDamageable
     [SerializeField] protected bool anchored = true;
     
     private int currentHealth;
-    private float baseViewRadius;
     private NavMeshAgent navMeshAgent;
     private CreatureBrain creatureBrain;
     private Collider bodyCollider;
@@ -69,6 +68,8 @@ public abstract class Creature : MonoBehaviour, IDamageable
     public float CalculatedDamageResistance { get; private set; }
     public CreatureCapabilities ActiveCapabilities { get; private set; }
     
+    public float CalculatedViewRadius { get; private set; }
+    
     // "Cow", "Cow (1)" and "Cow(Clone)" are all a Cow: drops Unity's duplicate numbers and spawn suffixes.
     public string CreatureName => Regex.Replace(gameObject.name, @"(\s*\(\d+\)|\s*\(Clone\))+$", "").Trim();
     public GameConstants.Team Team => team;
@@ -78,7 +79,6 @@ public abstract class Creature : MonoBehaviour, IDamageable
     public int AttackDamage => attackDamage;
     public float AttackSpeed => attackSpeed;
     public float AttackRange => attackRange;
-    public float ViewRadius => viewRadius;
     public bool Anchored => anchored;
     public bool Down => currentHealth <= 0;
     public Gatherer Gatherer => gatherer;
@@ -101,7 +101,7 @@ public abstract class Creature : MonoBehaviour, IDamageable
         gatherer = GetComponentInChildren<Gatherer>();
         creatureMutator = GetComponent<CreatureMutator>();
 
-        baseViewRadius = viewRadius;
+
         OnMutationsChanged();
         currentHealth = CalculatedMaxHealth;
     }
@@ -148,7 +148,7 @@ public abstract class Creature : MonoBehaviour, IDamageable
         CalculatedAttackSpeed = Mathf.Max(0.05f, attackSpeed + bonusAttackSpeed);
         CalculatedDamageResistance = Mathf.Max(0f, Mathf.Min(100f, resistance)); // Clamp to 0-100%
         ActiveCapabilities = caps;
-        viewRadius = Mathf.Max(1f, baseViewRadius + bonusViewRadius);
+        CalculatedViewRadius = Mathf.Max(1f, viewRadius + bonusViewRadius);
         
         // Attack range is capped by view radius: a creature can't attack something it can't see.
         CalculatedAttackRange = Mathf.Min(viewRadius, attackRange + bonusRange);

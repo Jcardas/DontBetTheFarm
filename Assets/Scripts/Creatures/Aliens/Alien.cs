@@ -32,7 +32,7 @@ public class Alien : Creature
                 buildingGap = gap;
             }
 
-            if (Reach.Gap(guardPost, target.Body) > ViewRadius) return;
+            if (Reach.Gap(guardPost, target.Body) > CalculatedViewRadius) return;
             TargetTier tier = TierOf(target);
             if (best != null && (tier > bestTier || tier == bestTier && gap >= bestGap)) return;
             best = target;

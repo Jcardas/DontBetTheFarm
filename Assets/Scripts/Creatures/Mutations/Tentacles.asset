@@ -21,7 +21,7 @@ MonoBehaviour:
   damageResistance: 0
   bonusMoveSpeed: 0
   bonusAttackDamage: 0
-  bonusAttackRange: 100
+  bonusAttackRange: 0
   bonusAttackSpeed: 0
-  bonusGuardRadius: 0
+  bonusViewRadius: 0
   overridesAttack: 0
