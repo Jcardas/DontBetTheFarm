@@ -37,7 +37,9 @@ public class Highlight : MonoBehaviour
         creature = GetComponent<Creature>();
         mutator = GetComponent<CreatureMutator>();
         // A creature's outline goes on its model (ToyBob's object), so the rings under it aren't outlined too.
-        var model = GetComponentInChildren<ToyBob>();
+        // A building's goes on its ground plate: one calm line round the footprint, not round every fence rail.
+        Component model = GetComponentInChildren<ToyBob>();
+        if (model == null && TryGetComponent(out Buildable building)) model = building.GroundElement;
         outline = (model != null ? model.gameObject : gameObject).AddComponent<Outline>();
         Show();
     }
