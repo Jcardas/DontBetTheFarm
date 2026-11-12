@@ -1,17 +1,19 @@
 using UnityEngine;
 
 // Outlines something the player is pointing at or has picked (Quick Outline, Assets/ThirdParty/QuickOutline).
-// A creature also always shows a thin outline in its team's colour wherever something hides it from the camera,
+// A creature also always shows a faint outline wherever something hides it from the camera,
 // so units behind the barn are never lost. Creature adds one to itself; parts CreatureMutator adds later are
 // picked up the same frame.
 [DisallowMultipleComponent]
 public class Highlight : MonoBehaviour
 {
-    static readonly Color FarmHidden = new(0.35f, 0.75f, 1f, 0.6f);
-    static readonly Color AlienHidden = new(1f, 0.35f, 0.3f, 0.6f);
-    static readonly Color HoverColor = new(1f, 1f, 1f, 0.9f);
-    static readonly Color SelectedColor = new(1f, 0.85f, 0.1f); // the drag box's yellow
-    const float HiddenWidth = 2f, LitWidth = 3f;
+    // Blue for the player's side, red for aliens; the shade tells the states apart.
+    static readonly Color HiddenColor = new(0.4f, 0.65f, 1f, 0.35f);
+    static readonly Color HoverColor = new(0.6f, 0.85f, 1f, 0.7f);
+    static readonly Color SelectedColor = new(0.2f, 0.55f, 1f, 0.85f);
+    static readonly Color EnemyHidden = new(1f, 0.35f, 0.3f, 0.35f);
+    static readonly Color EnemyHover = new(1f, 0.5f, 0.45f, 0.7f);
+    const float HiddenWidth = 1.5f, LitWidth = 2f;
 
     Outline outline;
     Creature creature;
@@ -67,9 +69,9 @@ public class Highlight : MonoBehaviour
         outline.enabled = lit || creature != null;
         outline.OutlineMode = lit ? Outline.Mode.OutlineAll : Outline.Mode.OutlineHidden;
         outline.OutlineWidth = lit ? LitWidth : HiddenWidth;
+        bool enemy = creature != null && creature.Team == GameConstants.Team.Alien;
         outline.OutlineColor = selected ? SelectedColor
-            : hovered ? HoverColor
-            : creature != null && creature.Team == GameConstants.Team.Alien ? AlienHidden
-            : FarmHidden;
+            : hovered ? (enemy ? EnemyHover : HoverColor)
+            : enemy ? EnemyHidden : HiddenColor;
     }
 }
