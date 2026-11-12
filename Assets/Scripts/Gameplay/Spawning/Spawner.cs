@@ -98,6 +98,12 @@ public class Spawner : MonoBehaviour
     {
         if (platform != null && currentWave != null)
         {
+            GameObject enemyPrefab = currentWave.GetRandomEnemyPrefab();
+            if (enemyPrefab == null)
+            {
+                return;
+            }
+
             Vector3 spawnPosition = platform.GetRandomSpawnPosition();
 
             if (beamEffectPrefab != null)
@@ -105,12 +111,6 @@ public class Spawner : MonoBehaviour
                 Vector3 beamSpawnPosition = spawnPosition;
                 beamSpawnPosition.y -= 2.5f;
                 Instantiate(beamEffectPrefab, beamSpawnPosition, Quaternion.identity);
-            }
-
-            GameObject enemyPrefab = currentWave.GetRandomEnemyPrefab();
-            if (enemyPrefab == null)
-            {
-                return;
             }
             
             GameObject enemyObj = Instantiate(enemyPrefab, spawnPosition, platform.transform.rotation);
