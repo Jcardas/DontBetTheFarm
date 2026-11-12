@@ -118,6 +118,8 @@ public class AnimalPen : Buildable, IContextInteractable
         // Instantiate the animals original prefab at the calculated position and rotation, and parent it to the pen
         Animal newAnimal = Instantiate(animalPrefab, spawnPosition, spawnRotation, CreatureManager.AnimalContainer);
         
+        newAnimal.SourcePrefab = animalPrefab.SourcePrefab; // Ensure the new animal has the correct source prefab reference
+        
         AddAnimal(newAnimal);
     }
 
@@ -152,7 +154,7 @@ public class AnimalPen : Buildable, IContextInteractable
             return;
         }
 
-        SpawnAnimal(parentTemplate);
+        SpawnAnimal(parentTemplate.SourcePrefab);
     }
 
     private void HealAllAnimals()
@@ -263,7 +265,7 @@ public class AnimalPen : Buildable, IContextInteractable
         bool hasSpace = animalsInPen.Count < MaxAnimals;
         bool hasBreedingPair = TryGetBreedableAnimal(out Animal breedableAnimal);
         bool hasHayForBreeding = breedableAnimal != null && currentHay >= breedableAnimal.BreedingCost;
-        bool enoughAnimalsToBreed = animalsInPen.Count(a => a != null && !a.Down && GetSpeciesKey(a) == GetSpeciesKey(breedableAnimal)) >= 2;
+        bool enoughAnimalsToBreed = hasBreedingPair && animalsInPen.Count(a => a != null && !a.Down && GetSpeciesKey(a) == GetSpeciesKey(breedableAnimal)) >= 2;
         bool canBreed = hasSpace && hasBreedingPair && hasHayForBreeding && enoughAnimalsToBreed;
 
         string breedLabel;
