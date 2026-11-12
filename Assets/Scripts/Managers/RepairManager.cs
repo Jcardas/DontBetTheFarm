@@ -1,10 +1,12 @@
 using System.Collections;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
+using Unity.AI.Navigation;
 
 public class RepairManager : MonoBehaviour
 {
@@ -13,7 +15,7 @@ public class RepairManager : MonoBehaviour
     [SerializeField] private float exitTimeout = 8f;
 
     [Header("UI")]
-    [SerializeField] private RectTransform repairPanel; 
+    [SerializeField] private RectTransform repairPanel;
     [SerializeField] private Button repairButton;
     [SerializeField] private TMP_Text repairButtonText;
     [SerializeField] private TMP_Text statusText;
@@ -78,7 +80,7 @@ public class RepairManager : MonoBehaviour
             foreach (Selectable unit in Selectable.All)
             {
                 if (!unit || !unit.Selected) continue;
-                var chosen = unit.GetComponent<RepairWorker>();
+                RepairWorker chosen = unit.GetComponent<RepairWorker>();
                 if (chosen && chosen.CanRepair) SelectWorker(chosen);
                 break;
             }
@@ -88,32 +90,17 @@ public class RepairManager : MonoBehaviour
         if (building && (!building.IsBroken || !worker || !worker.CanRepair))
             ClearBuilding();
 
-        
         bool show = !exiting && building && InRange() && PlacePanel();
-
         if (show)
         {
             int cost = building.RepairWoodCost;
-            int wood = ResourceManager.Count(ResourceType.Wood);
-            bool enoughWood = wood >= cost;
-
-            
-            repairButton.interactable = enoughWood;
-
-            repairButtonText.text = enoughWood
-                ? $"Repair ({cost} Wood)"
-                : "Collect Wood First";
-
-
-            statusText.text = enoughWood
-                ? "Ready to repair"
-                : $"Not enough wood! Need {cost - wood} more.";
-
+            int missing = cost - ResourceManager.Count(ResourceType.Wood);
+            repairButton.interactable = missing <= 0;
+            repairButtonText.text = missing <= 0 ? $"Repair ({cost} Wood)" : "Collect Wood First";
+            statusText.text = missing <= 0 ? "Ready to repair" : $"Not enough wood! Need {missing} more.";
         }
-        else
-        {
-            repairButton.interactable = false;
-        }
+        else repairButton.interactable = false;
+
         if (repairPanel.gameObject.activeSelf != show)
             repairPanel.gameObject.SetActive(show);
     }
@@ -131,131 +118,134 @@ public class RepairManager : MonoBehaviour
         ClearBuilding();
     }
 
-    private void HandleClick()
-    {
-        if (Mouse.current == null || !Mouse.current.leftButton.wasPressedThisFrame) return;
-        if (!worker || !worker.CanRepair || !cam) return;
-        if (EventSystem.current && EventSystem.current.IsPointerOverGameObject()) return;
-
-        Ray ray = cam.ScreenPointToRay(Mouse.current.position.ReadValue());
-        RepairableStructure best = null;
-        float bestDist = float.PositiveInfinity;
-
-        foreach (var s in FindObjectsByType<RepairableStructure>(FindObjectsSortMode.None))
-        {
-            if (!s.IsBroken || !GetFootprint(s, out Bounds b)) continue;
-            b.Expand(0.3f);
-            if (b.IntersectRay(ray, out float d) && d < bestDist) { bestDist = d; best = s; }
-        }
-
-        if (best && best != building) SelectBuilding(best);
-    }
-
-    public void SelectBuilding(RepairableStructure found)
-    {
-        if (!worker || !worker.CanRepair || !found || !found.IsBroken) return;
-        if (!GetFootprint(found, out Bounds bounds)) return;
-
-        building = found;
-        footprint = bounds;
-        if (InRange()) return;
-
-        var agent = GetAgent();
-        if (agent && FindExit(agent, footprint, Mathf.Min(1.5f, repairRange * 0.5f), out Vector3 pos))
-            SendWorkerTo(pos);
-        else
-            Debug.LogWarning("No reachable repair position for " + found.name);
-    }
-
     private void ClearBuilding()
     {
         building = null;
         repairPanel.gameObject.SetActive(false);
     }
 
-    private static bool GetFootprint(RepairableStructure s, out Bounds area)
+    private void HandleClick()
     {
-        if (s is Buildable b && b.GroundElement)
+        if (Mouse.current == null || !Mouse.current.leftButton.wasPressedThisFrame ||
+            !worker || !worker.CanRepair || !cam ||
+            (EventSystem.current && EventSystem.current.IsPointerOverGameObject())) return;
+
+        Ray ray = cam.ScreenPointToRay(Mouse.current.position.ReadValue());
+        RepairableStructure closest = null;
+        float minDistance = float.PositiveInfinity;
+
+        foreach (RepairableStructure target in FindObjectsByType<RepairableStructure>(FindObjectsSortMode.None))
         {
-            var ground = b.GroundElement.GetComponentInChildren<Renderer>(true);
-            if (ground) { area = ground.bounds; return true; }
+            if (!target.IsBroken || !GetFootprint(target, out Bounds bounds)) continue;
+            bounds.Expand(0.3f);
+            if (bounds.IntersectRay(ray, out float distance) && distance < minDistance)
+            {
+                minDistance = distance;
+                closest = target;
+            }
         }
 
-        bool found = false;
-        area = default;
-        foreach (var r in s.GetComponentsInChildren<Renderer>())
+        if (closest && closest != building) SelectBuilding(closest);
+    }
+
+    public void SelectBuilding(RepairableStructure target)
+    {
+        if (!worker || !worker.CanRepair || !target || !target.IsBroken ||
+            !GetFootprint(target, out Bounds bounds)) return;
+
+        building = target;
+        footprint = bounds;
+        if (InRange()) return;
+
+        NavMeshAgent agent = GetWorkerAgent();
+        if (!agent || !FindExit(agent, footprint, Mathf.Min(1.5f, repairRange * 0.5f), out Vector3 exit) ||
+            !MoveCreature(worker.GetComponent<Creature>(), exit))
+            Debug.LogWarning("No reachable repair position for " + target.name);
+    }
+
+    private static bool GetFootprint(RepairableStructure target, out Bounds bounds)
+    {
+        if (target is Buildable buildable && buildable.GroundElement)
         {
-            if (!r.enabled || !r.gameObject.activeInHierarchy) continue;
-            if (found) area.Encapsulate(r.bounds); else { area = r.bounds; found = true; }
+            Renderer ground = buildable.GroundElement.GetComponentInChildren<Renderer>(true);
+            if (ground) { bounds = ground.bounds; return true; }
+        }
+
+        bounds = default;
+        bool found = false;
+        foreach (Renderer part in target.GetComponentsInChildren<Renderer>())
+        {
+            if (!part.enabled) continue;
+            if (found) bounds.Encapsulate(part.bounds);
+            else { bounds = part.bounds; found = true; }
         }
         return found;
     }
 
-    private static bool Inside(Bounds b, Vector3 p, float extra = 0f) =>
-        p.x >= b.min.x - extra && p.x <= b.max.x + extra &&
-        p.z >= b.min.z - extra && p.z <= b.max.z + extra;
+    private static bool Inside(Bounds bounds, Vector3 position, float margin = 0f) =>
+        position.x >= bounds.min.x - margin && position.x <= bounds.max.x + margin &&
+        position.z >= bounds.min.z - margin && position.z <= bounds.max.z + margin;
 
     private bool InRange()
     {
         if (!building || !worker || !worker.CanRepair) return false;
         Vector3 p = worker.transform.position;
-        float x = Mathf.Max(0f, footprint.min.x - p.x, p.x - footprint.max.x);
-        float z = Mathf.Max(0f, footprint.min.z - p.z, p.z - footprint.max.z);
-        return x * x + z * z <= repairRange * repairRange;
+        float dx = Mathf.Max(0f, footprint.min.x - p.x, p.x - footprint.max.x);
+        float dz = Mathf.Max(0f, footprint.min.z - p.z, p.z - footprint.max.z);
+        return dx * dx + dz * dz <= repairRange * repairRange;
     }
 
     private bool PlacePanel()
     {
         if (!cam) return false;
-        Vector3 s = cam.WorldToScreenPoint(new Vector3(footprint.center.x, footprint.max.y, footprint.center.z));
-        if (s.z <= 0f) return false;
+        Vector3 point = cam.WorldToScreenPoint(new Vector3(footprint.center.x, footprint.max.y, footprint.center.z));
+        if (point.z <= 0f) return false;
 
         Vector2 size = Vector2.Scale(repairPanel.rect.size, repairPanel.lossyScale);
-        float x = Mathf.Clamp(s.x, size.x * 0.5f + screenPadding, Screen.width - size.x * 0.5f - screenPadding);
-        float y = Mathf.Clamp(s.y + panelOffset, screenPadding, Screen.height - size.y - screenPadding);
-        repairPanel.position = new Vector3(x, y, 0f);
+        repairPanel.position = new Vector3(
+            Mathf.Clamp(point.x, size.x / 2f + screenPadding, Screen.width - size.x / 2f - screenPadding),
+            Mathf.Clamp(point.y + panelOffset, screenPadding, Screen.height - size.y - screenPadding), 0f);
         return true;
     }
 
-    private NavMeshAgent GetAgent()
+    private NavMeshAgent GetWorkerAgent()
     {
-        var creature = worker ? worker.GetComponent<Creature>() : null;
-        var a = creature ? creature.NavMeshAgent : null;
-        return a && a.enabled && a.isOnNavMesh ? a : null;
+        Creature creature = worker ? worker.GetComponent<Creature>() : null;
+        NavMeshAgent agent = creature ? creature.NavMeshAgent : null;
+        return agent && agent.enabled && agent.isOnNavMesh ? agent : null;
     }
 
-    private static bool FindExit(NavMeshAgent agent, Bounds b, float margin, out Vector3 best)
+    private static bool FindExit(NavMeshAgent agent, Bounds area, float margin, out Vector3 exit)
     {
         Vector3 p = agent.transform.position;
-        float cx = Mathf.Clamp(p.x, b.min.x, b.max.x);
-        float cz = Mathf.Clamp(p.z, b.min.z, b.max.z);
-        Vector3[] options =
-        {
-            new(b.min.x - margin, p.y, cz), new(b.max.x + margin, p.y, cz),
-            new(cx, p.y, b.min.z - margin), new(cx, p.y, b.max.z + margin)
+        float x = Mathf.Clamp(p.x, area.min.x, area.max.x);
+        float z = Mathf.Clamp(p.z, area.min.z, area.max.z);
+        Vector3[] candidates = {
+            new(area.min.x - margin, p.y, z), new(area.max.x + margin, p.y, z),
+            new(x, p.y, area.min.z - margin), new(x, p.y, area.max.z + margin)
         };
 
-        best = p;
+        exit = p;
         float shortest = float.PositiveInfinity;
-        var path = new NavMeshPath();
-        foreach (var o in options)
+        NavMeshPath path = new NavMeshPath();
+        foreach (Vector3 candidate in candidates)
         {
-            if (!NavMesh.SamplePosition(o, out NavMeshHit hit, 1.5f, agent.areaMask) ||
-                Inside(b, hit.position, 0.01f) ||
-                !agent.CalculatePath(hit.position, path) ||
+            if (!NavMesh.SamplePosition(candidate, out NavMeshHit hit, 1.5f, agent.areaMask) ||
+                Inside(area, hit.position, 0.01f) || !agent.CalculatePath(hit.position, path) ||
                 path.status != NavMeshPathStatus.PathComplete) continue;
 
-            float d = Vector3.Distance(p, hit.position);
-            if (d < shortest) { shortest = d; best = hit.position; }
+            float distance = Vector3.Distance(p, hit.position);
+            if (distance >= shortest) continue;
+            shortest = distance;
+            exit = hit.position;
         }
         return shortest < float.PositiveInfinity;
     }
 
-    private bool SendWorkerTo(Vector3 destination)
+    private static bool MoveCreature(Creature creature, Vector3 destination)
     {
-        var agent = GetAgent();
-        var creature = worker ? worker.GetComponent<Creature>() : null;
-        if (!agent || !creature) return false;
+        NavMeshAgent agent = creature ? creature.NavMeshAgent : null;
+        if (!agent || !agent.enabled || !agent.isOnNavMesh) return false;
 
         if (creature.CreatureBrain) creature.CreatureBrain.Obey();
         agent.isStopped = false;
@@ -264,105 +254,130 @@ public class RepairManager : MonoBehaviour
         return true;
     }
 
-    
     public void RepairSelected()
     {
         if (exiting || !building || !InRange()) return;
-
-        int wood = ResourceManager.Count(ResourceType.Wood);
-
-        if (wood < building.RepairWoodCost)
+        if (ResourceManager.Count(ResourceType.Wood) < building.RepairWoodCost)
         {
             statusText.text = "Not enough wood! Collect wood first.";
             return;
         }
-
         StartCoroutine(ExitThenRepair());
     }
 
+    private bool CanFinishRepair(RepairableStructure target, RepairWorker repairer) =>
+        target && building == target && worker == repairer && repairer && repairer.CanRepair &&
+        target.IsBroken && ResourceManager.Count(ResourceType.Wood) >= target.RepairWoodCost;
 
     private IEnumerator ExitThenRepair()
     {
         exiting = true;
-        var target = building;
-        var repairer = worker;
-        var agent = GetAgent();
-        bool safe = agent && target && repairer;
+        RepairableStructure target = building;
+        RepairWorker repairer = worker;
 
-        if (safe)
+        float radius = 0f;
+        foreach (Creature creature in FindObjectsByType<Creature>(FindObjectsSortMode.None))
+            if (creature && creature.NavMeshAgent)
+                radius = Mathf.Max(radius, creature.NavMeshAgent.radius);
+
+        Bounds area = footprint;
+        area.Expand(new Vector3((radius + 0.1f) * 2f, 0f, (radius + 0.1f) * 2f));
+
+        bool cleared = false;
+        if (CanFinishRepair(target, repairer) && GetWorkerAgent())
         {
-            Bounds area = footprint;
-            area.Expand(new Vector3(agent.radius * 2 + 0.2f, 0, agent.radius * 2 + 0.2f));
+            yield return ClearArea(area, ok => cleared = ok);
+            // if (cleared && CanFinishRepair(target, repairer))
+            // {
+            //     yield return PlayHammerAnimation(target);
+            //     cleared = false;
+            //     yield return ClearArea(area, ok => cleared = ok);
+            //     if (cleared && CanFinishRepair(target, repairer) && target.TryRepair())
+            //     {
+            //         ClearBuilding();
+            //         exiting = false;
+            //         yield break;
+            //     }
+            // }
+            if (cleared && CanFinishRepair(target, repairer) && target.TryRepair())
+{
+    RebuildNavMesh();
 
-            if (Inside(area, repairer.transform.position))
-            {
-                safe = FindExit(agent, area, 0.6f, out Vector3 exit) && SendWorkerTo(exit);
-                float end = Time.time + exitTimeout;
-                while (safe && repairer && Inside(area, repairer.transform.position) && Time.time < end)
-                    yield return null;
-                safe = safe && repairer && !Inside(area, repairer.transform.position);
-            }
+    ClearBuilding();
+    exiting = false;
+    yield break;
+}
         }
 
-       
-        if (safe && target && building == target && worker == repairer &&
-            target.IsBroken &&
-            ResourceManager.Count(ResourceType.Wood) >= target.RepairWoodCost)
-        {
-            yield return PlayHammerAnimation(target);
-
-            if (target && building == target && worker == repairer &&
-                target.TryRepair())
-            {
-                ClearBuilding();
-            }
-            else
-            {
-                statusText.text = "Repair cancelled";
-            }
-        }
-        else
-        {
-            statusText.text = "Repair cancelled: not enough wood or no safe exit";
-        }
-
-
-
+        statusText.text = "Repair cancelled: not enough wood or a creature could not leave";
         exiting = false;
     }
 
+    private IEnumerator ClearArea(Bounds area, System.Action<bool> finished)
+    {
+        HashSet<Creature> commanded = new HashSet<Creature>();
+        float deadline = Time.time + exitTimeout;
+        WaitForSeconds pause = new WaitForSeconds(0.1f);
+
+        while (Time.time < deadline)
+        {
+            bool occupied = false;
+            foreach (Creature creature in FindObjectsByType<Creature>(FindObjectsSortMode.None))
+            {
+                if (!creature || !creature.gameObject.activeInHierarchy) continue;
+                if (!Inside(area, creature.transform.position))
+                {
+                    commanded.Remove(creature);
+                    continue;
+                }
+
+                occupied = true;
+                if (commanded.Contains(creature)) continue;
+                NavMeshAgent agent = creature.NavMeshAgent;
+                if (!agent || !agent.enabled || !agent.isOnNavMesh ||
+                    !FindExit(agent, area, Mathf.Max(0.6f, agent.radius + 0.2f), out Vector3 exit) ||
+                    !MoveCreature(creature, exit))
+                {
+                    Debug.LogWarning("Cannot safely move " + creature.name + " out of the building.");
+                    finished(false);
+                    yield break;
+                }
+                commanded.Add(creature);
+            }
+
+            if (!occupied) { finished(true); yield break; }
+            yield return pause;
+        }
+
+        Debug.LogWarning("Repair cancelled: creatures did not leave in time.");
+        finished(false);
+    }
 
     private IEnumerator PlayHammerAnimation(RepairableStructure target)
     {
         if (!hammerPrefab || !target) yield break;
 
-        Vector3 position = new Vector3(
-            footprint.center.x,
-            footprint.max.y + 0.5f,
-            footprint.center.z
-        );
-
-        GameObject hammer = Instantiate(hammerPrefab, position, Quaternion.identity);
+        Vector3 origin = new Vector3(footprint.center.x, footprint.max.y + 0.5f, footprint.center.z);
+        GameObject hammer = Instantiate(hammerPrefab, origin, Quaternion.identity);
         Quaternion facing = cam ? cam.transform.rotation : Quaternion.identity;
 
-        float timer = 0f;
-
-        while (timer < hammerDuration && target)
+        for (float time = 0f; time < hammerDuration && target; time += Time.deltaTime)
         {
-            timer += Time.deltaTime;
-
-            float swing = Mathf.Sin(timer * 18f);
-
-            hammer.transform.rotation =
-                facing * Quaternion.Euler(0, 0, swing * 40f);
-
-            hammer.transform.position =
-                position + Vector3.up * (Mathf.Abs(swing) * 0.15f);
-
+            float swing = Mathf.Sin(time * 18f);
+            hammer.transform.rotation = facing * Quaternion.Euler(0f, 0f, swing * 40f);
+            hammer.transform.position = origin + Vector3.up * (Mathf.Abs(swing) * 0.15f);
             yield return null;
         }
-
         Destroy(hammer);
     }
 
+    private void RebuildNavMesh()
+    {
+        foreach (NavMeshSurface surface in
+            FindObjectsByType<NavMeshSurface>(FindObjectsSortMode.None))
+        {
+            if (surface.isActiveAndEnabled)
+                surface.BuildNavMesh();
+        }
+    }
 }
