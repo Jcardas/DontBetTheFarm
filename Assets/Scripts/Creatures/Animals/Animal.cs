@@ -28,13 +28,15 @@ public class Animal : Creature
 
     protected override void HandleZeroHealth()
     {
-        // Animals do not die, they are knocked out.
+        // Animals do not die, they are knocked out. The base turns off its NavMeshAgent so the others walk past it.
         AnimalKnockedOut();
+        base.HandleZeroHealth();
     }
     
     protected override void HandleRevive()
     {
         // When a farm animal is revived, it should be reset to its default state.
+        base.HandleRevive();
     }
 
     protected virtual void AnimalKnockedOut()
