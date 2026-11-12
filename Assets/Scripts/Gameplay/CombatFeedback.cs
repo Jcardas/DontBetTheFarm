@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.UI;
@@ -8,6 +9,8 @@ using UnityEngine.UI;
 [RequireComponent(typeof(Creature))]
 public class CombatFeedback : MonoBehaviour
 {
+    [SerializeField] private CreatureMutator mutator; // Subscribe to the mutator so we see all mutation parts too
+    
     static readonly Color FarmBar = new(0.35f, 0.85f, 0.3f), AlienBar = new(0.9f, 0.2f, 0.15f);
     static readonly int BaseColor = Shader.PropertyToID("_BaseColor");
     static Material onTop;
@@ -20,6 +23,7 @@ public class CombatFeedback : MonoBehaviour
     public Vector2 barSize = new(0.9f, 0.1f);
 
     Creature creature;
+    GameObject toyObject; // Holds the main model root (e.g., Cow)
     Renderer[] model;
     MaterialPropertyBlock flashBlock;
     RectTransform bar, fill;
@@ -28,31 +32,83 @@ public class CombatFeedback : MonoBehaviour
     bool tinted;
 
     public bool Flashing => Time.time < flashEnds;
-    public bool BarShowing => bar.gameObject.activeSelf;
-    public float BarFill => fill.anchorMax.x;
-    public Color BarColor => fill.GetComponent<Image>().color;
+    public bool BarShowing => bar != null && bar.gameObject.activeSelf;
+    public float BarFill => fill != null ? fill.anchorMax.x : 0f;
+    public Color BarColor => fill != null ? fill.GetComponent<Image>().color : Color.white;
 
     void Awake()
     {
+        if (mutator == null)
+        {
+            mutator = GetComponentInParent<CreatureMutator>() ?? GetComponent<CreatureMutator>();
+        }
+        
         creature = GetComponent<Creature>();
-        var toy = GetComponentInChildren<ToyBob>();
-        model = (toy ? toy.gameObject : gameObject).GetComponentsInChildren<Renderer>();
+
+        // Find the GameObject that holds ToyBob, fallback to this GameObject
+        var toy = GetComponentInChildren<ToyBob>(true);
+        toyObject = toy ? toy.gameObject : gameObject;
+
+        // Fetch initial renderers under the toy root
+        UpdateRenderers();
+
         flashBlock = new MaterialPropertyBlock();
         flashBlock.SetColor(BaseColor, flashColor);
         if (!onTop)
         {
             onTop = new Material(Canvas.GetDefaultCanvasMaterial());
-            onTop.SetInt("unity_GUIZTestMode", (int)CompareFunction.Always); // a tree crown can't hide the bar
+            onTop.SetInt("unity_GUIZTestMode", (int)CompareFunction.Always);
         }
         BuildBar();
     }
 
-    void Start() => lastHealth = creature.CurrentHealth; // Creature sets its health in Awake
+    private void OnEnable()
+    {
+        if (mutator != null)
+        {
+            mutator.OnMutationsUpdated += HandleMutationsChangedUpdated;
+        }
+    }
+    
+    private void OnDisable()
+    {
+        if (mutator != null)
+        {
+            mutator.OnMutationsUpdated -= HandleMutationsChangedUpdated;
+        }
+    }
+
+    private void HandleMutationsChangedUpdated()
+    {
+        UpdateRenderers();
+        BuildBar();
+    }
+
+    private void UpdateRenderers()
+    {
+        model = GetComponentsInChildren<Renderer>(true);
+
+        foreach (var r in model)
+        {
+            if (r != null)
+            {
+                r.SetPropertyBlock(tinted ? flashBlock : null);
+            }
+        }
+    }
+
+    void Start() => lastHealth = creature.CurrentHealth;
 
     void BuildBar()
     {
         float top = 1f;
-        foreach (var r in model) top = Mathf.Max(top, r.bounds.max.y - transform.position.y);
+        foreach (var r in model)
+        {
+            if (r != null)
+            {
+                top = Mathf.Max(top, r.bounds.max.y - transform.position.y);
+            }
+        }
 
         var canvas = new GameObject("HealthBar", typeof(RectTransform), typeof(Canvas)).GetComponent<Canvas>();
         canvas.renderMode = RenderMode.WorldSpace;
@@ -89,13 +145,17 @@ public class CombatFeedback : MonoBehaviour
         if (Flashing != tinted)
         {
             tinted = Flashing;
-            foreach (var r in model) r.SetPropertyBlock(tinted ? flashBlock : null);
+            foreach (var r in model)
+            {
+                if (r == null) continue;
+                r.SetPropertyBlock(tinted ? flashBlock : null);
+            }
         }
 
-        bool hurt = !creature.Down && health < creature.MaxHealth;
+        bool hurt = !creature.Down && health < creature.CalculatedMaxHealth;
         bar.gameObject.SetActive(hurt);
         if (!hurt) return;
-        fill.anchorMax = new Vector2((float)health / creature.MaxHealth, 1f);
-        if (Camera.main) bar.rotation = Camera.main.transform.rotation; // faces the screen at any camera angle
+        fill.anchorMax = new Vector2((float)health / creature.CalculatedMaxHealth, 1f);
+        if (Camera.main) bar.rotation = Camera.main.transform.rotation;
     }
 }

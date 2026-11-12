@@ -6,25 +6,13 @@ public class Gatherer : MonoBehaviour
 {
     private static readonly Color WorkTint = new(0.8f, 1f, 0.7f);
 
-    public enum State
-    {
-        Idle,
-        GatheringNode,
-        HarvestingField
-    }
+    public enum State { Idle, GatheringNode, HarvestingField, RepairingBuilding }
 
-    [Header("Gathering Settings")] public ResourceType collects = ResourceType.Wood;
-    public int loadSize = 5;
-    public float secondsPerLoad = 2f;
-
-    [Tooltip("How close its centre must get to a resource's edge.")]
+    [Header("Work Settings")]
     public float reach = 1.2f;
-
-    [Tooltip("Can be ordered to harvest crop fields. On for the farmer only.")]
-    public bool harvestsFields;
-
-    [Tooltip("Seconds of work on a ripe field before it is harvested.")]
     public float secondsPerHarvest = 1.5f;
+    public int repairAmount = 10;
+    public float secondsPerRepair = 1.5f;
 
     private NavMeshAgent agent;
     private Creature creature;
@@ -33,8 +21,10 @@ public class Gatherer : MonoBehaviour
     private ProgressRing progress;
 
     private ResourceNode node;
+    private ResourceType activeResourceType;
     private WheatField field;
-    private Collider soil;
+    private Buildable building; 
+    private Collider targetCollider;
     private Collider heading;
 
     private State state = State.Idle;
@@ -49,51 +39,55 @@ public class Gatherer : MonoBehaviour
         creature = GetComponent<Creature>();
         brain = GetComponent<CreatureBrain>();
         toy = GetComponentInChildren<ToyBob>();
-        progress = GetComponent<ProgressRing>();
+        progress = GetComponentInChildren<ProgressRing>();
+    }
+
+    // Maps ResourceType to the capability required to harvest it
+    public bool CanWork(ResourceNode target)
+    {
+        if (target == null) return false;
+        return target.type switch
+        {
+            ResourceType.Wood => creature.HasCapability(CreatureCapabilities.CanChopWood),
+            // Add additional ResourceTypes here as you add capabilities (e.g. CanMineStone)
+            _ => false
+        };
     }
 
     public void Work(ResourceNode target)
     {
-        if (target == null) return;
-
-        field = null;
-        soil = null;
+        if (!CanWork(target)) return;
+        BeginTask(State.GatheringNode, target.transform.position, target.Body);
         node = target;
-        collects = target.type;
-        workTimer = 0f;
-        heading = null;
-
-        brain.IsPassive = true;
-        // Tether unit to the work site rather than its old spawn post
-        brain.SetGuardPost(target.transform.position);
-
-        state = State.GatheringNode;
+        activeResourceType = target.type;
     }
 
     public void Harvest(WheatField target)
     {
-        if (target == null || !harvestsFields) return;
-
-        node = null;
+        if (target == null || !creature.HasCapability(CreatureCapabilities.CanHarvestCrops)) return;
+        BeginTask(State.HarvestingField, target.transform.position, target.GetComponentInChildren<Collider>());
         field = target;
-        soil = target.GetComponentInChildren<Collider>();
-        workTimer = 0f;
-        heading = null;
-
-        brain.IsPassive = true;
-        brain.SetGuardPost(target.transform.position);
-
-        state = State.HarvestingField;
     }
 
-    public void MoveTo(Vector3 point)
+    public void Repair(Buildable target)
     {
-        AbortWork();
+        if (target == null || !creature.HasCapability(CreatureCapabilities.CanRepair)) return;
+        BeginTask(State.RepairingBuilding, target.transform.position, target.GetComponentInChildren<Collider>());
+        building = target;
+    }
 
-        if (agent.isOnNavMesh && NavMesh.SamplePosition(point, out NavMeshHit hit, 3f, NavMesh.AllAreas))
-        {
-            agent.SetDestination(hit.position);
-        }
+    private void BeginTask(State newState, Vector3 sitePosition, Collider col)
+    {
+        node = null;
+        field = null;
+        building = null;
+        heading = null;
+        workTimer = 0f;
+
+        targetCollider = col;
+        brain.IsPassive = true;
+        brain.SetGuardPost(sitePosition);
+        state = newState;
     }
 
     public void AbortWork()
@@ -101,78 +95,53 @@ public class Gatherer : MonoBehaviour
         state = State.Idle;
         node = null;
         field = null;
-        soil = null;
+        building = null;
+        targetCollider = null;
         heading = null;
         workTimer = 0f;
 
-        if (agent != null && agent.isOnNavMesh && agent.hasPath)
-        {
-            agent.ResetPath();
-        }
-
+        if (agent != null && agent.isOnNavMesh && agent.hasPath) agent.ResetPath();
         if (brain != null)
         {
             brain.IsPassive = false;
-            // Guard where the unit currently stands when interrupted
             brain.SetGuardPost(transform.position);
         }
     }
 
     private void Update()
     {
-        if (state == State.Idle || creature.Down)
-        {
-            if (creature.Down && state != State.Idle) AbortWork();
-            return;
-        }
+        if (state == State.Idle) return;
+        if (creature.Down) { AbortWork(); return; }
 
-        if (state == State.HarvestingField)
+        switch (state)
         {
-            UpdateFieldHarvest();
-        }
-        else if (state == State.GatheringNode)
-        {
-            UpdateNodeGathering();
+            case State.GatheringNode:     UpdateNodeGathering(); break;
+            case State.HarvestingField:   UpdateFieldHarvest(); break;
+            case State.RepairingBuilding: UpdateRepair(); break;
         }
     }
 
     private void UpdateNodeGathering()
     {
+        if (!creature.HasCapability(CreatureCapabilities.CanChopWood)) { AbortWork(); return; }
+
         if (node == null || node.Empty)
         {
-            node = ResourceNode.Nearest(transform.position, collects);
-            workTimer = 0f;
-            if (node == null)
-            {
-                AbortWork();
-                return;
-            }
+            node = ResourceNode.Nearest(transform.position, activeResourceType);
+            if (node == null) { AbortWork(); return; }
 
+            targetCollider = node.Body;
+            workTimer = 0f;
             brain.SetGuardPost(node.transform.position);
         }
 
-        if (!Arrive(node.Body)) return;
-
-        if (DoWorkTick(secondsPerLoad))
+        if (!Arrive(targetCollider)) return;
+        
+        if (DoWorkTick(secondsPerHarvest))
         {
-            int amountTaken = node.Take(loadSize);
-
-            if (ResourceManager.Instance == null)
-            {
-                Debug.LogError(
-                    "[Gatherer] ResourceManager.Instance is NULL! Ensure a GameObject in the scene has ResourceManager attached.");
-                return;
-            }
-
-            if (amountTaken > 0)
-            {
-                ResourceManager.Instance.Deposit(node.type, amountTaken);
-            }
-            else
-            {
-                Debug.LogWarning(
-                    $"[Gatherer] Node {node.name} returned 0 resources on Take({loadSize}). Is the node empty or unconfigured?");
-            }
+            int taken = node.Take(1); // Assuming 1 unit per harvest for simplicity
+            if (taken > 0 && ResourceManager.Instance != null)
+                ResourceManager.Instance.Deposit(node.type, taken);
 
             if (node.Empty)
             {
@@ -184,14 +153,13 @@ public class Gatherer : MonoBehaviour
 
     private void UpdateFieldHarvest()
     {
-        if (field == null || soil == null)
+        if (!creature.HasCapability(CreatureCapabilities.CanHarvestCrops) || field == null || targetCollider == null)
         {
             AbortWork();
             return;
         }
 
-        if (!Arrive(soil)) return;
-        if (!field.mature) return;
+        if (!Arrive(targetCollider) || !field.mature) return;
 
         if (DoWorkTick(secondsPerHarvest))
         {
@@ -200,12 +168,31 @@ public class Gatherer : MonoBehaviour
         }
     }
 
+    private void UpdateRepair()
+    {
+        //TODO use sazias repair system once merged, you can safely ignore this.
+        
+        Debug.Log("REMOVE REDUNDANT REPAIR CODE IN GATHERER.CS ONCE SAZIA'S REPAIR SYSTEM IS MERGED");
+        
+        // if (!creature.HasCapability(CreatureCapabilities.CanRepair) || building == null || building.CurrentHealth >= building.MaxHealth)
+        // {
+        //     AbortWork();
+        //     return;
+        // }
+        //
+        // if (!Arrive(targetCollider)) return;
+        //
+        // if (DoWorkTick(secondsPerRepair))
+        // {
+        //     building.Repair(repairAmount);
+        //     if (building.CurrentHealth >= building.MaxHealth) AbortWork();
+        // }
+    }
+
     private bool DoWorkTick(float duration)
     {
         workTimer += Time.deltaTime;
-
-        if (progress)
-            progress.Set(workTimer / duration, WorkTint);
+        if (progress) progress.Set(workTimer / duration, WorkTint);
 
         if (toy && Time.time >= nextBump)
         {
@@ -214,7 +201,6 @@ public class Gatherer : MonoBehaviour
         }
 
         if (workTimer < duration) return false;
-
         workTimer = 0f;
         return true;
     }
@@ -241,7 +227,6 @@ public class Gatherer : MonoBehaviour
 
     private void OnDisable()
     {
-        if (brain != null)
-            brain.IsPassive = false;
+        if (brain != null) brain.IsPassive = false;
     }
 }
