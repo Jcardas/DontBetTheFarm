@@ -879,9 +879,6 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 8f69b12e2e3b84a499eaafbba2ebdca8, type: 3}
       insertIndex: -1
       addedObject: {fileID: 605828040209965552}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 8f69b12e2e3b84a499eaafbba2ebdca8, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: -3630713254175371433}
   m_SourcePrefab: {fileID: 100100000, guid: 8f69b12e2e3b84a499eaafbba2ebdca8, type: 3}
 --- !u!4 &8117234978526828938 stripped
 Transform:
@@ -936,6 +933,7 @@ MonoBehaviour:
   attackRange: 1
   viewRadius: 8
   anchored: 1
+  beamEffectPrefab: {fileID: 6513492497273295794, guid: efbfd504153af464d949dab00121ca2a, type: 3}
   breedingCost: 5
   healCost: 10
 --- !u!114 &2008345416212060268
@@ -1072,26 +1070,3 @@ MonoBehaviour:
       defaultVisualPrefab: {fileID: 919132149155446097, guid: 6b12bcdb500bed943b9d0483f8625276, type: 3}
   socketScaleFactor: 1
   defaultMutations: []
---- !u!114 &-3630713254175371433
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8930047177322382128}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3af5c6d5c3b3646a8bdd4e7bebe399b5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Animal
-  team: 0
-  baseCapabilities: 0
-  maxHealth: 50
-  moveSpeed: 5
-  attackDamage: 10
-  attackSpeed: 1
-  attackRange: 1
-  viewRadius: 8
-  anchored: 1
-  breedingCost: 5
-  healCost: 10
