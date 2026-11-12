@@ -178,6 +178,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ccd992bef0a6a684c8ebe5f7c4723af9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CombatFeedback
+  mutator: {fileID: 0}
   flashColor: {r: 1, g: 0.25, b: 0.2, a: 1}
   flashSeconds: 0.12
   barGap: 0.25
@@ -372,6 +373,22 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -7688349302017375435, guid: da67726b77ffb2141bfad9ea521743fa, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: -7477605531764172075, guid: da67726b77ffb2141bfad9ea521743fa, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: -5526758131457490607, guid: da67726b77ffb2141bfad9ea521743fa, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 484165207373277667, guid: da67726b77ffb2141bfad9ea521743fa, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
     - target: {fileID: 528474360497172861, guid: da67726b77ffb2141bfad9ea521743fa, type: 3}
       propertyPath: m_LocalPosition.y
       value: 0.132
@@ -380,9 +397,25 @@ PrefabInstance:
       propertyPath: m_Name
       value: Goose
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: da67726b77ffb2141bfad9ea521743fa, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
     - target: {fileID: 1022035537680389878, guid: da67726b77ffb2141bfad9ea521743fa, type: 3}
       propertyPath: m_LocalPosition.y
       value: 0.132
+      objectReference: {fileID: 0}
+    - target: {fileID: 1208071746982527692, guid: da67726b77ffb2141bfad9ea521743fa, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 1583079614667658642, guid: da67726b77ffb2141bfad9ea521743fa, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 3230452020871368132, guid: da67726b77ffb2141bfad9ea521743fa, type: 3}
+      propertyPath: m_Layer
+      value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 7894637551439825436, guid: da67726b77ffb2141bfad9ea521743fa, type: 3}
       propertyPath: m_LocalPosition.y
