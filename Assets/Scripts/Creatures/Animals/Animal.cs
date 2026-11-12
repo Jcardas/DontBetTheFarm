@@ -7,8 +7,18 @@ using UnityEngine;
 [RequireComponent(typeof(Selectable), typeof(Gatherer))]
 public class Animal : Creature
 {
+    [Header("Prefab Reference")]
+    [Tooltip("Prefab reference for the farm animal. This is used for spawning and instantiation.")]
+    [SerializeField] protected Animal sourcePrefab;
+    
     [SerializeField] protected int breedingCost;
     [SerializeField] protected int healCost;
+
+    public Animal SourcePrefab
+    {
+        get => sourcePrefab != null ? sourcePrefab : this;
+        set => sourcePrefab = value;
+    }
     
     public int BreedingCost => breedingCost;
     public int HealCost => healCost;
