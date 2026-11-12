@@ -16,6 +16,7 @@ public class AbductionManager : MonoBehaviour
     readonly Dictionary<Creature, float> downSince = new();
     readonly List<UFO> saucers = new();
     readonly List<Animal> returned = new();
+    readonly Dictionary<Animal, GameObject> helmets = new();
 
     void Awake()
     {
@@ -94,8 +95,14 @@ public class AbductionManager : MonoBehaviour
         for (int i = returned.Count - 1; i >= 0; i--)
         {
             Animal a = returned[i];
-            if (!a.Down) continue;
+            if (!a.Down)
+            {
+                // On goes the helmet the frame after it lands, once its model has stood back up.
+                if (!helmets.ContainsKey(a)) helmets[a] = PutOnHelmet(a);
+                continue;
+            }
             returned.RemoveAt(i);
+            if (helmets.Remove(a, out GameObject helmet)) Destroy(helmet);
             if (WaveManager.Instance != null) WaveManager.Instance.UnregisterEnemy(a);
             a.SetTeam(GameConstants.Team.Farm);
             a.HealToFull();
@@ -110,5 +117,52 @@ public class AbductionManager : MonoBehaviour
             Creature target = CreatureManager.Instance.GetNearestEnemy(a.Team, a.Position, a.Position, float.MaxValue);
             if (target != null) a.CreatureBrain.Attack(target);
         }
+    }
+
+    // A mind-control helmet built from primitives: a metal cap, an antenna and a glowing green tip. It sits between
+    // the head sockets (where horns and antennae go), or on top of the animal if it has none, sized to its height.
+    static GameObject PutOnHelmet(Animal animal)
+    {
+        Bounds body = new(animal.Position, Vector3.zero);
+        foreach (Renderer r in animal.GetComponentsInChildren<Renderer>())
+            if (r is MeshRenderer or SkinnedMeshRenderer) body.Encapsulate(r.bounds);
+        float size = body.size.y * 0.25f;
+
+        Transform head = animal.transform;
+        Vector3 top = new(body.center.x, body.max.y, body.center.z);
+        Vector3 sockets = Vector3.zero;
+        int count = 0;
+        foreach (Transform t in animal.GetComponentsInChildren<Transform>())
+        {
+            if (!t.name.StartsWith("Socket_Head")) continue;
+            sockets += t.position;
+            count++;
+            head = t.parent;
+        }
+        if (count > 0) top = sockets / count + Vector3.up * 0.3f * size; // the cap's rim rests at the sockets
+
+        var helmet = new GameObject("Mind Control Helmet").transform;
+        helmet.SetPositionAndRotation(top, animal.transform.rotation);
+        helmet.SetParent(head, true); // bobs along with the head
+        Color metal = new(0.55f, 0.58f, 0.65f), glow = new(0.2f, 1f, 0.3f);
+        HelmetPart(PrimitiveType.Sphere, helmet, Vector3.zero, new Vector3(1f, 0.6f, 1f) * size, metal);
+        HelmetPart(PrimitiveType.Cylinder, helmet, Vector3.up * 0.6f * size, new Vector3(0.08f, 0.4f, 0.08f) * size, metal);
+        HelmetPart(PrimitiveType.Sphere, helmet, Vector3.up * 1.05f * size, Vector3.one * 0.25f * size, glow, true);
+        return helmet.gameObject;
+    }
+
+    static void HelmetPart(PrimitiveType shape, Transform helmet, Vector3 at, Vector3 scale, Color color, bool glows = false)
+    {
+        GameObject part = GameObject.CreatePrimitive(shape);
+        Destroy(part.GetComponent<Collider>()); // nothing should click or bump into it
+        part.transform.SetParent(helmet, false);
+        part.transform.localPosition = at;
+        part.transform.localScale = scale;
+        Material m = part.GetComponent<Renderer>().material;
+        m.color = color;
+        m.SetFloat("_Metallic", glows ? 0f : 0.8f);
+        if (!glows) return;
+        m.EnableKeyword("_EMISSION");
+        m.SetColor("_EmissionColor", color * 2f);
     }
 }
