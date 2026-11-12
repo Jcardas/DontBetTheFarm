@@ -137,7 +137,7 @@ public class UFO : MonoBehaviour
             {
                 victim.transform.position = liftFrom;
                 victim.transform.localScale = victimScale;
-                if (victim.NavMeshAgent) victim.NavMeshAgent.enabled = true;
+                if (victim.NavMeshAgent && !victim.Down) victim.NavMeshAgent.enabled = true; // a body stays out of walkers' way
             }
         }
         victim = null;
