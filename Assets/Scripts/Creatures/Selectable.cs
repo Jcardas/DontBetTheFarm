@@ -24,7 +24,8 @@ public class Selectable : MonoBehaviour
     private bool hovered;
 
     public Creature Creature => creature;
-    public bool Down => creature == null || creature.Down;
+    // Knocked out, or switched off while the unit is on the aliens' side: either way it can't be picked or ordered.
+    public bool Down => creature == null || creature.Down || !enabled;
 
     public bool Selected
     {
