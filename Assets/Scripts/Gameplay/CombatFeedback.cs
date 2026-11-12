@@ -81,6 +81,7 @@ public class CombatFeedback : MonoBehaviour
     private void HandleMutationsChangedUpdated()
     {
         UpdateRenderers();
+        BuildBar();
     }
 
     private void UpdateRenderers()
@@ -151,10 +152,10 @@ public class CombatFeedback : MonoBehaviour
             }
         }
 
-        bool hurt = !creature.Down && health < creature.MaxHealth;
+        bool hurt = !creature.Down && health < creature.CalculatedMaxHealth;
         bar.gameObject.SetActive(hurt);
         if (!hurt) return;
-        fill.anchorMax = new Vector2((float)health / creature.MaxHealth, 1f);
+        fill.anchorMax = new Vector2((float)health / creature.CalculatedMaxHealth, 1f);
         if (Camera.main) bar.rotation = Camera.main.transform.rotation;
     }
 }

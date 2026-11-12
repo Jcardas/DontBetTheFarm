@@ -1,7 +1,21 @@
+using System;
 using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEngine.AI;
 
+/// <summary>
+/// Capabilities:
+///
+/// <list type="bullet">
+/// <item>  (1) CanChopWood</item>
+/// <item>  (2) CanHarvestCrops</item>
+/// <item>  (3) CanRepair</item>
+/// <item>  (4) CanFly</item>
+/// <item>  (5) IsRangedAttacker</item>
+/// </list>
+///
+/// </summary>
+[Flags]
 public enum CreatureCapabilities
 {
     None           = 0,
@@ -89,14 +103,17 @@ public abstract class Creature : MonoBehaviour, IDamageable
     /// </summary>
     public void OnMutationsChanged()
     {
+        // Calculate the capabilities granted by mutations. This is a bitmask of CreatureCapabilities.
+        CreatureCapabilities caps = CreatureCapabilities.None;
+        
+        // Calculate the creature's effective stats based on its base stats and any equipped mutations.
         int bonusHealth = 0;
+        float resistance = 0f;
         float bonusSpeed = 0f;
         int bonusDamage = 0;
         float bonusRange = 0f;
-        float bonusGuard = 0f;
         float attackSpeedMultiplier = 1f;
-        float resistance = 0f;
-        CreatureCapabilities caps = CreatureCapabilities.None;
+        float bonusGuardRadius = 0f;
 
         if (creatureMutator != null)
         {
@@ -107,7 +124,7 @@ public abstract class Creature : MonoBehaviour, IDamageable
                 bonusSpeed += mutation.bonusMoveSpeed;
                 bonusDamage += mutation.bonusAttackDamage;
                 bonusRange += mutation.bonusAttackRange;
-                bonusGuard += mutation.bonusGuardRadius;
+                bonusGuardRadius += mutation.bonusGuardRadius;
                 attackSpeedMultiplier *= mutation.attackSpeedMultiplier;
                 resistance = Mathf.Max(resistance, mutation.damageResistance);
                 caps |= mutation.grantedCapabilities;
@@ -123,7 +140,7 @@ public abstract class Creature : MonoBehaviour, IDamageable
         CalculatedAttackSpeed = Mathf.Max(0.05f, attackSpeed * attackSpeedMultiplier);
         CalculatedDamageResistance = resistance;
         ActiveCapabilites = caps;
-        guardRadius = Mathf.Max(1f, guardRadius + bonusGuard);
+        guardRadius = Mathf.Max(1f, guardRadius + bonusGuardRadius);
 
         // Apply speed directly to the NavMeshAgent if active
         if (navMeshAgent != null)
