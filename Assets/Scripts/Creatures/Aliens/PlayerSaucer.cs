@@ -1,43 +1,54 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-// The player's saucer. It hovers at home (where it is placed, beside the barn) while aliens are still standing.
-// A few seconds after the last one goes down it sweeps the field: beams up every knocked-out alien, brings them all
-// home in one trip, and each one becomes research (Technology). Its lights and beam are blue so it never reads as an
-// enemy.
+// The player's saucer. It stays out of sight until dawn, when it flies down, beams up every knocked-out alien, brings
+// them all home (where it is placed, beside the barn) in one trip, and each one becomes research (Technology). Then it
+// flies off for the day. In a scene with no clock it goes out a few seconds after the last alien goes down instead.
+// Its lights and beam are blue so it never reads as an enemy.
 public class PlayerSaucer : UFO
 {
-    [Tooltip("Seconds with no enemy left standing before it goes out to collect.")]
+    [Tooltip("How far above home it waits out of sight, and comes down from.")]
+    [SerializeField] float skyHeight = 40f;
+    [Tooltip("With no clock in the scene: seconds with no enemy left standing before it goes out to collect.")]
     [SerializeField] float calmDelay = 3f;
     [Tooltip("Research each knocked-out alien is worth.")]
     [SerializeField] int researchPerAlien = 1;
 
     readonly List<Creature> cargo = new();
-    Vector3 home;
-    bool sweeping;
+    Vector3 home, sky;
+    bool sweeping, shown;
+    int lastDay;
     float calmSince = -1f;
 
     protected override void Awake()
     {
         base.Awake();
         home = transform.position - Vector3.up * hoverHeight;
+        sky = home + Vector3.up * skyHeight;
         exitPoint = home;
         PaintBlue();
+        transform.position = sky + Vector3.up * hoverHeight;
+        Show(false);
     }
 
     protected override void OnIdle()
     {
-        if (!sweeping)
+        if (sweeping)
         {
-            FlyTo(home);
-            sweeping = CalmLongEnough();
-            return;
+            Creature next = NearestDownedAlien();
+            if (next != null) Claim(next);
+            else if (cargo.Count > 0) state = State.Carry; // home with the catch
+            else sweeping = false;
         }
-
-        Creature next = NearestDownedAlien();
-        if (next != null) Claim(next);
-        else if (cargo.Count > 0) state = State.Carry; // home with the catch
-        else sweeping = false;
+        else if (shown)
+        {
+            if (FlyTo(sky)) Show(false); // off for the day
+        }
+        else if (TimeToSweep())
+        {
+            Show(true);
+            sweeping = true;
+        }
     }
 
     // Stacks the catch under the hull and goes for the next body.
@@ -62,6 +73,25 @@ public class PlayerSaucer : UFO
         cargo.Clear();
         sweeping = false;
         state = State.Idle;
+    }
+
+    // Dawn (the clock's day count goes up at 6am) with knocked-out aliens to collect. With no clock in the scene,
+    // a few seconds after the fight ends.
+    bool TimeToSweep()
+    {
+        if (TimeManager.Instance == null) return CalmLongEnough();
+        int day = TimeManager.Instance.getDay();
+        if (day == lastDay) return false;
+        lastDay = day;
+        return NearestDownedAlien() != null;
+    }
+
+    // Hides or shows the whole saucer: model, lights and beam.
+    void Show(bool on)
+    {
+        shown = on;
+        foreach (Transform part in transform) part.gameObject.SetActive(on);
+        if (beam) beam.SetActive(false);
     }
 
     // True once no enemy has been standing for calmDelay seconds and there is a knocked-out alien to collect.
