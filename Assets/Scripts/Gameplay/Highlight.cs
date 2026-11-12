@@ -9,7 +9,7 @@ public class Highlight : MonoBehaviour
 {
     // Blue for the player's side, red for aliens; the shade tells the states apart.
     static readonly Color HiddenColor = new(0.4f, 0.65f, 1f, 0.35f);
-    static readonly Color HoverColor = new(0.6f, 0.85f, 1f, 0.7f);
+    static readonly Color HoverColor = new(0.35f, 0.7f, 1f, 0.8f);
     static readonly Color SelectedColor = new(0.2f, 0.55f, 1f, 0.85f);
     static readonly Color EnemyHidden = new(1f, 0.35f, 0.3f, 0.35f);
     static readonly Color EnemyHover = new(1f, 0.5f, 0.45f, 0.7f);
