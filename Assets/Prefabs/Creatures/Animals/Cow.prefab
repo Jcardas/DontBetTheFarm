@@ -928,6 +928,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Animal
   team: 0
+  baseCapabilities: 0
   maxHealth: 50
   moveSpeed: 5
   attackDamage: 10
@@ -996,12 +997,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 80c74e6182afa2a418f71c753b71cd81, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Gatherer
-  collects: 0
-  loadSize: 5
-  secondsPerLoad: 2
   reach: 1
-  harvestsFields: 0
   secondsPerHarvest: 1.5
+  repairAmount: 10
+  secondsPerRepair: 1.5
 --- !u!114 &4922400994622298660
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1072,7 +1071,9 @@ MonoBehaviour:
     - transform: {fileID: 7394141514268568823}
       defaultVisualPrefab: {fileID: 919132149155446097, guid: 6b12bcdb500bed943b9d0483f8625276, type: 3}
   socketScaleFactor: 1
-  defaultMutations: []
+  defaultMutations:
+  - mutation: {fileID: 11400000, guid: d072a8806c873c449a05b6d3f15b93a7, type: 2}
+    slot: 1
 --- !u!114 &-3630713254175371433
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1086,6 +1087,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Animal
   team: 0
+  baseCapabilities: 0
   maxHealth: 50
   moveSpeed: 5
   attackDamage: 10

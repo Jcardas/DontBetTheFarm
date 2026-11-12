@@ -19,9 +19,13 @@ using UnityEngine.AI;
 public enum CreatureCapabilities
 {
     None           = 0,
+    
+    // Resource Capabilities
     CanChopWood    = 1 << 0, // Axe
     CanHarvestCrops = 1 << 1, // Scythe
     CanRepair      = 1 << 2, // Hammer
+    
+    // Combat Capabilities
     CanFly         = 1 << 3, // Wings
     IsRangedAttacker = 1 << 4 // Ranged attack (e.g., spit, fire breath)
 }
@@ -31,7 +35,10 @@ public abstract class Creature : MonoBehaviour, IDamageable
 {
     [Header("Team & Alignment")]
     [SerializeField] protected GameConstants.Team team;
-
+    
+    [Header("Capabilities")]
+    [SerializeField] protected CreatureCapabilities baseCapabilities = CreatureCapabilities.None;
+    
     [Header("Base Stats")]
     [SerializeField] protected int maxHealth = 50;
     [SerializeField] protected float moveSpeed = 3.5f;
@@ -40,8 +47,9 @@ public abstract class Creature : MonoBehaviour, IDamageable
     [SerializeField] protected float attackRange = 1f;
     [SerializeField] protected float guardRadius = 8f;
     [SerializeField] protected bool anchored = true;
-
+    
     private int currentHealth;
+    private float baseGuardRadius;
     private NavMeshAgent navMeshAgent;
     private CreatureBrain creatureBrain;
     private Collider bodyCollider;
@@ -59,6 +67,7 @@ public abstract class Creature : MonoBehaviour, IDamageable
     public float CalculatedAttackRange { get; private set; }
     public float CalculatedAttackSpeed { get; private set; }
     public float CalculatedDamageResistance { get; private set; }
+    public CreatureCapabilities ActiveCapabilities { get; private set; }
     
     // "Cow", "Cow (1)" and "Cow(Clone)" are all a Cow: drops Unity's duplicate numbers and spawn suffixes.
     public string CreatureName => Regex.Replace(gameObject.name, @"(\s*\(\d+\)|\s*\(Clone\))+$", "").Trim();
@@ -81,8 +90,7 @@ public abstract class Creature : MonoBehaviour, IDamageable
     public Vector3 Position => transform.position;
     
     
-    public CreatureCapabilities ActiveCapabilites {get; private set;}
-    public float DamageResistance {get; private set;}
+    public bool HasCapability(CreatureCapabilities capability) => (ActiveCapabilities & capability) != 0;
     
     protected virtual void Awake()
     {
@@ -93,6 +101,7 @@ public abstract class Creature : MonoBehaviour, IDamageable
         gatherer = GetComponentInChildren<Gatherer>();
         creatureMutator = GetComponent<CreatureMutator>();
 
+        baseGuardRadius = guardRadius;
         OnMutationsChanged();
         currentHealth = CalculatedMaxHealth;
     }
@@ -104,7 +113,7 @@ public abstract class Creature : MonoBehaviour, IDamageable
     public void OnMutationsChanged()
     {
         // Calculate the capabilities granted by mutations. This is a bitmask of CreatureCapabilities.
-        CreatureCapabilities caps = CreatureCapabilities.None;
+        CreatureCapabilities caps = baseCapabilities;
         
         // Calculate the creature's effective stats based on its base stats and any equipped mutations.
         int bonusHealth = 0;
@@ -139,8 +148,8 @@ public abstract class Creature : MonoBehaviour, IDamageable
         CalculatedAttackRange = Mathf.Max(0.5f, attackRange + bonusRange);
         CalculatedAttackSpeed = Mathf.Max(0.05f, attackSpeed + bonusAttackSpeed);
         CalculatedDamageResistance = Mathf.Max(0f, Mathf.Min(100f, resistance)); // Clamp to 0-100%
-        ActiveCapabilites = caps;
-        guardRadius = Mathf.Max(1f, guardRadius + bonusGuardRadius);
+        ActiveCapabilities = caps;
+        guardRadius = Mathf.Max(1f, baseGuardRadius + bonusGuardRadius);
 
         // Apply speed directly to the NavMeshAgent if active
         if (navMeshAgent != null)
@@ -197,14 +206,11 @@ public abstract class Creature : MonoBehaviour, IDamageable
     public void TakeDamage(int amount)
     {
         if (Down) return;
-
-        // e.g if the creature has 20% damage resistance, it takes 80% of the incoming damage.
-        currentHealth = Mathf.Max(0, currentHealth - Mathf.RoundToInt(amount * (1f - CalculatedDamageResistance / 100f)));
-
-        if (currentHealth <= 0)
-        {
-            HandleZeroHealth();
-        }
+        
+        int mitigated = Mathf.RoundToInt(amount * (1f - CalculatedDamageResistance / 100f));
+        
+        currentHealth = Mathf.Max(0, currentHealth - mitigated);
+        if (currentHealth <= 0) HandleZeroHealth();
     }
 
     private void Heal(int amount)

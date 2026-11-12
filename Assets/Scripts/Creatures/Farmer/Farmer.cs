@@ -22,6 +22,7 @@ public class Farmer : Creature
 
     protected override void Awake()
     {
+        baseCapabilities |= CreatureCapabilities.CanChopWood | CreatureCapabilities.CanHarvestCrops | CreatureCapabilities.CanRepair | CreatureCapabilities.IsRangedAttacker;
         base.Awake();
         shotgun = GetComponent<Shotgun>();
     }

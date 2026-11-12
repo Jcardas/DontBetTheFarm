@@ -1135,6 +1135,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Farmer
       objectReference: {fileID: 0}
+    - target: {fileID: 6274418971666159120, guid: caa00833de06b4f4bac853340fcf66a4, type: 3}
+      propertyPath: collects
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7870129620406675401, guid: caa00833de06b4f4bac853340fcf66a4, type: 3}
       propertyPath: m_LocalPosition.x
       value: 1.6719999
