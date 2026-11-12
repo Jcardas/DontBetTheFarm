@@ -69,7 +69,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  - {fileID: 2100000, guid: adae472a689264b9bb17cc6e38a2e058, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -136,6 +136,14 @@ PrefabInstance:
     m_TransformParent: {fileID: 6796258252841555242}
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: 613e4ab375a3b334093e208bbff50b6d, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 613e4ab375a3b334093e208bbff50b6d, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 613e4ab375a3b334093e208bbff50b6d, type: 3}
       propertyPath: m_LocalPosition.x
       value: -0.45347977
       objectReference: {fileID: 0}
@@ -175,6 +183,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -7511558181221131132, guid: 613e4ab375a3b334093e208bbff50b6d, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: e8f76b84d135203489ab695431e2d8d6, type: 2}
     - target: {fileID: 919132149155446097, guid: 613e4ab375a3b334093e208bbff50b6d, type: 3}
       propertyPath: m_Name
       value: CropCircle
