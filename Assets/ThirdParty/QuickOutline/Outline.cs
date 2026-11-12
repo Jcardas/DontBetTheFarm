@@ -5,6 +5,9 @@
 //  Created by Chris Nolet on 3/30/18.
 //  Copyright © 2018 Chris Nolet. All rights reserved.
 //
+//  Don't Bet the Farm changes, each marked "DBTF": Refresh() for models whose parts change at runtime, skip
+//  renderers destroyed since, and leave unreadable meshes' normals alone instead of erroring in builds.
+//
 
 using System;
 using System.Collections.Generic;
@@ -99,8 +102,17 @@ public class Outline : MonoBehaviour {
     needsUpdate = true;
   }
 
+  // DBTF: re-reads the renderers, for models whose parts are added or swapped after Awake (CreatureMutator).
+  public void Refresh() {
+    if (isActiveAndEnabled) OnDisable();
+    renderers = GetComponentsInChildren<Renderer>();
+    LoadSmoothNormals();
+    if (isActiveAndEnabled) OnEnable();
+  }
+
   void OnEnable() {
     foreach (var renderer in renderers) {
+      if (renderer == null) continue; // DBTF: destroyed since the last Refresh
 
       // Append outline shaders
       var materials = renderer.sharedMaterials.ToList();
@@ -139,6 +151,7 @@ public class Outline : MonoBehaviour {
 
   void OnDisable() {
     foreach (var renderer in renderers) {
+      if (renderer == null) continue; // DBTF: destroyed since the last Refresh
 
       // Remove outline shaders
       var materials = renderer.sharedMaterials.ToList();
@@ -182,6 +195,11 @@ public class Outline : MonoBehaviour {
     // Retrieve or generate smooth normals
     foreach (var meshFilter in GetComponentsInChildren<MeshFilter>()) {
 
+      // DBTF: a mesh imported without Read/Write can't be changed in a build; it keeps its own normals
+      if (meshFilter.sharedMesh == null || !meshFilter.sharedMesh.isReadable) {
+        continue;
+      }
+
       // Skip if smooth normals have already been adopted
       if (!registeredMeshes.Add(meshFilter.sharedMesh)) {
         continue;
@@ -204,6 +222,11 @@ public class Outline : MonoBehaviour {
 
     // Clear UV3 on skinned mesh renderers
     foreach (var skinnedMeshRenderer in GetComponentsInChildren<SkinnedMeshRenderer>()) {
+
+      // DBTF: as above
+      if (skinnedMeshRenderer.sharedMesh == null || !skinnedMeshRenderer.sharedMesh.isReadable) {
+        continue;
+      }
 
       // Skip if UV3 has already been reset
       if (!registeredMeshes.Add(skinnedMeshRenderer.sharedMesh)) {
