@@ -265,7 +265,7 @@ public class AnimalPen : Buildable, IContextInteractable
         bool hasSpace = animalsInPen.Count < MaxAnimals;
         bool hasBreedingPair = TryGetBreedableAnimal(out Animal breedableAnimal);
         bool hasHayForBreeding = breedableAnimal != null && currentHay >= breedableAnimal.BreedingCost;
-        bool enoughAnimalsToBreed = animalsInPen.Count(a => a != null && !a.Down && GetSpeciesKey(a) == GetSpeciesKey(breedableAnimal)) >= 2;
+        bool enoughAnimalsToBreed = hasBreedingPair && animalsInPen.Count(a => a != null && !a.Down && GetSpeciesKey(a) == GetSpeciesKey(breedableAnimal)) >= 2;
         bool canBreed = hasSpace && hasBreedingPair && hasHayForBreeding && enoughAnimalsToBreed;
 
         string breedLabel;
