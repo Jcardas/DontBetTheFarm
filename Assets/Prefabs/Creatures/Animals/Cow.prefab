@@ -559,6 +559,7 @@ MonoBehaviour:
   attackRange: 1
   guardRadius: 8
   anchored: 1
+  sourcePrefab: {fileID: 0}
   breedingCost: 5
   healCost: 10
 --- !u!114 &1140187867803301487
@@ -612,7 +613,7 @@ MonoBehaviour:
   loadSize: 5
   secondsPerLoad: 2
   reach: 1
-  harvestsFields: 0
+  harvestsFields: 1
   secondsPerHarvest: 1.5
 --- !u!114 &4922400994622298660
 MonoBehaviour:
