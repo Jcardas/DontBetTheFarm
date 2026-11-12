@@ -246,8 +246,8 @@ public class PlayerControls : MonoBehaviour
         if (left != LeftButton.Dragging) return;
         Rect r = Box(pressedAt, input.Player.Point.ReadValue<Vector2>());
         r.y = Screen.height - r.yMax; // input is bottom-left origin, IMGUI is top-left
-        var tint = new Color(1f, 0.85f, 0.1f);
-        GUI.DrawTexture(r, Texture2D.whiteTexture, ScaleMode.StretchToFill, true, 0f, new Color(tint.r, tint.g, tint.b, 0.15f), 0f, 0f);
-        GUI.DrawTexture(r, Texture2D.whiteTexture, ScaleMode.StretchToFill, true, 0f, tint, 1f, 0f);
+        var tint = new Color(0.4f, 0.7f, 1f); // blue, like the outlines
+        GUI.DrawTexture(r, Texture2D.whiteTexture, ScaleMode.StretchToFill, true, 0f, new Color(tint.r, tint.g, tint.b, 0.12f), 0f, 0f);
+        GUI.DrawTexture(r, Texture2D.whiteTexture, ScaleMode.StretchToFill, true, 0f, new Color(tint.r, tint.g, tint.b, 0.8f), 1f, 0f);
     }
 }
