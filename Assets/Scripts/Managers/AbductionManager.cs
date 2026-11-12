@@ -87,13 +87,26 @@ public class AbductionManager : MonoBehaviour
     }
 
     // An animal only fights what comes near its post, so send each returned one at the nearest farm creature.
+    // Knocking one out wins it back: it gets up again on the farm's side.
     void MarchReturned()
     {
-        returned.RemoveAll(a => a == null || a.Team != GameConstants.Team.Alien);
+        returned.RemoveAll(a => a == null);
+        for (int i = returned.Count - 1; i >= 0; i--)
+        {
+            Animal a = returned[i];
+            if (!a.Down) continue;
+            returned.RemoveAt(i);
+            if (WaveManager.Instance != null) WaveManager.Instance.UnregisterEnemy(a);
+            a.SetTeam(GameConstants.Team.Farm);
+            a.HealToFull();
+            a.CreatureBrain.Guard(a.Position); // forget the farm creature it was attacking
+            if (a.TryGetComponent(out Selectable selectable)) selectable.enabled = true;
+        }
+
         if (CreatureManager.Instance == null) return;
         foreach (Animal a in returned)
         {
-            if (a.Down || a.CreatureBrain.Engaged || !a.CreatureBrain.enabled) continue;
+            if (a.CreatureBrain.Engaged || !a.CreatureBrain.enabled) continue;
             Creature target = CreatureManager.Instance.GetNearestEnemy(a.Team, a.Position, a.Position, float.MaxValue);
             if (target != null) a.CreatureBrain.Attack(target);
         }
