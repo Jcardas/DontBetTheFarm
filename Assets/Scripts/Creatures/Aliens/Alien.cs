@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 
 // The team's agreed attack order, first to last.
 public enum TargetTier { Animal, Farmer, Pen, Field, OtherBuilding, Farmhouse }
@@ -74,4 +75,8 @@ public class Alien : Creature
     {
         
     }
+
+    
+
+
 }
