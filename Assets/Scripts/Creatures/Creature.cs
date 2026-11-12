@@ -45,11 +45,11 @@ public abstract class Creature : MonoBehaviour, IDamageable
     [SerializeField] protected int attackDamage = 10;
     [SerializeField] protected float attackSpeed = 1f; // Seconds between attacks
     [SerializeField] protected float attackRange = 1f;
-    [SerializeField] protected float guardRadius = 8f;
+    [SerializeField] protected float viewRadius = 8f;
     [SerializeField] protected bool anchored = true;
     
     private int currentHealth;
-    private float baseGuardRadius;
+    private float baseViewRadius;
     private NavMeshAgent navMeshAgent;
     private CreatureBrain creatureBrain;
     private Collider bodyCollider;
@@ -78,7 +78,7 @@ public abstract class Creature : MonoBehaviour, IDamageable
     public int AttackDamage => attackDamage;
     public float AttackSpeed => attackSpeed;
     public float AttackRange => attackRange;
-    public float GuardRadius => guardRadius;
+    public float ViewRadius => viewRadius;
     public bool Anchored => anchored;
     public bool Down => currentHealth <= 0;
     public Gatherer Gatherer => gatherer;
@@ -101,7 +101,7 @@ public abstract class Creature : MonoBehaviour, IDamageable
         gatherer = GetComponentInChildren<Gatherer>();
         creatureMutator = GetComponent<CreatureMutator>();
 
-        baseGuardRadius = guardRadius;
+        baseViewRadius = viewRadius;
         OnMutationsChanged();
         currentHealth = CalculatedMaxHealth;
     }
@@ -122,7 +122,7 @@ public abstract class Creature : MonoBehaviour, IDamageable
         int bonusDamage = 0;
         float bonusRange = 0f;
         float bonusAttackSpeed = 0f;
-        float bonusGuardRadius = 0f;
+        float bonusViewRadius = 0f;
 
         if (creatureMutator != null)
         {
@@ -133,7 +133,7 @@ public abstract class Creature : MonoBehaviour, IDamageable
                 bonusSpeed += mutation.bonusMoveSpeed;
                 bonusDamage += mutation.bonusAttackDamage;
                 bonusRange += mutation.bonusAttackRange;
-                bonusGuardRadius += mutation.bonusGuardRadius;
+                bonusViewRadius += mutation.bonusViewRadius;
                 bonusAttackSpeed += mutation.bonusAttackSpeed;
                 resistance += mutation.damageResistance;
                 caps |= mutation.grantedCapabilities;
@@ -145,11 +145,13 @@ public abstract class Creature : MonoBehaviour, IDamageable
         CalculatedMaxHealth = Mathf.Max(1, maxHealth + bonusHealth);
         CalculatedMoveSpeed = Mathf.Max(0.1f, moveSpeed + bonusSpeed);
         CalculatedAttackDamage = Mathf.Max(0, attackDamage + bonusDamage);
-        CalculatedAttackRange = Mathf.Max(0.5f, attackRange + bonusRange);
         CalculatedAttackSpeed = Mathf.Max(0.05f, attackSpeed + bonusAttackSpeed);
         CalculatedDamageResistance = Mathf.Max(0f, Mathf.Min(100f, resistance)); // Clamp to 0-100%
         ActiveCapabilities = caps;
-        guardRadius = Mathf.Max(1f, baseGuardRadius + bonusGuardRadius);
+        viewRadius = Mathf.Max(1f, baseViewRadius + bonusViewRadius);
+        
+        // Attack range is capped by view radius: a creature can't attack something it can't see.
+        CalculatedAttackRange = Mathf.Min(viewRadius, attackRange + bonusRange);
 
         // Apply speed directly to the NavMeshAgent if active
         if (navMeshAgent != null)
@@ -262,7 +264,7 @@ public abstract class Creature : MonoBehaviour, IDamageable
     // What this creature fights when it has no orders: the nearest enemy creature near its guard post.
     public virtual IDamageable FindTarget(Vector3 guardPost) =>
         CreatureManager.Instance != null
-            ? CreatureManager.Instance.GetNearestEnemy(team, transform.position, guardPost, guardRadius)
+            ? CreatureManager.Instance.GetNearestEnemy(team, transform.position, guardPost, viewRadius)
             : null;
 
     // How this creature lands a hit once its target is in range. Melee by default; ranged and special creatures override it.

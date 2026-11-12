@@ -33,7 +33,7 @@ public class MutationData : ScriptableObject
     public int bonusAttackDamage = 0;
     public float bonusAttackRange = 0f;       // Tentacles (e.g., 0.5 = 50% longer)
     public float bonusAttackSpeed = 0f;  // Tentacles (e.g., 0.8 = 20% faster)
-    public float bonusGuardRadius = 0f;       // Antenna (spot enemies from further away)
+    public float bonusViewRadius = 0f;       // Antenna (spot enemies from further away)
 
     [Header("Attack Replacement (Optional)")]
     public bool overridesAttack;              // True for Laser Eye or Fire Breath
