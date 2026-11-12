@@ -76,7 +76,6 @@ public class PlayerControls : MonoBehaviour
         if (player.Fire.WasPressedThisFrame() && shotgun && ground.Raycast(ray, out float along)) shotgun.Fire(ray.GetPoint(along));
         bool overSomething = MouseTarget.Find(ray, out RaycastHit hit);
         var unit = overSomething ? hit.collider.GetComponentInParent<Selectable>() : null;
-        HoverTarget(overSomething ? MouseTarget.Building(ray, hit) : null);
         if (player.Command.WasPressedThisFrame() && overSomething) Command(hit);
 
         if (left == LeftButton.Idle && player.Select.WasPressedThisFrame())
@@ -86,6 +85,7 @@ public class PlayerControls : MonoBehaviour
         }
         if (left == LeftButton.Pressed && (at - pressedAt).magnitude > DragPixels) left = LeftButton.Dragging;
         Hover(left == LeftButton.Dragging ? Selectable.All.Where(s => OnScreen(cam, s, Box(pressedAt, at))) : new[] { unit });
+        HoverTarget(overSomething && left != LeftButton.Dragging ? MouseTarget.Building(ray, hit) : null);
         if (left == LeftButton.Idle || !player.Select.WasReleasedThisFrame()) return;
 
         if (left == LeftButton.Dragging) Pick(Selectable.All.Where(s => OnScreen(cam, s, Box(pressedAt, at))), shift, ctrl);
