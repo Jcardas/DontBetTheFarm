@@ -11,7 +11,7 @@ public class WaveManager : MonoBehaviour
     public Spawner[] motherships; // Alien Motherships that will spawn the waves
 
 
-    private List<Alien> activeAliens = new List<Alien>();
+    private List<Creature> activeEnemies = new List<Creature>();
 
     private void Awake()
     {
@@ -36,7 +36,7 @@ public class WaveManager : MonoBehaviour
             return;
         }
 
-        activeAliens.Clear();
+        activeEnemies.Clear();
 
         int waveIndex = (currentDay - 1) % waves.Length;
 
@@ -67,25 +67,25 @@ public class WaveManager : MonoBehaviour
             }
         }
 
-        foreach (Alien alien in activeAliens)
+        foreach (Creature enemy in activeEnemies)
         {
-            if (alien != null && !alien.Down)
+            if (enemy != null && !enemy.Down)
             {
-                alien.Retreat();
+                enemy.Retreat();
             }
         }
 
     }
 
-    public void RegisterAlien(Alien alien)
+    public void RegisterEnemy(Creature enemy)
     { 
-        activeAliens.Add(alien);
+        activeEnemies.Add(enemy);
     }
 
     public int GetActiveAlienCount()
     {
-        activeAliens.RemoveAll(alien => alien == null || alien.Down);
-        return activeAliens.Count;
+        activeEnemies.RemoveAll(enemy => enemy == null || enemy.Down);
+        return activeEnemies.Count;
     }
 
     public void CloakMotherships()

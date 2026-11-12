@@ -107,14 +107,20 @@ public class Spawner : MonoBehaviour
                 Instantiate(beamEffectPrefab, beamSpawnPosition, Quaternion.identity);
             }
 
-            GameObject enemy = Instantiate(currentWave.enemyPrefab, spawnPosition, platform.transform.rotation);
-            Alien alien = enemy.GetComponent<Alien>();
-
-
-            if (alien != null)
+            GameObject enemyPrefab = currentWave.GetRandomEnemyPrefab();
+            if (enemyPrefab == null)
             {
-                alien.SetDespawnPoint(spawnPosition);
-                waveManager.RegisterAlien(alien);
+                return;
+            }
+            
+            GameObject enemyObj = Instantiate(enemyPrefab, spawnPosition, platform.transform.rotation);
+            Creature enemy = enemyObj.GetComponent<Creature>();
+
+
+            if (enemy != null)
+            {
+                enemy.SetDespawnPoint(spawnPosition);
+                waveManager.RegisterEnemy(enemy);
             }
         }
     }
