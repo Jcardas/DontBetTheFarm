@@ -29,6 +29,7 @@ public class PlayerControls : MonoBehaviour
     CameraController cameraController;
     Selectable lastClicked;
     HashSet<Selectable> lit = new();
+    Highlight litTarget;
     CursorType cursor;
     float lastClickAt;
     readonly List<Selectable>[] groups = { new(), new(), new() };
@@ -75,6 +76,7 @@ public class PlayerControls : MonoBehaviour
         if (player.Fire.WasPressedThisFrame() && shotgun && ground.Raycast(ray, out float along)) shotgun.Fire(ray.GetPoint(along));
         bool overSomething = MouseTarget.Find(ray, out RaycastHit hit);
         var unit = overSomething ? hit.collider.GetComponentInParent<Selectable>() : null;
+        HoverTarget(overSomething ? MouseTarget.Building(ray, hit) : null);
         if (player.Command.WasPressedThisFrame() && overSomething) Command(hit);
 
         if (left == LeftButton.Idle && player.Select.WasPressedThisFrame())
@@ -140,6 +142,17 @@ public class PlayerControls : MonoBehaviour
         foreach (var s in lit) if (s && !now.Contains(s)) s.Hovered = false;
         foreach (var s in now) if (!lit.Contains(s)) s.Hovered = true;
         lit = now;
+    }
+
+    // Lights a building under the mouse the way units light up; it gets its Highlight the first time.
+    void HoverTarget(Component target)
+    {
+        Highlight next = null;
+        if (target && !target.TryGetComponent(out next)) next = target.gameObject.AddComponent<Highlight>();
+        if (next == litTarget) return;
+        if (litTarget) litTarget.Hovered = false;
+        litTarget = next;
+        if (next) next.Hovered = true;
     }
 
     // Same precedence as Order.From, so the cursor always previews the order a right-click would give.

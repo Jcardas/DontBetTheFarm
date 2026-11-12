@@ -2,8 +2,8 @@ using UnityEngine;
 
 // Outlines something the player is pointing at or has picked (Quick Outline, Assets/ThirdParty/QuickOutline).
 // A creature also always shows a faint outline wherever something hides it from the camera,
-// so units behind the barn are never lost. Creature adds one to itself; parts CreatureMutator adds later are
-// picked up the same frame.
+// so units behind the barn are never lost. Creature adds one to itself, and parts CreatureMutator adds later are
+// picked up the same frame; PlayerControls adds one to a building the first time it is hovered.
 [DisallowMultipleComponent]
 public class Highlight : MonoBehaviour
 {
@@ -66,7 +66,9 @@ public class Highlight : MonoBehaviour
     void Show()
     {
         bool lit = hovered || selected;
-        outline.enabled = lit || creature != null;
+        bool on = lit || creature != null;
+        if (on && !outline.enabled) outline.Refresh(); // a building may have been broken or repaired since it was lit
+        outline.enabled = on;
         outline.OutlineMode = lit ? Outline.Mode.OutlineAll : Outline.Mode.OutlineHidden;
         outline.OutlineWidth = lit ? LitWidth : HiddenWidth;
         bool enemy = creature != null && creature.Team == GameConstants.Team.Alien;
