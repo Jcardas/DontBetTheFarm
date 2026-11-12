@@ -110,12 +110,12 @@ public class CreatureMutator : MonoBehaviour
         {
             if (socketSlot.transform == null || mutation.prefab == null) continue;
 
-            GameObject part = Instantiate(mutation.prefab, socketSlot.transform);
-            part.transform.localPosition = Vector3.zero;
-            part.transform.localRotation = Quaternion.identity;
-            
-            part.transform.localScale = Vector3.Scale(Vector3.one * mutation.localScale, Vector3.one * socketScaleFactor);
-
+            GameObject part = SpawnMutationObject(
+                mutation.prefab,
+                socketSlot.transform,
+                false,
+                mutation.localScale > 0f ? Vector3.one * mutation.localScale : null
+                );
             
             // Hook behaviors (e.g. venom slow, spores aura)
             var behaviors = part.GetComponentsInChildren<IMutationBehavior>();
@@ -132,11 +132,8 @@ public class CreatureMutator : MonoBehaviour
         equippedMutations[targetSlot] = mutation;
         activePartObjects[targetSlot] = spawnedParts;
 
-        // Notify listeners that the visuals have changed, so they can update any relevant state (e.g., Creature recalculating stats)
+        // Notify all listeners (Creature stat calculations, CombatFeedback visuals, etc.)
         OnMutationsUpdated?.Invoke();
-      
-        //TODO: Use the event instead of calling the method directly, but for now we can call it directly to ensure the creature updates its stats immediately.
-        if (ownerCreature != null) ownerCreature.OnMutationsChanged();
     }
 
     /// <summary>
@@ -149,8 +146,6 @@ public class CreatureMutator : MonoBehaviour
 
         // Revert to original default parts for this slot
         RestoreSlotDefaults(targetSlot);
-
-        if (ownerCreature != null) ownerCreature.OnMutationsChanged();
     }
 
     /// <summary>
@@ -192,7 +187,11 @@ public class CreatureMutator : MonoBehaviour
         {
             if (socketSlot.transform == null || socketSlot.defaultVisualPrefab == null) continue;
 
-            GameObject defaultPart = SpawnMutationObject(socketSlot.defaultVisualPrefab, socketSlot.transform, true);
+            GameObject defaultPart = SpawnMutationObject(
+                socketSlot.defaultVisualPrefab,
+                socketSlot.transform,
+                true
+                );
             spawnedDefaults.Add(defaultPart);
         }
 
@@ -296,7 +295,12 @@ public class CreatureMutator : MonoBehaviour
         bool socketSlotIsValid(SocketSlot s) => s.transform != null;
     }
 
-    private GameObject SpawnMutationObject(GameObject visualObject, Transform parentPosition, bool defaultPart = false)
+    private GameObject SpawnMutationObject(
+        GameObject visualObject,
+        Transform parentPosition,
+        bool defaultPart = false,
+        Vector3? customScale = null
+        )
     {
         if (visualObject == null || parentPosition == null) return null;
 
@@ -320,7 +324,10 @@ public class CreatureMutator : MonoBehaviour
         // Scale the part based on whether it's a default part or a mutation part
         part.transform.localScale = Vector3.one * (defaultPart ? 1.0f : socketScaleFactor);
         
-        
+        if (customScale.HasValue)
+        {
+            part.transform.localScale = customScale.Value;
+        }
         return part;
     }
 }

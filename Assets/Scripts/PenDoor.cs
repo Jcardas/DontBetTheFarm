@@ -52,7 +52,7 @@ public class PenDoor : MonoBehaviour
             if (agent == null || !agent.isOnNavMesh)
                 continue;
             
-            if (agent.GetComponent<FarmAnimal>() == null)
+            if (agent.GetComponent<Animal>() == null)
                 continue;
 
             bool moving =

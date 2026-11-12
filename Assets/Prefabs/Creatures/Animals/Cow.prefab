@@ -857,10 +857,10 @@ PrefabInstance:
       addedObject: {fileID: 4102592567818270327}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 8f69b12e2e3b84a499eaafbba2ebdca8, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 2008345416212060268}
+      addedObject: {fileID: 1029719111889259948}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 8f69b12e2e3b84a499eaafbba2ebdca8, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 3280359256616727060}
+      addedObject: {fileID: 2008345416212060268}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 8f69b12e2e3b84a499eaafbba2ebdca8, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1140187867803301487}
@@ -879,6 +879,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 8f69b12e2e3b84a499eaafbba2ebdca8, type: 3}
       insertIndex: -1
       addedObject: {fileID: 605828040209965552}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 8f69b12e2e3b84a499eaafbba2ebdca8, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: -3630713254175371433}
   m_SourcePrefab: {fileID: 100100000, guid: 8f69b12e2e3b84a499eaafbba2ebdca8, type: 3}
 --- !u!4 &8117234978526828938 stripped
 Transform:
@@ -912,6 +915,29 @@ NavMeshAgent:
   m_BaseOffset: 0
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4
+--- !u!114 &1029719111889259948
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8930047177322382128}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3af5c6d5c3b3646a8bdd4e7bebe399b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Animal
+  team: 0
+  maxHealth: 50
+  moveSpeed: 5
+  attackDamage: 10
+  attackSpeed: 1
+  attackRange: 1
+  guardRadius: 8
+  anchored: 1
+  sourcePrefab: {fileID: 0}
+  breedingCost: 5
+  healCost: 10
 --- !u!114 &2008345416212060268
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -924,29 +950,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 892b36e178d0cf445b40477ada4570f0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CreatureBrain
---- !u!114 &3280359256616727060
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8930047177322382128}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f15ec938729b84c06b50146bf09764f5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::MeleeAnimal
-  team: 0
-  maxHealth: 50
-  moveSpeed: 5
-  attackDamage: 10
-  attackSpeed: 1
-  attackRange: 1.5
-  guardRadius: 8
-  anchored: 1
-  sourcePrefab: {fileID: 0}
-  breedingCost: 5
-  healCost: 10
 --- !u!114 &1140187867803301487
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1025,6 +1028,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ccd992bef0a6a684c8ebe5f7c4723af9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CombatFeedback
+  mutator: {fileID: 0}
   flashColor: {r: 1, g: 0.25, b: 0.2, a: 1}
   flashSeconds: 0.12
   barGap: 0.25
@@ -1070,3 +1074,26 @@ MonoBehaviour:
       defaultVisualPrefab: {fileID: 919132149155446097, guid: 6b12bcdb500bed943b9d0483f8625276, type: 3}
   socketScaleFactor: 1
   defaultMutations: []
+--- !u!114 &-3630713254175371433
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8930047177322382128}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3af5c6d5c3b3646a8bdd4e7bebe399b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Animal
+  team: 0
+  maxHealth: 50
+  moveSpeed: 5
+  attackDamage: 10
+  attackSpeed: 1
+  attackRange: 1
+  guardRadius: 8
+  anchored: 1
+  sourcePrefab: {fileID: 0}
+  breedingCost: 5
+  healCost: 10

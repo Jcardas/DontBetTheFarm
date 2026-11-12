@@ -105,11 +105,11 @@ GameObject:
   - component: {fileID: 6096825848420422047}
   - component: {fileID: 2901380397308851988}
   - component: {fileID: 7855260496075631928}
-  - component: {fileID: 7528430850132707700}
+  - component: {fileID: 5347483745185632925}
   - component: {fileID: -1807932057669856012}
   - component: {fileID: 137285043343942539}
   m_Layer: 6
-  m_Name: Small_Alien_Base
+  m_Name: Small_Alien
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -188,7 +188,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 892b36e178d0cf445b40477ada4570f0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CreatureBrain
---- !u!114 &7528430850132707700
+--- !u!114 &5347483745185632925
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -197,9 +197,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 1989022934381298033}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bf29d543b34b44c4e9d1a931e7fb4e7c, type: 3}
+  m_Script: {fileID: 11500000, guid: 3dcab2d9aac76dc4db3a3e305f9689dd, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SmallAlien
+  m_EditorClassIdentifier: Assembly-CSharp::Alien
   team: 1
   maxHealth: 50
   moveSpeed: 5

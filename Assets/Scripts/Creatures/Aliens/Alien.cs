@@ -7,7 +7,7 @@ public class Alien : Creature
 {
     public static TargetTier TierOf(IDamageable target) => target switch
     {
-        FarmAnimal => TargetTier.Animal,
+        Animal => TargetTier.Animal,
         Farmer => TargetTier.Farmer,
         AnimalPen => TargetTier.Pen,
         WheatField => TargetTier.Field,

@@ -8,10 +8,11 @@ public enum CreatureCapabilities
     CanChopWood    = 1 << 0, // Axe
     CanHarvestCrops = 1 << 1, // Scythe
     CanRepair      = 1 << 2, // Hammer
-    CanFly         = 1 << 3 // Wings
+    CanFly         = 1 << 3, // Wings
+    IsRangedAttacker = 1 << 4 // Ranged attack (e.g., spit, fire breath)
 }
 
-[RequireComponent(typeof(NavMeshAgent), typeof(CreatureBrain))]
+[RequireComponent(typeof(NavMeshAgent), typeof(CreatureBrain), typeof(CreatureMutator)) ]
 public abstract class Creature : MonoBehaviour, IDamageable
 {
     [Header("Team & Alignment")]
@@ -32,6 +33,8 @@ public abstract class Creature : MonoBehaviour, IDamageable
     private Collider bodyCollider;
     private ToyBob toyBob;
     private Gatherer gatherer;
+    
+    private CreatureMutator creatureMutator;
 
     // Public properties
     
@@ -60,9 +63,9 @@ public abstract class Creature : MonoBehaviour, IDamageable
     public Collider Body => bodyCollider;
     public NavMeshAgent NavMeshAgent => navMeshAgent;
     public CreatureBrain CreatureBrain => creatureBrain;
+    public CreatureMutator CreatureMutator => creatureMutator;
     public Vector3 Position => transform.position;
-
-    private CreatureMutator mutator;
+    
     
     public CreatureCapabilities ActiveCapabilites {get; private set;}
     public float DamageResistance {get; private set;}
@@ -74,17 +77,10 @@ public abstract class Creature : MonoBehaviour, IDamageable
         bodyCollider = GetComponentInChildren<Collider>();
         toyBob = GetComponentInChildren<ToyBob>();
         gatherer = GetComponentInChildren<Gatherer>();
-        
-        // Mutator is a child of the creature, so we can get it here.
-        mutator = GetComponent<CreatureMutator>();
+        creatureMutator = GetComponent<CreatureMutator>();
 
         OnMutationsChanged();
         currentHealth = CalculatedMaxHealth;
-
-        // if (navMeshAgent != null)
-        //     navMeshAgent.speed = moveSpeed;
-        //
-        // currentHealth = maxHealth;
     }
 
     /// <summary>
@@ -99,13 +95,14 @@ public abstract class Creature : MonoBehaviour, IDamageable
         float bonusRange = 0f;
         float bonusGuard = 0f;
         float attackSpeedMultiplier = 1f;
-        float resistance= 0f;
+        float resistance = 0f;
         CreatureCapabilities caps = CreatureCapabilities.None;
-        
-        if (mutator != null)
+
+        if (creatureMutator != null)
         {
-            foreach (var mutation in mutator.EquippedMutations.Values)
+            foreach (var mutation in creatureMutator.EquippedMutations.Values)
             {
+                if (mutation == null) continue;
                 bonusHealth += mutation.bonusMaxHealth;
                 bonusSpeed += mutation.bonusMoveSpeed;
                 bonusDamage += mutation.bonusAttackDamage;
@@ -117,13 +114,29 @@ public abstract class Creature : MonoBehaviour, IDamageable
             }
         }
 
+        int oldMaxHealth = CalculatedMaxHealth;
+
         CalculatedMaxHealth = Mathf.Max(1, maxHealth + bonusHealth);
         CalculatedMoveSpeed = Mathf.Max(0.1f, moveSpeed + bonusSpeed);
         CalculatedAttackDamage = Mathf.Max(0, attackDamage + bonusDamage);
         CalculatedAttackRange = Mathf.Max(0.5f, attackRange + bonusRange);
         CalculatedAttackSpeed = Mathf.Max(0.05f, attackSpeed * attackSpeedMultiplier);
         CalculatedDamageResistance = resistance;
+        ActiveCapabilites = caps;
         guardRadius = Mathf.Max(1f, guardRadius + bonusGuard);
+
+        // Apply speed directly to the NavMeshAgent if active
+        if (navMeshAgent != null)
+        {
+            navMeshAgent.speed = CalculatedMoveSpeed;
+        }
+
+        // Scale current health proportionally if MaxHealth changes mid-game
+        if (oldMaxHealth > 0 && CalculatedMaxHealth != oldMaxHealth && currentHealth > 0)
+        {
+            float healthPct = (float)currentHealth / oldMaxHealth;
+            currentHealth = Mathf.Clamp(Mathf.RoundToInt(CalculatedMaxHealth * healthPct), 1, CalculatedMaxHealth);
+        }
     }
 
     protected virtual void Reset()
@@ -136,6 +149,12 @@ public abstract class Creature : MonoBehaviour, IDamageable
         // Register this creature with the CreatureManager when enabled
         if (CreatureManager.Instance != null)
             CreatureManager.Instance.Register(this);
+
+        if (creatureMutator != null)
+        {
+            // Subscribe to the mutation update event to recalculate stats when mutations change
+            creatureMutator.OnMutationsUpdated += OnMutationsChanged;
+        }
     }
 
     protected virtual void Start()
@@ -150,6 +169,12 @@ public abstract class Creature : MonoBehaviour, IDamageable
         // Unregister this creature from the CreatureManager when disabled
         if (CreatureManager.Instance != null)
             CreatureManager.Instance.Unregister(this);
+
+        if (creatureMutator != null)
+        {
+            // Unsubscribe from the mutation update event to avoid memory leaks
+            creatureMutator.OnMutationsUpdated -= OnMutationsChanged;
+        }
     }
 
     public void TakeDamage(int amount)
@@ -227,9 +252,9 @@ public abstract class Creature : MonoBehaviour, IDamageable
         target.TakeDamage(CalculatedAttackDamage);
 
         // Notify attached mutation behaviors if target is a creature
-        if (mutator != null && target is Creature targetCreature)
+        if (creatureMutator != null && target is Creature targetCreature)
         {
-            foreach (var behavior in mutator.ActiveBehaviors)
+            foreach (var behavior in creatureMutator.ActiveBehaviors)
             {
                 behavior.OnCreatureAttack(targetCreature);
             }

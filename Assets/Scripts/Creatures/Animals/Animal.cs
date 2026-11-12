@@ -5,20 +5,10 @@ using UnityEngine;
 /// It inherits from the Creature class and can be used to create different types of farm animals.
 /// </summary>
 [RequireComponent(typeof(Selectable), typeof(Gatherer))]
-public abstract class FarmAnimal : Creature
+public class Animal : Creature
 {
-    [Header("Prefab Reference")]
-    [Tooltip("Prefab reference for the farm animal. This is used for spawning and instantiation.")]
-    [SerializeField] protected FarmAnimal sourcePrefab;
-    
     [SerializeField] protected int breedingCost;
     [SerializeField] protected int healCost;
-
-    public FarmAnimal SourcePrefab
-    {
-        get => sourcePrefab != null ? sourcePrefab : this;
-        set => sourcePrefab = value;
-    }
     
     public int BreedingCost => breedingCost;
     public int HealCost => healCost;
@@ -44,7 +34,7 @@ public abstract class FarmAnimal : Creature
     
     protected override void HandleRevive()
     {
-        
+        // When a farm animal is revived, it should be reset to its default state.
     }
 
     protected virtual void AnimalKnockedOut()
