@@ -162,6 +162,14 @@ public class ContextInteractionManager : MonoBehaviour
             if (MouseTarget.Menu(ray, hit) is IContextInteractable interactable)
             {
                 IReadOnlyList<ContextActionData> actions = interactable.GetContextActions();
+                // One choice needs no popup: it just happens
+                if (actions != null && actions.Count == 1)
+                {
+                    actions[0].onExecute?.Invoke();
+                    ContextMenuEventBus.RequestClose();
+                    return;
+                }
+
                 if (actions != null && actions.Count > 0)
                 {
                     ContextMenuEventBus.RequestOpen(actions, screenPos);

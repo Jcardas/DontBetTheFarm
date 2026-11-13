@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public enum OrderKind { Move, Work, Harvest, Attack, Repair, Pen }
+public enum OrderKind { Move, Work, Harvest, Attack, Repair, Pen, Barn }
 
 // One player order, read once from what was clicked so every picked unit gets the same order.
 // Each unit's Selectable decides what it means for that unit: a cow can't attack, so it walks there instead.
@@ -29,7 +29,7 @@ public readonly struct Order
         this.enemy = enemy;
     }
 
-    // `ray` finds a pen by its whole outline, so a gap in its fence still counts as the pen.
+    // `ray` finds a pen or the barn by its whole outline, so a gap in a pen's fence still counts as the pen.
     public static Order From(Ray ray, RaycastHit hit)
     {
         var enemy = hit.collider.GetComponentInParent<Creature>();
@@ -51,8 +51,11 @@ public readonly struct Order
         if (node != null)
             return new Order(OrderKind.Work, hit.point, node: node);
 
-        if (MouseTarget.Building(ray, hit) is AnimalPen pen)
+        var building = MouseTarget.Building(ray, hit);
+        if (building is AnimalPen pen)
             return new Order(OrderKind.Pen, pen.transform.position, building: pen);
+        if (building is Barn barn && !barn.Down)
+            return new Order(OrderKind.Barn, barn.Door, building: barn);
 
         return new Order(OrderKind.Move, hit.point);
     }

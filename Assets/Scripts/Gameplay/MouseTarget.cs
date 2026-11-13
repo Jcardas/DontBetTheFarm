@@ -36,7 +36,10 @@ public static class MouseTarget
     }
 
     // The building whose menu a right-click opens: one that has a menu, while no unit is picked
-    // (picked units take a right-click as an order).
+    // (picked units take a right-click as an order), or the barn while the farmer is in it.
     public static Buildable Menu(Ray ray, RaycastHit hit) =>
-        Building(ray, hit) is IContextInteractable building && !Selectable.All.Any(s => s.Selected) ? (Buildable)building : null;
+        Building(ray, hit) is IContextInteractable building &&
+        (building is Barn { HasFarmer: true } || !Selectable.All.Any(s => s.Selected))
+            ? (Buildable)building
+            : null;
 }
