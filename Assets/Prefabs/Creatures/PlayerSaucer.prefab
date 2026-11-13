@@ -43,7 +43,7 @@ Light:
   m_Enabled: 1
   serializedVersion: 12
   m_Type: 0
-  m_Color: {r: 0, g: 1, b: 0.17201257, a: 1}
+  m_Color: {r: 0.15, g: 0.55, b: 1, a: 1}
   m_Intensity: 8.67
   m_Range: 10.80962
   m_SpotAngle: 89.2951
@@ -154,9 +154,9 @@ Transform:
   m_GameObject: {fileID: 2875245453519901023}
   serializedVersion: 2
   m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: 0, y: -4.07, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_LocalPosition: {x: 0, y: -4.67, z: 0}
+  m_LocalScale: {x: 0.46, y: 0.46, z: 0.46}
+  m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 4921663830338766330}
   m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
@@ -350,7 +350,7 @@ ParticleSystem:
       serializedVersion: 2
       minMaxState: 0
       minColor: {r: 1, g: 1, b: 1, a: 1}
-      maxColor: {r: 0, g: 1, b: 0.21522045, a: 0.27058825}
+      maxColor: {r: 0.15, g: 0.55, b: 1, a: 0.27058825}
       maxGradient:
         serializedVersion: 2
         key0: {r: 1, g: 1, b: 1, a: 1}
@@ -5015,6 +5015,9 @@ MonoBehaviour:
   liftTime: 2.5
   storedOffset: {x: 0, y: -1.2141303, z: 0}
   storedScale: 0.5
+  skyHeight: 40
+  calmDelay: 3
+  researchPerAlien: 1
 --- !u!1 &8076097286781388867
 GameObject:
   m_ObjectHideFlags: 0
@@ -5103,7 +5106,7 @@ PrefabInstance:
     - target: {fileID: -7511558181221131132, guid: 4cf6c1d8266e04545a95bae6f52733e5, type: 3}
       propertyPath: 'm_Materials.Array.data[1]'
       value: 
-      objectReference: {fileID: 2100000, guid: e5a001c14ee234d729bd7a340e7bfb2f, type: 2}
+      objectReference: {fileID: 2100000, guid: 4bf196d6e91c744a099e2200da13306e, type: 2}
     - target: {fileID: 919132149155446097, guid: 4cf6c1d8266e04545a95bae6f52733e5, type: 3}
       propertyPath: m_Name
       value: Model

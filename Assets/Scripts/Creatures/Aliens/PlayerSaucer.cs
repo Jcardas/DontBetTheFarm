@@ -1,22 +1,18 @@
-using System.Collections.Generic;
 using UnityEngine;
 
-// The player's saucer. It stays out of sight until dawn, when it flies down, beams up every knocked-out alien, brings
-// them all home (where it is placed, beside the barn) in one trip, and each one becomes research (Technology). Then it
-// flies off for the day. In a scene with no clock it goes out a few seconds after the last alien goes down instead.
+// The player's saucer. It waits at its spawn point inside the barn until dawn, when it flies out, beams up every
+// knocked-out alien, immediately deposits each one into research (Technology), and returns to its spawn point.
+// In a scene with no clock it goes out a few seconds after the last alien goes down instead.
 // Its lights and beam are blue so it never reads as an enemy.
 public class PlayerSaucer : UFO
 {
-    [Tooltip("How far above home it waits out of sight, and comes down from.")]
-    [SerializeField] float skyHeight = 40f;
     [Tooltip("With no clock in the scene: seconds with no enemy left standing before it goes out to collect.")]
     [SerializeField] float calmDelay = 3f;
     [Tooltip("Research each knocked-out alien is worth.")]
-    [SerializeField] int researchPerAlien = 1;
+    [SerializeField] int researchPerAlien = 1; // TODO: Calculate based on difficulty of alien
 
-    readonly List<Creature> cargo = new();
-    Vector3 home, sky;
-    bool sweeping, shown;
+    Vector3 home;
+    bool sweeping, returningHome;
     int lastDay;
     float calmSince = -1f;
 
@@ -24,11 +20,7 @@ public class PlayerSaucer : UFO
     {
         base.Awake();
         home = transform.position - Vector3.up * hoverHeight;
-        sky = home + Vector3.up * skyHeight;
         exitPoint = home;
-        PaintBlue();
-        transform.position = sky + Vector3.up * hoverHeight;
-        Show(false);
     }
 
     protected override void OnIdle()
@@ -36,42 +28,38 @@ public class PlayerSaucer : UFO
         if (sweeping)
         {
             Creature next = NearestDownedAlien();
-            if (next != null) Claim(next);
-            else if (cargo.Count > 0) state = State.Carry; // home with the catch
-            else sweeping = false;
+            if (next != null)
+            {
+                Claim(next);
+            }
+            else
+            {
+                sweeping = false;
+                returningHome = true;
+            }
         }
-        else if (shown)
+        else if (returningHome)
         {
-            if (FlyTo(sky)) Show(false); // off for the day
+            if (FlyTo(home)) returningHome = false;
         }
         else if (TimeToSweep())
         {
-            Show(true);
             sweeping = true;
         }
     }
 
-    // Stacks the catch under the hull and goes for the next body.
+    // Immediately deposits the beamed-up alien into research storage and destroys its model.
     protected override void OnAboard()
     {
-        victim.transform.localPosition = storedOffset + Vector3.down * 0.5f * cargo.Count;
-        cargo.Add(victim);
-        victim = null;
-        state = State.Idle;
-    }
-
-    // Home: every alien aboard becomes research.
-    protected override void Deliver()
-    {
-        foreach (Creature c in cargo)
+        if (victim != null)
         {
-            Release(c);
-            Destroy(c.gameObject);
+            if (ResourceManager.Instance != null)
+                ResourceManager.Instance.Deposit(ResourceType.Technology, researchPerAlien);
+
+            Release(victim);
+            Destroy(victim.gameObject);
+            victim = null;
         }
-        if (ResourceManager.Instance != null && cargo.Count > 0)
-            ResourceManager.Instance.Deposit(ResourceType.Technology, cargo.Count * researchPerAlien);
-        cargo.Clear();
-        sweeping = false;
         state = State.Idle;
     }
 
@@ -84,14 +72,6 @@ public class PlayerSaucer : UFO
         if (day == lastDay) return false;
         lastDay = day;
         return NearestDownedAlien() != null;
-    }
-
-    // Hides or shows the whole saucer: model, lights and beam.
-    void Show(bool on)
-    {
-        shown = on;
-        foreach (Transform part in transform) part.gameObject.SetActive(on);
-        if (beam) beam.SetActive(false);
     }
 
     // True once no enemy has been standing for calmDelay seconds and there is a knocked-out alien to collect.
@@ -124,22 +104,5 @@ public class PlayerSaucer : UFO
                 (best == null || Vector3.Distance(transform.position, c.Position) < Vector3.Distance(transform.position, best.Position)))
                 best = c;
         return best;
-    }
-
-    // Justin's model with blue lights, spotlight and beam.
-    void PaintBlue()
-    {
-        Color blue = new(0.15f, 0.55f, 1f);
-        var block = new MaterialPropertyBlock();
-        block.SetColor("_BaseColor", blue);
-        block.SetColor("_EmissionColor", blue);
-        foreach (var r in GetComponentsInChildren<MeshRenderer>(true))
-            if (r.sharedMaterials.Length > 1) r.SetPropertyBlock(block, 1); // slot 1 is UFO Lights
-        foreach (var l in GetComponentsInChildren<Light>(true)) l.color = blue;
-        foreach (var ps in GetComponentsInChildren<ParticleSystem>(true))
-        {
-            var main = ps.main;
-            main.startColor = new Color(blue.r, blue.g, blue.b, main.startColor.color.a);
-        }
     }
 }
