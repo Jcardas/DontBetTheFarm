@@ -7,14 +7,6 @@ using UnityEngine;
 [DisallowMultipleComponent]
 public class Highlight : MonoBehaviour
 {
-    // Blue for the player's side, red for aliens; the shade tells the states apart.
-    static readonly Color HiddenColor = new(0.4f, 0.65f, 1f, 0.35f);
-    static readonly Color HoverColor = new(0.35f, 0.7f, 1f, 0.8f);
-    static readonly Color SelectedColor = new(0.2f, 0.55f, 1f, 0.85f);
-    static readonly Color EnemyHidden = new(1f, 0.35f, 0.3f, 0.35f);
-    static readonly Color EnemyHover = new(1f, 0.5f, 0.45f, 0.7f);
-    const float HiddenWidth = 2f, LitWidth = 2f;
-
     Outline outline;
     Creature creature;
     CreatureMutator mutator;
@@ -72,10 +64,14 @@ public class Highlight : MonoBehaviour
         if (on && !outline.enabled) outline.Refresh(); // a building may have been broken or repaired since it was lit
         outline.enabled = on;
         outline.OutlineMode = lit ? Outline.Mode.OutlineAll : Outline.Mode.OutlineHidden;
-        outline.OutlineWidth = lit ? LitWidth : HiddenWidth;
-        bool enemy = creature != null && creature.Team == GameConstants.Team.Alien;
-        outline.OutlineColor = selected ? SelectedColor
-            : hovered ? (enemy ? EnemyHover : HoverColor)
-            : enemy ? EnemyHidden : HiddenColor;
+        outline.OutlineWidth = lit ? GameConstants.Instance.LitOutlineWidth : GameConstants.Instance.HiddenOutlineWidth;
+
+        // Default to Farm colors for non-creature highlightables (e.g., buildings)
+        var team = creature != null ? creature.Team : GameConstants.Team.Farm;
+        var colors = GameConstants.Instance.GetTeamColors(team);
+
+        outline.OutlineColor = selected ? colors.selectedColor
+            : hovered ? colors.hoverColor
+            : colors.hiddenColor;
     }
 }
