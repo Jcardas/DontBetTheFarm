@@ -22,6 +22,7 @@ public class Farmer : Creature
 
     protected override void Awake()
     {
+        baseCapabilities |= CreatureCapabilities.CanChopWood | CreatureCapabilities.CanHarvestCrops | CreatureCapabilities.CanRepair | CreatureCapabilities.IsRangedAttacker;
         base.Awake();
         shotgun = GetComponent<Shotgun>();
     }
@@ -36,6 +37,7 @@ public class Farmer : Creature
     protected override void HandleZeroHealth()
     {
         // When the farmer's health reaches zero, trigger the game over sequence.
+        base.HandleZeroHealth();
         GameOver();
     }
 

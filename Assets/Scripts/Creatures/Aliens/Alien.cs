@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 
 // The team's agreed attack order, first to last.
 public enum TargetTier { Animal, Farmer, Pen, Field, OtherBuilding, Farmhouse }
@@ -7,7 +8,7 @@ public class Alien : Creature
 {
     public static TargetTier TierOf(IDamageable target) => target switch
     {
-        FarmAnimal => TargetTier.Animal,
+        Animal => TargetTier.Animal,
         Farmer => TargetTier.Farmer,
         AnimalPen => TargetTier.Pen,
         WheatField => TargetTier.Field,
@@ -32,7 +33,7 @@ public class Alien : Creature
                 buildingGap = gap;
             }
 
-            if (Reach.Gap(guardPost, target.Body) > GuardRadius) return;
+            if (Reach.Gap(guardPost, target.Body) > CalculatedViewRadius) return;
             TargetTier tier = TierOf(target);
             if (best != null && (tier > bestTier || tier == bestTier && gap >= bestGap)) return;
             best = target;
@@ -66,7 +67,8 @@ public class Alien : Creature
     
     protected override void HandleZeroHealth()
     {
-        // Aliens die when their health reaches zero.
+        // Aliens die when their health reaches zero. The body stays, but the base stops it blocking anyone.
+        base.HandleZeroHealth();
         Die();
     }
 
@@ -74,4 +76,8 @@ public class Alien : Creature
     {
         
     }
+
+    
+
+
 }

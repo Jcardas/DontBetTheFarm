@@ -2,7 +2,7 @@ using UnityEngine;
 
 // A farm animal that attacks from range by launching a projectile (the llama's spit), and backs away from enemies
 // that get too close so it keeps its spacing instead of running into melee.
-public class RangedAnimal : FarmAnimal
+public class RangedAnimal : Animal
 {
     [Header("Ranged Attack")]
     [Tooltip("Launched at the target on every attack. It deals this animal's attack damage. Melee if empty.")]
@@ -23,7 +23,7 @@ public class RangedAnimal : FarmAnimal
         }
 
         Vector3 from = transform.position + Vector3.up * launchHeight + transform.forward * 0.5f;
-        Instantiate(projectile, from, transform.rotation).Launch(target, attackDamage);
+        Instantiate(projectile, from, transform.rotation).Launch(target, CalculatedAttackDamage);
         TriggerAttackVisual();
     }
 }
