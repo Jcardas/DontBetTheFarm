@@ -27,6 +27,7 @@ public class UFO : MonoBehaviour
     // Bodies a saucer is already going for, so two saucers never chase the same one.
     static readonly HashSet<Creature> claimed = new();
     public static bool IsClaimed(Creature c) => claimed.Contains(c);
+    protected static void Release(Creature c) => claimed.Remove(c);
 
     // Clears the lists between plays even when "Reload Domain" is off in Enter Play Mode settings.
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
