@@ -5015,9 +5015,11 @@ MonoBehaviour:
   liftTime: 2.5
   storedOffset: {x: 0, y: -1.2141303, z: 0}
   storedScale: 0.5
-  skyHeight: 40
+  hangar: {fileID: 0}
   calmDelay: 3
   researchPerAlien: 1
+  broken: 0
+  brokenMat: {fileID: 0}
 --- !u!1 &8076097286781388867
 GameObject:
   m_ObjectHideFlags: 0
