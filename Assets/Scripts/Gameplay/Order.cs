@@ -43,7 +43,7 @@ public readonly struct Order
         }
 
         var field = hit.collider.GetComponentInParent<WheatField>();
-        if (field != null && !field.IsBroken)
+        if (field != null)
             return new Order(OrderKind.Harvest, hit.point, field: field);
 
         var node = hit.collider.GetComponentInParent<ResourceNode>();

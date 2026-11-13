@@ -1,180 +1,119 @@
 
-using System.Collections.Generic;
+
 using UnityEngine;
 using UnityEngine.AI;
 
-[DisallowMultipleComponent]
-[RequireComponent(typeof(AnimalPen))]
-public class AnimalPenGateController : MonoBehaviour
+public class PenDoor : MonoBehaviour
 {
-    [Header("Existing Gate Models")]
-    [SerializeField] private Transform leftGate;
-    [SerializeField] private Transform rightGate;
-    [SerializeField] private Transform gateCenter;
+    [Header("Door Settings")]
+    [SerializeField] private float openAngle = 90f;
+    [SerializeField] private float speed = 240f;
+    [SerializeField] private float closeDelay = 2f;
 
-    [Header("Sliding Animation")]
-    [SerializeField] private float slideDistance = 1.6f;
-    [SerializeField] private float secondsToOpen = 0.5f;
-    [SerializeField] private float openWhenAnimalWithin = 3f;
+    [Header("Detection")]
+    [SerializeField] private Vector3 detectionCenter = Vector3.zero;
+    [SerializeField] private Vector3 detectionSize = new Vector3(4f, 3f, 8f);
 
-    [Header("Animal-Only Navigation")]
-    [SerializeField] private string animalGateAreaName = "AnimalGate";
-    [SerializeField] private float scanEverySeconds = 0.6f;
+    private Quaternion closedRotation;
+    private Quaternion openRotation;
 
-    private Vector3 leftClosedPosition;
-    private Vector3 rightClosedPosition;
-    private Vector3 doorwayPosition;
-    private bool hasGates;
-    private float openness;
-    private float nextScan;
-    private int gateAreaBit;
-
-    private readonly List<FarmAnimal> animals = new();
+    private bool isOpen;
+    private float closeTimer;
 
     private void Start()
     {
-        if (!leftGate) leftGate = FindNamedGate("fencegatel");
-        if (!rightGate) rightGate = FindNamedGate("fencegater");
-
-        hasGates = leftGate && rightGate;
-
-        if (!hasGates)
-        {
-            Debug.LogWarning("Assign FenceGate L and FenceGate R.", this);
-        }
-        else
-        {
-            leftClosedPosition =
-                transform.InverseTransformPoint(leftGate.position);
-
-            rightClosedPosition =
-                transform.InverseTransformPoint(rightGate.position);
-
-            doorwayPosition = gateCenter
-                ? transform.InverseTransformPoint(gateCenter.position)
-                : (leftClosedPosition + rightClosedPosition) * 0.5f;
-        }
-
-        int areaIndex = NavMesh.GetAreaFromName(animalGateAreaName);
-
-        if (areaIndex < 0)
-        {
-            Debug.LogWarning(
-                $"NavMesh area '{animalGateAreaName}' does not exist.", this);
-            gateAreaBit = 0;
-        }
-        else
-        {
-            gateAreaBit = 1 << areaIndex;
-        }
-
-        RefreshAnimalsAndAreaMasks();
+        closedRotation = transform.localRotation;
+        openRotation = closedRotation *
+            Quaternion.Euler(0f, openAngle, 0f);
     }
 
     private void Update()
     {
-        if (Time.time >= nextScan)
-            RefreshAnimalsAndAreaMasks();
+        bool animalApproaching = false;
+        Vector3 center =
+    transform.position +
+    transform.parent.TransformVector(detectionCenter);
 
-        if (!hasGates) return;
+        Collider[] nearby = Physics.OverlapBox(
+            center,
+            detectionSize * 0.5f,
+            transform.parent.rotation
+        );
 
-        float target = IsAnimalNearDoor() ? 1f : 0f;
-
-        openness = Mathf.MoveTowards(
-            openness,
-            target,
-            Time.deltaTime / Mathf.Max(0.05f, secondsToOpen));
-
-        float distance = Mathf.SmoothStep(0f, slideDistance, openness);
-
-        leftGate.position = transform.TransformPoint(
-            leftClosedPosition + Vector3.left * distance);
-
-        rightGate.position = transform.TransformPoint(
-            rightClosedPosition + Vector3.right * distance);
-    }
-
-    private void RefreshAnimalsAndAreaMasks()
-    {
-        nextScan = Time.time + Mathf.Max(0.15f, scanEverySeconds);
-        animals.Clear();
-
-        foreach (NavMeshAgent agent in
-            FindObjectsByType<NavMeshAgent>(FindObjectsSortMode.None))
+        foreach (Collider col in nearby)
         {
-            if (!agent) continue;
+            NavMeshAgent agent =
+                col.GetComponentInParent<NavMeshAgent>();
+            
 
-            FarmAnimal animal = agent.GetComponentInParent<FarmAnimal>();
-            bool isAnimal = animal != null;
-
-            if (gateAreaBit != 0)
-            {
-                int wanted = isAnimal
-                    ? agent.areaMask | gateAreaBit
-                    : agent.areaMask & ~gateAreaBit;
-
-                if (agent.areaMask != wanted)
-                    agent.areaMask = wanted;
-            }
-
-            if (isAnimal && !animals.Contains(animal))
-                animals.Add(animal);
-        }
-    }
-
-    private bool IsAnimalNearDoor()
-    {
-        Vector3 door = transform.TransformPoint(doorwayPosition);
-        float maxDistanceSquared =
-            openWhenAnimalWithin * openWhenAnimalWithin;
-
-        foreach (FarmAnimal animal in animals)
-        {
-            if (!animal ||
-                !animal.gameObject.activeInHierarchy ||
-                animal.Down)
+            if (agent == null || !agent.isOnNavMesh)
                 continue;
 
-            Vector3 difference = animal.transform.position - door;
-            difference.y = 0f;
+            if (agent == null || !agent.isOnNavMesh)
+                continue;
+            
+            if (agent.GetComponent<Animal>() == null)
+                continue;
 
-            if (difference.sqrMagnitude <= maxDistanceSquared)
-                return true;
+            bool moving =
+                agent.pathPending ||
+                (agent.hasPath &&
+                 !agent.isStopped &&
+                 agent.remainingDistance >
+                 agent.stoppingDistance + 0.1f);
+
+            if (moving)
+            {
+                animalApproaching = true;
+                break;
+            }
         }
 
-        return false;
-    }
-
-    private Transform FindNamedGate(string normalizedName)
-    {
-        foreach (Transform part in
-            GetComponentsInChildren<Transform>(true))
+        if (animalApproaching)
         {
-            string key = part.name
-                .Replace(" ", "")
-                .Replace("_", "")
-                .Replace("-", "")
-                .ToLowerInvariant();
+            isOpen = true;
+            closeTimer = closeDelay;
+        }
+        else if (isOpen)
+        {
+            closeTimer -= Time.deltaTime;
 
-            if (key == normalizedName)
-                return part;
+            if (closeTimer <= 0f)
+                isOpen = false;
         }
 
-        return null;
+        Quaternion targetRotation =
+            isOpen ? openRotation : closedRotation;
+
+        transform.localRotation = Quaternion.RotateTowards(
+            transform.localRotation,
+            targetRotation,
+            speed * Time.deltaTime
+        );
     }
 
-    private void OnDrawGizmosSelected()
-    {
-        Vector3 center;
+   
+private void OnDrawGizmosSelected()
+{
+    if (transform.parent == null) return;
 
-        if (gateCenter)
-            center = gateCenter.position;
-        else if (leftGate && rightGate)
-            center = (leftGate.position + rightGate.position) * 0.5f;
-        else
-            return;
+    Gizmos.color = Color.yellow;
 
-        Gizmos.color = Color.cyan;
-        Gizmos.DrawWireSphere(center, openWhenAnimalWithin);
-    }
+    Vector3 center =
+        transform.position +
+        transform.parent.TransformVector(detectionCenter);
+
+    Matrix4x4 oldMatrix = Gizmos.matrix;
+
+    Gizmos.matrix = Matrix4x4.TRS(
+        center,
+        transform.parent.rotation,
+        Vector3.one
+    );
+
+    Gizmos.DrawWireCube(Vector3.zero, detectionSize);
+
+    Gizmos.matrix = oldMatrix;
+}
+
 }

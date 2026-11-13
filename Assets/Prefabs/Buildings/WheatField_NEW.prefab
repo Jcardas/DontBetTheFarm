@@ -11,10 +11,9 @@ GameObject:
   - component: {fileID: 4804762179119703158}
   - component: {fileID: 1856471574083397070}
   - component: {fileID: 2275919335033056446}
-  - component: {fileID: 8670572905190133588}
   m_Layer: 8
   m_Name: WheatField_NEW
-  m_TagString: Building
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -56,11 +55,16 @@ MonoBehaviour:
   maxHealth: 100
   buildingCost: 10
   resourceType: 0
-  wheatVisual: {fileID: 1094455621171541390}
   growTime: 15
-  startingYScale: 0.1
-  fullyGrownYScale: 1
+  startHeight: 0.1
+  finalHeight: 0.6
   wheatPerHarvest: 1
+  soil: {fileID: 0}
+  spacing: 0.3
+  edgePadding: 0.15
+  player: {fileID: 0}
+  harvestDistance: 2
+  harvestButton: {fileID: 0}
   mature: 0
 --- !u!208 &2275919335033056446
 NavMeshObstacle:
@@ -78,27 +82,6 @@ NavMeshObstacle:
   m_CarveOnlyStationary: 1
   m_Center: {x: 0, y: 0.5, z: 0}
   m_TimeToStationary: 0.5
---- !u!65 &8670572905190133588
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4304144612023501590}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 8, y: 1, z: 8}
-  m_Center: {x: 0, y: 0.5, z: 0}
 --- !u!1001 &5890252345513442933
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -239,10 +222,6 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}
-    - target: {fileID: 919132149155446097, guid: 51508bb91e96be54b9a974289c6f520a, type: 3}
-      propertyPath: m_TagString
-      value: Building
-      objectReference: {fileID: 0}
     - target: {fileID: 1094559010302358929, guid: 51508bb91e96be54b9a974289c6f520a, type: 3}
       propertyPath: m_Layer
       value: 8
@@ -332,11 +311,6 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 51508bb91e96be54b9a974289c6f520a, type: 3}
---- !u!4 &1094455621171541390 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: -2409943832320373765, guid: 51508bb91e96be54b9a974289c6f520a, type: 3}
-  m_PrefabInstance: {fileID: 5890252345513442933}
-  m_PrefabAsset: {fileID: 0}
 --- !u!4 &6211827493649783198 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 51508bb91e96be54b9a974289c6f520a, type: 3}
@@ -414,10 +388,6 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: 1ca79baee8e55f041a7e61ae0c67c1f5, type: 3}
       propertyPath: m_IsActive
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 919132149155446097, guid: 1ca79baee8e55f041a7e61ae0c67c1f5, type: 3}
-      propertyPath: m_TagString
-      value: Building
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
