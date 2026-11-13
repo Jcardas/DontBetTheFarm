@@ -14,10 +14,10 @@ public readonly struct Order
     public readonly Creature enemy;
 
     Order(
-        OrderKind kind,
+        OrderKind kind, 
         Vector3 point,
         ResourceNode node = null,
-        WheatField field = null,
+        WheatField field = null, 
         Buildable building = null,
         Creature enemy = null)
     {
@@ -29,9 +29,12 @@ public readonly struct Order
         this.enemy = enemy;
     }
 
+    public static Order ForRepair(Buildable target) =>
+        new(OrderKind.Repair, target.transform.position, building: target);
+
     public static Order From(RaycastHit hit)
     {
-        var enemy = hit.collider.GetComponentInParent<Creature>();
+        Creature enemy = hit.collider.GetComponentInParent<Creature>();
         if (enemy != null &&
             enemy.Team == GameConstants.Team.Alien &&
             !enemy.Down)
@@ -41,16 +44,45 @@ public readonly struct Order
                 enemy.transform.position,
                 enemy: enemy);
         }
+        
+        Buildable broken = hit.collider.GetComponentInParent<Buildable>();
+        if (broken && broken.IsBroken)
+            return ForRepair(broken);
 
-        var field = hit.collider.GetComponentInParent<WheatField>();
-        if (field != null && !field.IsBroken)
+        WheatField field = hit.collider.GetComponentInParent<WheatField>();
+        if (field && !field.IsBroken)
             return new Order(OrderKind.Harvest, hit.point, field: field);
 
-        var node = hit.collider.GetComponentInParent<ResourceNode>();
-        if (node != null)
+        ResourceNode node = hit.collider.GetComponentInParent<ResourceNode>();
+        if (node)
             return new Order(OrderKind.Work, hit.point, node: node);
 
         return new Order(OrderKind.Move, hit.point);
+    }
+
+    // Renderer bounds make broken pens/barns clickable even without colliders.
+    public static Buildable BrokenAt(Ray ray)
+    {
+        Buildable closest = null;
+        float closestDistance = float.MaxValue;
+
+        foreach (Buildable candidate in
+            Object.FindObjectsByType<Buildable>(FindObjectsSortMode.None))
+        {
+            if (!candidate || !candidate.IsBroken) continue;
+
+            foreach (Renderer renderer in candidate.GetComponentsInChildren<Renderer>())
+            {
+                if (!renderer.enabled ||
+                    !renderer.bounds.IntersectRay(ray, out float distance) ||
+                    distance >= closestDistance) continue;
+
+                closestDistance = distance;
+                closest = candidate;
+            }
+        }
+
+        return closest;
     }
 
     public Order Offset(Vector3 by) =>

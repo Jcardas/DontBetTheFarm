@@ -81,7 +81,13 @@ public class PlayerControls : MonoBehaviour
         );      
         var unit = overSomething ? hit.collider.GetComponentInParent<Selectable>() : null;
         Hover(unit);
-        if (player.Command.WasPressedThisFrame() && overSomething) Command(hit);
+        // Right-click a broken structure to repair, even if it has no collider.
+        if (player.Command.WasPressedThisFrame())
+        {
+            Buildable broken = Order.BrokenAt(ray);
+            if (broken) Command(Order.ForRepair(broken));
+            else if (overSomething) Command(Order.From(hit));
+        }
 
         if (left == LeftButton.Idle && player.Select.WasPressedThisFrame())
         {
@@ -100,31 +106,21 @@ public class PlayerControls : MonoBehaviour
     {
         if (cameraController != null &&
             (cameraController.IsDragging || cameraController.IsEdgeScrolling))
-        {
             return;
-        }
 
         Camera cam = Camera.main;
         if (cam == null) return;
 
-        Vector2 at = input.Player.Point.ReadValue<Vector2>();
-        Ray ray = cam.ScreenPointToRay(at);
-bool overSomething = Physics.Raycast(
-    ray,
-    out RaycastHit hit,
-    Mathf.Infinity,
-    Physics.DefaultRaycastLayers,
-    QueryTriggerInteraction.Ignore
-);        var unit = overSomething
-            ? hit.collider.GetComponentInParent<Selectable>()
-            : null;
+        Ray ray = cam.ScreenPointToRay(input.Player.Point.ReadValue<Vector2>());
+        bool overSomething = Physics.Raycast(ray, out RaycastHit hit,
+            Mathf.Infinity, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore);
+        Selectable unit = overSomething ? hit.collider.GetComponentInParent<Selectable>() : null;
+
         ShowCursor(shotgun && shotgun.Reloading
             ? ReloadCursor(shotgun.ReloadProgress)
-            : OverBrokenBuilding(ray)
+            : Order.BrokenAt(ray)
                 ? CursorType.Repair
-                : overSomething
-                    ? CursorFor(hit, unit)
-                    : CursorType.Default);
+                : overSomething ? CursorFor(hit, unit) : CursorType.Default);
     }
 
     void ReadKeys(bool shift)
@@ -155,28 +151,14 @@ bool overSomething = Physics.Raycast(
     // Same precedence as Order.From, so the cursor always previews the order a right-click would give.
     static CursorType CursorFor(RaycastHit hit, Selectable unit)
     {
-
         return Order.From(hit).kind switch
         {
             OrderKind.Attack => CursorType.Attack,
             OrderKind.Harvest => CursorType.Harvest,
             OrderKind.Work => CursorType.Chop,
+            OrderKind.Repair => CursorType.Repair,
             _ => unit && !unit.Down ? CursorType.Interact : CursorType.Default,
         };
-    }
-
-    private bool OverBrokenBuilding(Ray ray)
-    {
-        foreach (var building in FindObjectsByType<RepairableStructure>(FindObjectsSortMode.None))
-        {
-            if (!building.IsBroken) continue;
-
-            foreach (var renderer in building.GetComponentsInChildren<Renderer>())
-                if (renderer.enabled && renderer.bounds.IntersectRay(ray))
-                    return true;
-        }
-
-        return false;
     }
 
     // Quarter steps. Reload100 is never shown: the frame the reload completes, the hover cursor comes back.
@@ -233,12 +215,27 @@ bool overSomething = Physics.Raycast(
     }
 
     // Everyone gets the same target; spread points stop a group stacking on one spot when it walks.
-    void Command(RaycastHit hit)
+    void Command(Order order)
     {
-        var order = Order.From(hit);
-        if (marker) Instantiate(marker, order.point, Quaternion.identity).Show(order.kind);
         var group = Selectable.All.Where(s => s.Selected).ToList();
-        for (int i = 0; i < group.Count; i++) group[i].Command(order.Offset(Spread(i)));
+
+        // Only one worker should operate the shared repair panel.
+        if (order.kind == OrderKind.Repair)
+        {
+            foreach (Selectable unit in group)
+            {
+                Gatherer gatherer = unit.GetComponent<Gatherer>();
+                if (!gatherer || !gatherer.CanRepair) continue;
+                if (marker) Instantiate(marker, order.point, Quaternion.identity).Show(order.kind);
+                unit.Command(order);
+                return;
+            }
+            return;
+        }
+
+        if (marker) Instantiate(marker, order.point, Quaternion.identity).Show(order.kind);
+        for (int i = 0; i < group.Count; i++)
+            group[i].Command(order.Offset(Spread(i)));
     }
 
     // Unit 0 stands on the point; the rest fill rings Spacing apart. Ring k holds 6k units,

@@ -1,73 +1,73 @@
-using System.Collections.Generic;
+using System.Collections;
+using Unity.AI.Navigation;
 using UnityEngine;
+using UnityEngine.AI;
 
-public abstract class Buildable : RepairableStructure, IDamageable
+// A Buildable now owns its broken state and repair logic.
+// No separate repair component is needed.
+public abstract class Buildable : MonoBehaviour, IDamageable
 {
     [Header("Buildable Settings")]
     [SerializeField] protected string buildableName;
-    [SerializeField] protected int maxHealth; // Health of the buildable structure
+    [SerializeField] protected int maxHealth;
     [SerializeField] protected int buildingCost;
-    [SerializeField] protected ResourceType resourceType; // The type of resource used to build this structure
-    
-    // Var holding cost and resource type for building this structure
-    public virtual (ResourceType, int) CostAndResource { get; private set; }
+    [SerializeField] protected ResourceType resourceType;
 
+    [Header("Repair Settings")]
+    [SerializeField] private int repairWoodCost = 10;
+    [SerializeField] private bool startsBroken;
+
+    [Header("Models")]
+    [SerializeField] private GameObject repairedVisual;
+    [SerializeField] private GameObject brokenVisual;
+
+    private NavMeshObstacle obstacle;
+
+    public virtual (ResourceType, int) CostAndResource { get; private set; }
     public string BuildableName => buildableName;
     public int MaxHealth => maxHealth;
     private int CurrentHealth { get; set; }
     public bool Down => CurrentHealth <= 0;
     public Vector3 Position => transform.position;
     public Collider Body { get; private set; }
-
     public Transform GroundElement { get; private set; }
 
-    protected override void Awake()
+    public bool IsBroken { get; private set; }
+    public int RepairWoodCost => repairWoodCost;
+
+    protected virtual void Awake()
     {
-        base.Awake();
-       
-        GroundElement = null;
+        obstacle = GetComponent<NavMeshObstacle>();
+        IsBroken = startsBroken;
+        UpdateVisuals();
 
         foreach (Transform child in GetComponentsInChildren<Transform>(true))
         {
-            if (child.name == "Ground")
-            {
-                GroundElement = child;
-                break;
-            }
+            if (child.name != "Ground") continue;
+            GroundElement = child;
+            break;
         }
 
-        if (GroundElement == null)
-        {
-            Debug.LogError("Ground element not found for " + buildableName + ". Please ensure that the buildable prefab has a child named 'Ground'.");
-        }
-
-        // The ground plate covers the whole footprint, so attackers measure their reach to the building's edge.
-        Body = GroundElement != null && GroundElement.TryGetComponent(out Collider ground)
+        Body = GroundElement && GroundElement.TryGetComponent(out Collider ground)
             ? ground
-            : GetComponentInChildren<Collider>();
-        
+            : GetComponent<Collider>();
+
+        if (!Body) Body = GetComponentInChildren<Collider>();
+        if (!Body) Debug.LogWarning($"{name} needs a collider for repair movement.", this);
+
         Reset();
-
         CurrentHealth = IsBroken ? 0 : maxHealth;
-
     }
-    
+
     protected virtual void Reset()
     {
         maxHealth = GameConstants.Instance.BaseBuilding.MaxHealth;
         CurrentHealth = maxHealth;
         buildingCost = GameConstants.Instance.BaseBuilding.BuildingCost;
         resourceType = GameConstants.Instance.BaseBuilding.ResourceType;
-        CostAndResource = 
-            (GameConstants.Instance.BaseBuilding.ResourceType,
-                GameConstants.Instance.BaseBuilding.BuildingCost);
-
-        
-        // Override this method in derived classes to set default values for stats if needed.
+        CostAndResource = (resourceType, buildingCost);
     }
-    
-    // This method is called when the buildable is built in the game. Note that it
-    // Does not subtract resources, it is assumed that the resource management system will handle that.
+
     public virtual void Build()
     {
         Debug.Log(buildableName + " has been built.");
@@ -80,34 +80,60 @@ public abstract class Buildable : RepairableStructure, IDamageable
         Destroy(gameObject);
     }
 
-    protected override void OnRepaired()
+    // Spend wood only after the repair animation has finished.
+    public virtual bool TryRepair()
     {
-        Repair(maxHealth);
+        if (!IsBroken || !ResourceManager.Spend(ResourceType.Wood, repairWoodCost))
+            return false;
+
+        IsBroken = false;
+        OnRepaired();
+        UpdateVisuals();
+        return true;
     }
 
-    protected override void OnBroken()
+    [ContextMenu("Break (Test)")]
+    public void Break()
+    {
+        if (IsBroken) return;
+        IsBroken = true;
+        UpdateVisuals();
+        OnBroken();
+
+        StartCoroutine(RefreshNavMeshAfterBreak());
+    }
+
+    protected virtual void OnRepaired() => Repair(maxHealth);
+
+    protected virtual void OnBroken()
     {
         CurrentHealth = 0;
         HandleDestroyed();
     }
 
-    protected virtual void Repair(int amount)
+     protected virtual void Repair(int amount)
     {
         CurrentHealth = Mathf.Clamp(
             CurrentHealth + amount, 0, maxHealth
         );
     }
 
+    private void UpdateVisuals()
+    {
+        if (repairedVisual) repairedVisual.SetActive(!IsBroken);
+        if (brokenVisual) brokenVisual.SetActive(IsBroken);
+        if (obstacle) obstacle.enabled = !IsBroken;
+    }
+
     public void ApplyDamage(int damage)
     {
         TakeDamage(damage);
     }
-    
     public virtual void TakeDamage(int damage)
     {
         if (IsBroken || damage <= 0) return;
 
-        CurrentHealth = Mathf.Max(
+         CurrentHealth = Mathf.Max(
             0, CurrentHealth - damage
         );
 
@@ -115,8 +141,20 @@ public abstract class Buildable : RepairableStructure, IDamageable
             Break();
     }
 
-    protected virtual void HandleDestroyed()
+   protected virtual void HandleDestroyed()
     {
         Debug.Log(buildableName + " destroyed!");
+    }
+
+    private IEnumerator RefreshNavMeshAfterBreak()
+    {
+        yield return null;
+
+        foreach (NavMeshSurface surface in
+            FindObjectsByType<NavMeshSurface>(FindObjectsSortMode.None))
+        {
+            if (surface.isActiveAndEnabled)
+                surface.BuildNavMesh();
+        }
     }
 }

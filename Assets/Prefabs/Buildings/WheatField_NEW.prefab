@@ -48,14 +48,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e7087975648574865828f31e21b76618, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WheatField
-  repairWoodCost: 10
-  startsBroken: 0
-  repairedVisual: {fileID: 6737113038101431076}
-  brokenVisual: {fileID: 6311533599245464431}
   buildableName: Wheat Fields
   maxHealth: 100
   buildingCost: 10
   resourceType: 0
+  repairWoodCost: 10
+  startsBroken: 0
+  repairedVisual: {fileID: 6737113038101431076}
+  brokenVisual: {fileID: 6311533599245464431}
   wheatVisual: {fileID: 1094455621171541390}
   growTime: 15
   startingYScale: 0.1
