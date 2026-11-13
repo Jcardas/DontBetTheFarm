@@ -1,5 +1,36 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &2400109977366218349
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3994512428033835713}
+  m_Layer: 6
+  m_Name: Socket_Neck
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3994512428033835713
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2400109977366218349}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.6632733, y: 0, z: 0, w: 0.74837726}
+  m_LocalPosition: {x: 0, y: 0.847, z: 0.163}
+  m_LocalScale: {x: 1, y: 0.99999994, z: 0.99999994}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 9222087878892801473}
+  m_LocalEulerAnglesHint: {x: -83.1, y: 0, z: 0}
 --- !u!1 &2547991513553249598
 GameObject:
   m_ObjectHideFlags: 0
@@ -111,6 +142,8 @@ MonoBehaviour:
   attackRange: 1
   viewRadius: 8
   anchored: 1
+  beamEffectPrefab: {fileID: 0}
+  sourcePrefab: {fileID: 0}
   breedingCost: 5
   healCost: 1
   flightHeight: 1.5
@@ -427,7 +460,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects: []
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: -8679921383154817045, guid: da67726b77ffb2141bfad9ea521743fa, type: 3}
+      insertIndex: 4
+      addedObject: {fileID: 3994512428033835713}
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: da67726b77ffb2141bfad9ea521743fa, type: 3}
       insertIndex: -1
