@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -9,6 +10,8 @@ public class AbductionManager : MonoBehaviour
     public static AbductionManager Instance { get; private set; }
 
     [SerializeField] UFO saucerPrefab;
+    [Tooltip("A collar prefab that is placed on abducted animals when they return as enemies.")]
+    [SerializeField] GameObject collarPrefab;
     [Tooltip("Seconds a farm creature lies knocked out before a saucer comes for it.")]
     [SerializeField] float delay = 4f;
     [SerializeField] int maxSaucers = 1;
@@ -16,7 +19,7 @@ public class AbductionManager : MonoBehaviour
     readonly Dictionary<Creature, float> downSince = new();
     readonly List<UFO> saucers = new();
     readonly List<Animal> returned = new();
-    readonly Dictionary<Animal, GameObject> helmets = new();
+    readonly Dictionary<Animal, GameObject> collars = new();
 
     void Awake()
     {
@@ -32,7 +35,8 @@ public class AbductionManager : MonoBehaviour
     {
         MarchReturned();
         saucers.RemoveAll(s => s == null);
-        if (CreatureManager.Instance == null || WaveManager.Instance == null || saucerPrefab == null) return;
+        
+        if (CreatureManager.Instance == null || TimeManager.Instance == null || WaveManager.Instance == null || saucerPrefab == null) return;
 
         foreach (Creature c in CreatureManager.Instance.GetEnemies(GameConstants.Team.Alien))
         {
@@ -43,7 +47,17 @@ public class AbductionManager : MonoBehaviour
                 continue;
             }
             if (!downSince.TryGetValue(c, out float since)) downSince[c] = since = Time.time;
-            if (Time.time - since >= delay && saucers.Count < maxSaucers) Send(c);
+            if (Time.time - since >= delay && saucers.Count < maxSaucers && !TimeManager.Instance.IsDayTime()) Send(c);
+        }
+        
+        if (saucers.Count > 0 && TimeManager.Instance.IsDayTime())
+        {
+            foreach (UFO saucer in saucers)
+                if (saucer != null)
+                {
+                    if (saucer.IsVictimInUFO()) continue; // Already got its target, so let it leave on its own.
+                    saucer.Retreat();
+                }
         }
     }
 
@@ -97,15 +111,20 @@ public class AbductionManager : MonoBehaviour
             Animal a = returned[i];
             if (!a.Down)
             {
-                // On goes the helmet the frame after it lands, once its model has stood back up.
-                if (!helmets.ContainsKey(a)) helmets[a] = PutOnHelmet(a);
+                // On goes the collar the frame after it lands, once its model has stood back up.
+                if (!collars.ContainsKey(a)) collars[a] = PutOnCollar(a);
                 continue;
             }
             returned.RemoveAt(i);
-            if (helmets.Remove(a, out GameObject helmet)) Destroy(helmet);
+            if (collars.Remove(a, out GameObject collar) && collar != null) Destroy(collar);
             if (WaveManager.Instance != null) WaveManager.Instance.UnregisterEnemy(a);
             a.SetTeam(GameConstants.Team.Farm);
-            a.HealToFull();
+            
+            // TODO: Instead of healing to full, leave the animal downed, the farmer (or a healing capable creature) can heal it back up.
+            // a.HealToFull(); 
+            // For now this is just commented out, but eventually we will remove
+            // all this because the player will have to heal the animal back up to get it back on their side.
+            
             a.CreatureBrain.Guard(a.Position); // forget the farm creature it was attacking
             if (a.TryGetComponent(out Selectable selectable)) selectable.enabled = true;
         }
@@ -119,50 +138,27 @@ public class AbductionManager : MonoBehaviour
         }
     }
 
-    // A mind-control helmet built from primitives: a metal cap, an antenna and a glowing green tip. It sits between
-    // the head sockets (where horns and antennae go), or on top of the animal if it has none, sized to its height.
-    static GameObject PutOnHelmet(Animal animal)
+    // Instantiates the mind-control collar prefab onto the animal's Socket_Neck slot, scaled by Animal.neckSize.
+    GameObject PutOnCollar(Animal animal)
     {
-        Bounds body = new(animal.Position, Vector3.zero);
-        foreach (Renderer r in animal.GetComponentsInChildren<Renderer>())
-            if (r is MeshRenderer or SkinnedMeshRenderer) body.Encapsulate(r.bounds);
-        float size = body.size.y * 0.25f;
+        if (collarPrefab == null) return null;
 
-        Transform head = animal.transform;
-        Vector3 top = new(body.center.x, body.max.y, body.center.z);
-        Vector3 sockets = Vector3.zero;
-        int count = 0;
-        foreach (Transform t in animal.GetComponentsInChildren<Transform>())
+        Transform socket = null;
+        foreach (Transform t in animal.GetComponentsInChildren<Transform>(true))
         {
-            if (!t.name.StartsWith("Socket_Head")) continue;
-            sockets += t.position;
-            count++;
-            head = t.parent;
+            if (t.name == "Socket_Neck")
+            {
+                socket = t;
+                break;
+            }
         }
-        if (count > 0) top = sockets / count + Vector3.up * 0.3f * size; // the cap's rim rests at the sockets
 
-        var helmet = new GameObject("Mind Control Helmet").transform;
-        helmet.SetPositionAndRotation(top, animal.transform.rotation);
-        helmet.SetParent(head, true); // bobs along with the head
-        Color metal = new(0.55f, 0.58f, 0.65f), glow = new(0.2f, 1f, 0.3f);
-        HelmetPart(PrimitiveType.Sphere, helmet, Vector3.zero, new Vector3(1f, 0.6f, 1f) * size, metal);
-        HelmetPart(PrimitiveType.Cylinder, helmet, Vector3.up * 0.6f * size, new Vector3(0.08f, 0.4f, 0.08f) * size, metal);
-        HelmetPart(PrimitiveType.Sphere, helmet, Vector3.up * 1.05f * size, Vector3.one * 0.25f * size, glow, true);
-        return helmet.gameObject;
-    }
+        Transform parent = socket != null ? socket : animal.transform;
+        GameObject collar = Instantiate(collarPrefab, parent, false);
+        collar.transform.localPosition = Vector3.zero;
+        collar.transform.localRotation = Quaternion.identity;
+        collar.transform.localScale = Vector3.one * animal.NeckSize;
 
-    static void HelmetPart(PrimitiveType shape, Transform helmet, Vector3 at, Vector3 scale, Color color, bool glows = false)
-    {
-        GameObject part = GameObject.CreatePrimitive(shape);
-        Destroy(part.GetComponent<Collider>()); // nothing should click or bump into it
-        part.transform.SetParent(helmet, false);
-        part.transform.localPosition = at;
-        part.transform.localScale = scale;
-        Material m = part.GetComponent<Renderer>().material;
-        m.color = color;
-        m.SetFloat("_Metallic", glows ? 0f : 0.8f);
-        if (!glows) return;
-        m.EnableKeyword("_EMISSION");
-        m.SetColor("_EmissionColor", color * 2f);
+        return collar;
     }
 }

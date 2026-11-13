@@ -145,4 +145,21 @@ public class UFO : MonoBehaviour
         state = State.Idle;
     }
 
+    // Return to the edge of the map no matter what.
+    public void Retreat()
+    {
+        if (beam) beam.SetActive(false);
+        if (victim != null) Drop();
+        victim = null;
+        
+        state = State.Leave;
+    }
+    
+    // Returns true if the saucer has the creature it was sent to abduct inside it.
+    // False if it is still on the ground or has been dropped.
+    public bool IsVictimInUFO()
+    {
+        return state is State.Carry or State.Leave && victim != null;
+    }
+
 }

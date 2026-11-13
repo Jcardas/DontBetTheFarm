@@ -110,6 +110,7 @@ public class CombatFeedback : MonoBehaviour
             }
         }
 
+        if (bar) Destroy(bar.gameObject); // Rebuilt when the mutations change: keep just one bar
         var canvas = new GameObject("HealthBar", typeof(RectTransform), typeof(Canvas)).GetComponent<Canvas>();
         canvas.renderMode = RenderMode.WorldSpace;
         bar = (RectTransform)canvas.transform;

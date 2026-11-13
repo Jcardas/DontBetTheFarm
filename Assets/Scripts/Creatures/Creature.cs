@@ -159,7 +159,7 @@ public abstract class Creature : MonoBehaviour, IDamageable
         CalculatedViewRadius = Mathf.Max(1f, viewRadius + bonusViewRadius);
         
         // Attack range is capped by view radius: a creature can't attack something it can't see.
-        CalculatedAttackRange = Mathf.Min(viewRadius, attackRange + bonusRange);
+        CalculatedAttackRange = Mathf.Min(CalculatedViewRadius, attackRange + bonusRange);
 
         // Apply speed directly to the NavMeshAgent if active
         if (navMeshAgent != null)
@@ -280,7 +280,7 @@ public abstract class Creature : MonoBehaviour, IDamageable
     // What this creature fights when it has no orders: the nearest enemy creature near its guard post.
     public virtual IDamageable FindTarget(Vector3 guardPost) =>
         CreatureManager.Instance != null
-            ? CreatureManager.Instance.GetNearestEnemy(team, transform.position, guardPost, viewRadius)
+            ? CreatureManager.Instance.GetNearestEnemy(team, transform.position, guardPost, CalculatedViewRadius)
             : null;
 
     // How this creature lands a hit once its target is in range. Melee by default; ranged and special creatures override it.

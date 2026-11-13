@@ -20,6 +20,7 @@ GameObject:
   - component: {fileID: 7163794546945123289}
   - component: {fileID: 7338576979227426404}
   - component: {fileID: 1997546153208528419}
+  - component: {fileID: -6073012364785229309}
   m_Layer: 6
   m_Name: Farmer
   m_TagString: Untagged
@@ -319,6 +320,20 @@ MonoBehaviour:
   socketBindings: []
   socketScaleFactor: 1
   defaultMutations: []
+--- !u!114 &-6073012364785229309
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 772027456437343675}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a4bb3c166d9fd4717afb4ee0107c5aa0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RepairWorker
+  isFarmer: 1
+  hasHammerLimbs: 0
 --- !u!1 &1082710212965220737
 GameObject:
   m_ObjectHideFlags: 0
