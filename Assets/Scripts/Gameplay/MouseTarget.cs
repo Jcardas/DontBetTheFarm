@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 // What the mouse is over, the same answer for every script that asks. A creature wins, even one behind a building
@@ -33,4 +34,9 @@ public static class MouseTarget
         }
         return nearest;
     }
+
+    // The building whose menu a right-click opens: one that has a menu, while no unit is picked
+    // (picked units take a right-click as an order).
+    public static Buildable Menu(Ray ray, RaycastHit hit) =>
+        Building(ray, hit) is IContextInteractable building && !Selectable.All.Any(s => s.Selected) ? (Buildable)building : null;
 }

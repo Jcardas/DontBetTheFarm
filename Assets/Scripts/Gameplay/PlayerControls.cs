@@ -7,7 +7,7 @@ using UnityEngine.InputSystem;
 // click a picked unit to drop it from the selection, double-click to pick every unit of its type on screen, or drag a box
 // around several (Shift-click toggles one unit, Shift-drag adds, Ctrl-click and Ctrl-drag drop). Left-clicking anything
 // that isn't a unit, or pressing Escape, drops everyone. Right-click the ground, a resource or an alien to order the picked
-// units there. Ctrl+1..3 saves the picked units as a group, 1..3 picks the group again (Shift+1..3 adds it).
+// units there; with nobody picked, right-click a building to open its menu (ContextInteractionManager). Ctrl+1..3 saves the picked units as a group, 1..3 picks the group again (Shift+1..3 adds it).
 // Space fires the farmer's shotgun toward the cursor.
 // The cursor shows what a right-click would do on whatever the mouse is over, or how far along a shotgun reload is.
 public class PlayerControls : MonoBehaviour
@@ -114,7 +114,7 @@ public class PlayerControls : MonoBehaviour
         ShowCursor(shotgun && shotgun.Reloading
             ? ReloadCursor(shotgun.ReloadProgress)
             : overSomething
-                ? CursorFor(hit, unit)
+                ? CursorFor(ray, hit, unit)
                 : CursorType.Default);
     }
 
@@ -145,7 +145,7 @@ public class PlayerControls : MonoBehaviour
     }
 
     // What lights up under the mouse besides units: what a right-click would act on, when a picked unit can do it
-    // (an alien to attack, a tree to chop, a field to harvest), or else a building with its own menu (a pen).
+    // (an alien to attack, a tree to chop, a field to harvest), or a building whose menu it would open (a pen).
     static Component Target(Ray ray, RaycastHit hit)
     {
         var order = Order.From(hit);
@@ -155,8 +155,7 @@ public class PlayerControls : MonoBehaviour
             if (order.node) return order.node;
             if (order.field) return order.field;
         }
-        var building = MouseTarget.Building(ray, hit);
-        return building is IContextInteractable ? building : null;
+        return MouseTarget.Menu(ray, hit);
     }
 
     static bool AnyPickedCan(Order order) => Selectable.All.Any(s => s.Selected && s.CanObey(order));
@@ -176,8 +175,9 @@ public class PlayerControls : MonoBehaviour
 
     // Same precedence as Order.From, so the cursor always previews the order a right-click would give, and only
     // when a picked unit can carry it out: with just cows picked, a tree shows the walk-here cursor, since they walk there.
-    static CursorType CursorFor(RaycastHit hit, Selectable unit)
+    static CursorType CursorFor(Ray ray, RaycastHit hit, Selectable unit)
     {
+        if (MouseTarget.Menu(ray, hit)) return CursorType.OpenMenu;
         var order = Order.From(hit);
         return (AnyPickedCan(order) ? order.kind : OrderKind.Move) switch
         {
