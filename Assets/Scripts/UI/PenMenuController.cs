@@ -1,95 +1,90 @@
 using UnityEngine;
-using UnityEngine.UI;
+using UnityEngine.UIElements;
 using UnityEngine.InputSystem;
 
 public class PenMenuController : MonoBehaviour
 {
-    [Header("Menu References")]
-    public GameObject masterMenuRoot;
-    public GameObject animalsView;
-    public GameObject breedingView;
+    [Header("Menu Documents")]
+    public UIDocument animalMenuDoc;
+    public UIDocument breedingMenuDoc;
 
-    [Header("Grid References")]
-    public Transform penListGrid;
-    public GameObject animalCardPrefab;
+    [Header("Controls")]
+    // Customizable in the Inspector. 
+    public Key toggleKey = Key.B;
 
-    [Header("Tab Buttons")]
-    public Image btnAnimalsBackground;
-    public Image btnBreedingBackground;
+    // Tracks which tab to open
+    private enum MenuTab { Animals, Breeding }
+    private MenuTab lastActiveTab = MenuTab.Animals; // Defaults to Animals on first load
+    private bool isMenuOpen = false;
 
-    private Color activeColor;
-    private Color inactiveColor;
-
-    public RectTransform tabNavigationContainer;
-
+    private VisualElement animalRoot;
+    private VisualElement breedingRoot;
 
     void Start()
     {
-        ColorUtility.TryParseHtmlString("#2A4835", out activeColor);
-        inactiveColor = new Color(0, 0, 0, 0);
+        // 1. Grab the root visual elements
+        animalRoot = animalMenuDoc.rootVisualElement;
+        breedingRoot = breedingMenuDoc.rootVisualElement;
 
-        masterMenuRoot.SetActive(true);
+        // 2. Query and hook up Animal Menu buttons
+        var animalBackButton = animalRoot.Q<VisualElement>("Btn_Back");
+        var breedingTabBtn = animalRoot.Q<VisualElement>("Tab_Breeding");
 
-        ShowAnimalsTab();
+        if (animalBackButton != null) animalBackButton.RegisterCallback<ClickEvent>(evt => CloseMenu());
+        if (breedingTabBtn != null) breedingTabBtn.RegisterCallback<ClickEvent>(evt => SwitchTab(MenuTab.Breeding));
 
-        Canvas.ForceUpdateCanvases();
+        // 3. Query and hook up Breeding Menu buttons
+        var breedingBackButton = breedingRoot.Q<VisualElement>("Btn_Back");
+        var animalTabBtn = breedingRoot.Q<VisualElement>("Tab_Animals");
 
-        masterMenuRoot.SetActive(false);
+        if (breedingBackButton != null) breedingBackButton.RegisterCallback<ClickEvent>(evt => CloseMenu());
+        if (animalTabBtn != null) animalTabBtn.RegisterCallback<ClickEvent>(evt => SwitchTab(MenuTab.Animals));
+
+        // 4. Hide both menus initially using UI Toolkit's display style
+        animalRoot.style.display = DisplayStyle.None;
+        breedingRoot.style.display = DisplayStyle.None;
     }
 
     void Update()
     {
-        if (Keyboard.current != null && Keyboard.current.bKey.wasPressedThisFrame)
+        // Check if a keyboard exists, then check if your specific key was pressed
+        if (Keyboard.current != null && Keyboard.current[toggleKey].wasPressedThisFrame)
         {
-            ToggleMasterMenu();
+            if (isMenuOpen)
+                CloseMenu();
+            else
+                OpenMenu();
         }
     }
 
-    private void ToggleMasterMenu()
+    // Made PUBLIC so your future Animal Pen script can easily trigger this via code
+    public void OpenMenu()
     {
-        bool isActive = !masterMenuRoot.activeSelf;
-        masterMenuRoot.SetActive(isActive);
-
-        if (isActive)
-        {
-            ShowAnimalsTab();
-            PopulatePenGrid(); // Generate the cards when the menu opens
-        }
-    }
-
-    public void ShowAnimalsTab()
-    {
-        animalsView.SetActive(true);
-        breedingView.SetActive(false);
-        btnAnimalsBackground.color = activeColor;
-        btnBreedingBackground.color = inactiveColor;
-    }
-
-    public void ShowBreedingTab()
-    {
-        animalsView.SetActive(false);
-        breedingView.SetActive(true);
-        btnAnimalsBackground.color = inactiveColor;
-        btnBreedingBackground.color = activeColor;
-    }
-
-    private void PopulatePenGrid()
-    {
-        // 1. Clear out any old cards first so they don't endlessly duplicate
-        foreach (Transform child in penListGrid)
-        {
-            Destroy(child.gameObject);
-        }
-
-        // 2. Spawn 5 test cards (you will later replace this '5' with your actual list of farm animals)
-        for (int i = 0; i < 5; i++)
-        {
-            Instantiate(animalCardPrefab, penListGrid, false);
-        }
+        isMenuOpen = true;
+        SwitchTab(lastActiveTab); // Opens whichever tab was saved last
     }
 
     public void CloseMenu()
     {
-        masterMenuRoot.SetActive(false);
+        isMenuOpen = false;
+        // Hide both menus instantly
+        animalRoot.style.display = DisplayStyle.None;
+        breedingRoot.style.display = DisplayStyle.None;
+    }
+
+    private void SwitchTab(MenuTab tab)
+    {
+        lastActiveTab = tab; // Save the state for the next time the menu opens
+
+        if (tab == MenuTab.Animals)
+        {
+            animalRoot.style.display = DisplayStyle.Flex;
+            breedingRoot.style.display = DisplayStyle.None;
+        }
+        else if (tab == MenuTab.Breeding)
+        {
+            animalRoot.style.display = DisplayStyle.None;
+            breedingRoot.style.display = DisplayStyle.Flex;
+        }
     }
 }

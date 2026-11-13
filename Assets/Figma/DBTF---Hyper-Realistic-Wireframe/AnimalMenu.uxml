@@ -1,0 +1,215 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/Figma/DBTF---Hyper-Realistic-Wireframe/AnimalMenu.uss?fileID=7433441132597879392&amp;guid=764b8b81ba0d6904e92b4170a8e6e600&amp;type=3#AnimalMenu"/>
+    <ui:VisualElement style="width: 1280px; height: 720px; border-radius: 12px; flex-shrink: 0;">
+        <ui:VisualElement style="display: flex; height: 62px; padding: 10px; align-items: flex-start; border-radius: 12px; background-color: rgb(22, 38, 32); flex-direction: row; position: absolute; left: 0; top: 0;">
+            <ui:VisualElement name="Btn_Back" style="display: flex; padding: 10px; justify-content: center; align-items: center; flex-shrink: 0; align-self: stretch; border-radius: 8px; background-color: rgb(22, 38, 32); flex-direction: row;">
+                <ui:VisualElement style="width: 32px; height: 32px; flex-shrink: 0;">
+                    <ui:VisualElement style="width: 32px; height: 32px; position: absolute; left: 0; top: 0; background-image: url(&quot;project://database/Assets/Figma/DBTF---Hyper-Realistic-Wireframe/images/img-a4jhpe1vpfmx0-149.png?fileID=2800000&amp;guid=71f7444b37e60294fbc52ce828700fd8&amp;type=3#img-a4jhpe1vpfmx0-149&quot;); -unity-background-scale-mode: scale-to-fit;"/>
+                    <ui:VisualElement style="width: 24px; height: 16px; position: absolute; left: 4px; top: 8px; background-image: url(&quot;project://database/Assets/Figma/DBTF---Hyper-Realistic-Wireframe/images/img-1w10bx1cqsfrh-383.png?fileID=2800000&amp;guid=851974b886ee5b944abc6e2adb624c16&amp;type=3#img-1w10bx1cqsfrh-383&quot;); -unity-background-scale-mode: scale-to-fit;"/>
+                </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:VisualElement name="Tab_Animals" style="display: flex; padding: 21px 42px; justify-content: center; align-items: center; flex-shrink: 0; align-self: stretch; border-radius: 8px; background-color: rgb(42, 72, 53); flex-direction: row; flex-wrap: nowrap;">
+                <ui:VisualElement style="width: 32px; height: 32px; flex-shrink: 0; margin-right: 4px; margin-left: 4px;">
+                    <ui:VisualElement style="width: 26.667px; height: 26.667px; position: absolute; left: 3px; top: 3px; background-image: url(&quot;project://database/Assets/Figma/DBTF---Hyper-Realistic-Wireframe/images/img-1sfckl119xmsfr-1637.png?fileID=2800000&amp;guid=2b77cb64ad38d224eb59e8177cc25b60&amp;type=3#img-1sfckl119xmsfr-1637&quot;); -unity-background-scale-mode: scale-to-fit;"/>
+                </ui:VisualElement>
+                <ui:Label text="Animals" class="unity-label" style="flex-shrink: 0; color: rgb(204, 204, 204); font-size: 20px; -unity-font-style: bold; white-space: nowrap; justify-content: flex-start; align-items: stretch; align-self: auto; align-content: flex-start; -unity-text-align: middle-left;"/>
+            </ui:VisualElement>
+            <ui:VisualElement name="Tab_Breeding" style="display: flex; padding: 21px 42px; justify-content: center; align-items: center; flex-shrink: 0; align-self: stretch; border-radius: 8px; background-color: rgb(22, 38, 32); flex-direction: row;">
+                <ui:VisualElement style="width: 28px; height: 23px; flex-shrink: 0; background-image: url(&quot;project://database/Assets/Figma/DBTF---Hyper-Realistic-Wireframe/images/img-1jlp4mq1uj4l59-1176.png?fileID=2800000&amp;guid=a8cd54a339423b048b3f46dc6923e12c&amp;type=3#img-1jlp4mq1uj4l59-1176&quot;); -unity-background-scale-mode: scale-to-fit; margin-right: 4px; margin-left: 4px;"/>
+                <ui:Label text="Breeding" class="unity-label" style="flex-shrink: 0; color: rgb(204, 204, 204); font-size: 20px; -unity-font-style: bold; white-space: nowrap; -unity-text-align: middle-left;"/>
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement style="width: 790px; height: 213px; padding: 10px; border-radius: 12px; background-color: rgba(22, 38, 32, 0.45); position: absolute; left: 0; top: 507px;">
+            <ui:VisualElement class="mutation-part" style="width: 96px; height: 96px; position: absolute; left: 10px; top: 10px;">
+                <ui:VisualElement style="width: 58px; height: 64px; position: absolute; left: 19px; top: 16px; background-image: url(&quot;project://database/Assets/Figma/DBTF---Hyper-Realistic-Wireframe/images/img-1qfhsfz1axs35h-3506.png?fileID=2800000&amp;guid=5a865ddfb6cbe234fa3bc1c95a74546a&amp;type=3#img-1qfhsfz1axs35h-3506&quot;); -unity-background-scale-mode: scale-to-fit;"/>
+            </ui:VisualElement>
+            <ui:VisualElement class="mutation-part" style="width: 96px; height: 96px; position: absolute; left: 121px; top: 10px;">
+                <ui:VisualElement style="width: 58px; height: 64px; position: absolute; left: 19px; top: 16px; background-image: url(&quot;project://database/Assets/Figma/DBTF---Hyper-Realistic-Wireframe/images/img-1qfhsfz1axs35h-3506.png?fileID=2800000&amp;guid=5a865ddfb6cbe234fa3bc1c95a74546a&amp;type=3#img-1qfhsfz1axs35h-3506&quot;); -unity-background-scale-mode: scale-to-fit;"/>
+            </ui:VisualElement>
+            <ui:VisualElement class="mutation-part" style="width: 96px; height: 96px; position: absolute; left: 233px; top: 10px;">
+                <ui:VisualElement style="width: 58px; height: 64px; position: absolute; left: 19px; top: 16px; background-image: url(&quot;project://database/Assets/Figma/DBTF---Hyper-Realistic-Wireframe/images/img-1qfhsfz1axs35h-3506.png?fileID=2800000&amp;guid=5a865ddfb6cbe234fa3bc1c95a74546a&amp;type=3#img-1qfhsfz1axs35h-3506&quot;); -unity-background-scale-mode: scale-to-fit;"/>
+            </ui:VisualElement>
+            <ui:VisualElement class="mutation-part" style="width: 96px; height: 96px; position: absolute; left: 344px; top: 10px;">
+                <ui:VisualElement style="width: 58px; height: 64px; position: absolute; left: 19px; top: 16px; background-image: url(&quot;project://database/Assets/Figma/DBTF---Hyper-Realistic-Wireframe/images/img-1qfhsfz1axs35h-3506.png?fileID=2800000&amp;guid=5a865ddfb6cbe234fa3bc1c95a74546a&amp;type=3#img-1qfhsfz1axs35h-3506&quot;); -unity-background-scale-mode: scale-to-fit;"/>
+            </ui:VisualElement>
+            <ui:VisualElement class="mutation-part" style="width: 96px; height: 96px; position: absolute; left: 456px; top: 10px;">
+                <ui:VisualElement style="width: 58px; height: 64px; position: absolute; left: 19px; top: 16px; background-image: url(&quot;project://database/Assets/Figma/DBTF---Hyper-Realistic-Wireframe/images/img-1qfhsfz1axs35h-3506.png?fileID=2800000&amp;guid=5a865ddfb6cbe234fa3bc1c95a74546a&amp;type=3#img-1qfhsfz1axs35h-3506&quot;); -unity-background-scale-mode: scale-to-fit;"/>
+            </ui:VisualElement>
+            <ui:VisualElement class="mutation-part" style="width: 96px; height: 96px; position: absolute; left: 567px; top: 10px;">
+                <ui:VisualElement style="width: 58px; height: 64px; position: absolute; left: 19px; top: 16px; background-image: url(&quot;project://database/Assets/Figma/DBTF---Hyper-Realistic-Wireframe/images/img-1qfhsfz1axs35h-3506.png?fileID=2800000&amp;guid=5a865ddfb6cbe234fa3bc1c95a74546a&amp;type=3#img-1qfhsfz1axs35h-3506&quot;); -unity-background-scale-mode: scale-to-fit;"/>
+            </ui:VisualElement>
+            <ui:VisualElement class="mutation-part" style="width: 96px; height: 96px; position: absolute; left: 679px; top: 10px;">
+                <ui:VisualElement style="width: 58px; height: 64px; position: absolute; left: 19px; top: 16px; background-image: url(&quot;project://database/Assets/Figma/DBTF---Hyper-Realistic-Wireframe/images/img-1qfhsfz1axs35h-3506.png?fileID=2800000&amp;guid=5a865ddfb6cbe234fa3bc1c95a74546a&amp;type=3#img-1qfhsfz1axs35h-3506&quot;); -unity-background-scale-mode: scale-to-fit;"/>
+            </ui:VisualElement>
+            <ui:VisualElement class="mutation-part" style="width: 96px; height: 96px; position: absolute; left: 10px; top: 112px;">
+                <ui:VisualElement style="width: 58px; height: 64px; position: absolute; left: 19px; top: 16px; background-image: url(&quot;project://database/Assets/Figma/DBTF---Hyper-Realistic-Wireframe/images/img-1qfhsfz1axs35h-3506.png?fileID=2800000&amp;guid=5a865ddfb6cbe234fa3bc1c95a74546a&amp;type=3#img-1qfhsfz1axs35h-3506&quot;); -unity-background-scale-mode: scale-to-fit;"/>
+            </ui:VisualElement>
+            <ui:VisualElement class="mutation-part" style="width: 96px; height: 96px; position: absolute; left: 121px; top: 112px;">
+                <ui:VisualElement style="width: 58px; height: 64px; position: absolute; left: 19px; top: 16px; background-image: url(&quot;project://database/Assets/Figma/DBTF---Hyper-Realistic-Wireframe/images/img-1qfhsfz1axs35h-3506.png?fileID=2800000&amp;guid=5a865ddfb6cbe234fa3bc1c95a74546a&amp;type=3#img-1qfhsfz1axs35h-3506&quot;); -unity-background-scale-mode: scale-to-fit;"/>
+            </ui:VisualElement>
+            <ui:VisualElement class="mutation-part" style="width: 96px; height: 96px; position: absolute; left: 233px; top: 112px;">
+                <ui:VisualElement style="width: 58px; height: 64px; position: absolute; left: 19px; top: 16px; background-image: url(&quot;project://database/Assets/Figma/DBTF---Hyper-Realistic-Wireframe/images/img-1qfhsfz1axs35h-3506.png?fileID=2800000&amp;guid=5a865ddfb6cbe234fa3bc1c95a74546a&amp;type=3#img-1qfhsfz1axs35h-3506&quot;); -unity-background-scale-mode: scale-to-fit;"/>
+            </ui:VisualElement>
+            <ui:VisualElement class="mutation-part" style="width: 96px; height: 96px; position: absolute; left: 344px; top: 112px;">
+                <ui:VisualElement style="width: 58px; height: 64px; position: absolute; left: 19px; top: 16px; background-image: url(&quot;project://database/Assets/Figma/DBTF---Hyper-Realistic-Wireframe/images/img-1qfhsfz1axs35h-3506.png?fileID=2800000&amp;guid=5a865ddfb6cbe234fa3bc1c95a74546a&amp;type=3#img-1qfhsfz1axs35h-3506&quot;); -unity-background-scale-mode: scale-to-fit;"/>
+            </ui:VisualElement>
+            <ui:VisualElement class="mutation-part" style="width: 96px; height: 96px; position: absolute; left: 456px; top: 112px;">
+                <ui:VisualElement style="width: 58px; height: 64px; position: absolute; left: 19px; top: 16px; background-image: url(&quot;project://database/Assets/Figma/DBTF---Hyper-Realistic-Wireframe/images/img-1qfhsfz1axs35h-3506.png?fileID=2800000&amp;guid=5a865ddfb6cbe234fa3bc1c95a74546a&amp;type=3#img-1qfhsfz1axs35h-3506&quot;); -unity-background-scale-mode: scale-to-fit;"/>
+            </ui:VisualElement>
+            <ui:VisualElement class="mutation-part" style="width: 96px; height: 96px; position: absolute; left: 567px; top: 112px;">
+                <ui:VisualElement style="width: 58px; height: 64px; position: absolute; left: 19px; top: 16px; background-image: url(&quot;project://database/Assets/Figma/DBTF---Hyper-Realistic-Wireframe/images/img-1qfhsfz1axs35h-3506.png?fileID=2800000&amp;guid=5a865ddfb6cbe234fa3bc1c95a74546a&amp;type=3#img-1qfhsfz1axs35h-3506&quot;); -unity-background-scale-mode: scale-to-fit;"/>
+            </ui:VisualElement>
+            <ui:VisualElement class="mutation-part" style="width: 96px; height: 96px; position: absolute; left: 679px; top: 112px;">
+                <ui:VisualElement style="width: 58px; height: 64px; position: absolute; left: 19px; top: 16px; background-image: url(&quot;project://database/Assets/Figma/DBTF---Hyper-Realistic-Wireframe/images/img-1qfhsfz1axs35h-3506.png?fileID=2800000&amp;guid=5a865ddfb6cbe234fa3bc1c95a74546a&amp;type=3#img-1qfhsfz1axs35h-3506&quot;); -unity-background-scale-mode: scale-to-fit;"/>
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement style="display: flex; width: 490px; height: 720px; padding: 10px; flex-direction: column; align-items: flex-start; border-radius: 12px; background-color: rgba(22, 38, 32, 0.45); position: absolute; left: 790px; top: 0;">
+            <ui:VisualElement style="display: flex; flex-direction: column; align-items: flex-start; flex-shrink: 0;">
+                <ui:Label text="Stats:" class="unity-label" style="flex-shrink: 0; color: rgb(255, 255, 255); font-size: 32px; -unity-font-style: bold; -unity-text-align: middle-center; white-space: nowrap;"/>
+                <ui:VisualElement style="display: flex; align-items: flex-start; flex-shrink: 0; flex-direction: row;">
+                    <ui:Label text="Level:" class="unity-label" style="flex-shrink: 0; color: rgb(255, 255, 255); font-size: 14px; -unity-font-style: bold; -unity-text-align: middle-center; white-space: nowrap;"/>
+                    <ui:Label text="1" class="unity-label" style="flex-shrink: 0; color: rgb(255, 255, 255); font-size: 14px; -unity-text-align: middle-center; white-space: nowrap;"/>
+                </ui:VisualElement>
+                <ui:VisualElement style="display: flex; align-items: flex-start; flex-shrink: 0; flex-direction: row;">
+                    <ui:Label text="Max Health:" class="unity-label" style="flex-shrink: 0; color: rgb(255, 255, 255); font-size: 14px; -unity-font-style: bold; -unity-text-align: middle-center; white-space: nowrap;"/>
+                    <ui:Label text="100" class="unity-label" style="flex-shrink: 0; color: rgb(255, 255, 255); font-size: 14px; -unity-text-align: middle-center; white-space: nowrap;"/>
+                </ui:VisualElement>
+                <ui:VisualElement style="display: flex; align-items: flex-start; flex-shrink: 0; flex-direction: row;">
+                    <ui:Label text="Speed:" class="unity-label" style="flex-shrink: 0; color: rgb(255, 255, 255); font-size: 14px; -unity-font-style: bold; -unity-text-align: middle-center; white-space: nowrap;"/>
+                    <ui:Label text="10" class="unity-label" style="flex-shrink: 0; color: rgb(255, 255, 255); font-size: 14px; -unity-text-align: middle-center; white-space: nowrap;"/>
+                </ui:VisualElement>
+                <ui:VisualElement style="display: flex; align-items: flex-start; flex-shrink: 0; flex-direction: row;">
+                    <ui:Label text="Melee Damage:" class="unity-label" style="flex-shrink: 0; color: rgb(255, 255, 255); font-size: 14px; -unity-font-style: bold; -unity-text-align: middle-center; white-space: nowrap;"/>
+                    <ui:Label text="10" class="unity-label" style="flex-shrink: 0; color: rgb(255, 255, 255); font-size: 14px; -unity-text-align: middle-center; white-space: nowrap;"/>
+                </ui:VisualElement>
+                <ui:VisualElement style="display: flex; align-items: flex-start; flex-shrink: 0; flex-direction: row;">
+                    <ui:Label text="Ranged Damage:" class="unity-label" style="flex-shrink: 0; color: rgb(255, 255, 255); font-size: 14px; -unity-font-style: bold; -unity-text-align: middle-center; white-space: nowrap;"/>
+                    <ui:Label text="0" class="unity-label" style="flex-shrink: 0; color: rgb(255, 255, 255); font-size: 14px; -unity-text-align: middle-center; white-space: nowrap;"/>
+                </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:VisualElement style="width: 450px; height: 2px; flex-shrink: 0; background-image: url(&quot;project://database/Assets/Figma/DBTF---Hyper-Realistic-Wireframe/images/img-1kce47v57vvky-179.png?fileID=2800000&amp;guid=d923f9b840ec8f641bc14ae26f00e688&amp;type=3#img-1kce47v57vvky-179&quot;); -unity-background-scale-mode: scale-to-fit;"/>
+            <ui:VisualElement style="display: flex; flex-direction: column; align-items: flex-start; flex-shrink: 0; align-self: stretch;">
+                <ui:Label text="Mutations:" class="unity-label" style="flex-shrink: 0; color: rgb(255, 255, 255); font-size: 32px; -unity-font-style: bold; -unity-text-align: middle-center; white-space: nowrap;"/>
+                <ui:VisualElement style="display: flex; flex-direction: column; align-items: flex-start; flex-shrink: 0; align-self: stretch;">
+                    <ui:VisualElement style="display: flex; width: auto; align-items: flex-start; flex-shrink: 0; flex-direction: row;">
+                        <ui:Label text="Head:" class="unity-label" style="flex-shrink: 0; color: rgb(255, 255, 255); font-size: 14px; -unity-font-style: bold; -unity-text-align: middle-center; white-space: nowrap;"/>
+                        <ui:Label text="Tentacles" class="unity-label" style="flex-shrink: 0; color: rgb(255, 255, 255); font-size: 14px; -unity-text-align: middle-center; white-space: nowrap;"/>
+                    </ui:VisualElement>
+                    <ui:VisualElement style="display: flex; width: auto; align-items: flex-start; flex-shrink: 0; flex-direction: row;">
+                        <ui:VisualElement style="width: 17px; flex-shrink: 0; align-self: stretch;"/>
+                        <ui:Label text="→" class="unity-label" style="flex-shrink: 0; color: rgb(255, 255, 255); font-size: 14px; -unity-font-style: bold; -unity-text-align: middle-center; white-space: nowrap;"/>
+                        <ui:Label text="Increases attack range" class="unity-label" style="flex-shrink: 0; color: rgb(255, 255, 255); font-size: 14px; -unity-text-align: middle-center; white-space: nowrap;"/>
+                    </ui:VisualElement>
+                </ui:VisualElement>
+                <ui:VisualElement style="display: flex; flex-direction: column; align-items: flex-start; flex-shrink: 0; align-self: stretch;">
+                    <ui:VisualElement style="display: flex; width: auto; align-items: flex-start; flex-shrink: 0; flex-direction: row;">
+                        <ui:Label text="Back:" class="unity-label" style="flex-shrink: 0; color: rgb(255, 255, 255); font-size: 14px; -unity-font-style: bold; -unity-text-align: middle-center; white-space: nowrap;"/>
+                        <ui:Label text="Wings" class="unity-label" style="flex-shrink: 0; color: rgb(255, 255, 255); font-size: 14px; -unity-text-align: middle-center; white-space: nowrap;"/>
+                    </ui:VisualElement>
+                    <ui:VisualElement style="display: flex; width: auto; align-items: flex-start; flex-shrink: 0; flex-direction: row;">
+                        <ui:VisualElement style="width: 17px; flex-shrink: 0; align-self: stretch;"/>
+                        <ui:Label text="→" class="unity-label" style="flex-shrink: 0; color: rgb(255, 255, 255); font-size: 14px; -unity-font-style: bold; -unity-text-align: middle-center; white-space: nowrap;"/>
+                        <ui:Label text="Allows animal flight" class="unity-label" style="flex-shrink: 0; color: rgb(255, 255, 255); font-size: 14px; -unity-text-align: middle-center; white-space: nowrap;"/>
+                    </ui:VisualElement>
+                </ui:VisualElement>
+                <ui:VisualElement style="display: flex; flex-direction: column; align-items: flex-start; flex-shrink: 0; align-self: stretch;">
+                    <ui:VisualElement style="display: flex; width: auto; align-items: flex-start; flex-shrink: 0; flex-direction: row;">
+                        <ui:Label text="Limbs:" class="unity-label" style="flex-shrink: 0; color: rgb(255, 255, 255); font-size: 14px; -unity-font-style: bold; -unity-text-align: middle-center; white-space: nowrap;"/>
+                        <ui:Label text="Axes" class="unity-label" style="flex-shrink: 0; color: rgb(255, 255, 255); font-size: 14px; -unity-text-align: middle-center; white-space: nowrap;"/>
+                    </ui:VisualElement>
+                    <ui:VisualElement style="display: flex; width: auto; align-items: flex-start; flex-shrink: 0; flex-direction: row;">
+                        <ui:VisualElement style="width: 17px; flex-shrink: 0; align-self: stretch;"/>
+                        <ui:Label text="→" class="unity-label" style="flex-shrink: 0; color: rgb(255, 255, 255); font-size: 14px; -unity-font-style: bold; -unity-text-align: middle-center; white-space: nowrap;"/>
+                        <ui:Label text="Allows animal to cut down trees (+1 Melee Damage)" class="unity-label" style="flex-shrink: 0; color: rgb(255, 255, 255); font-size: 14px; -unity-text-align: middle-center; white-space: nowrap;"/>
+                    </ui:VisualElement>
+                </ui:VisualElement>
+                <ui:VisualElement style="display: flex; flex-direction: column; align-items: flex-start; flex-shrink: 0; align-self: stretch;">
+                    <ui:VisualElement style="display: flex; width: auto; align-items: flex-start; flex-shrink: 0; flex-direction: row;">
+                        <ui:Label text="Tail:" class="unity-label" style="flex-shrink: 0; color: rgb(255, 255, 255); font-size: 14px; -unity-font-style: bold; -unity-text-align: middle-center; white-space: nowrap;"/>
+                        <ui:Label text="Scythe" class="unity-label" style="flex-shrink: 0; color: rgb(255, 255, 255); font-size: 14px; -unity-text-align: middle-center; white-space: nowrap;"/>
+                    </ui:VisualElement>
+                    <ui:VisualElement style="display: flex; width: auto; align-items: flex-start; flex-shrink: 0; flex-direction: row;">
+                        <ui:VisualElement style="width: 17px; flex-shrink: 0; align-self: stretch;"/>
+                        <ui:Label text="→" class="unity-label" style="flex-shrink: 0; color: rgb(255, 255, 255); font-size: 14px; -unity-font-style: bold; -unity-text-align: middle-center; white-space: nowrap;"/>
+                        <ui:Label text="Allows animal to harvest wheat (+1 Melee Damage)" class="unity-label" style="flex-shrink: 0; color: rgb(255, 255, 255); font-size: 14px; -unity-text-align: middle-center; white-space: nowrap;"/>
+                    </ui:VisualElement>
+                </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:VisualElement style="display: flex; padding: 10px; align-items: center; flex-grow: 1; flex-shrink: 0; flex-basis: 0; align-self: stretch; border-radius: 8px; background-color: rgb(22, 38, 32); flex-direction: row;">
+                <ui:VisualElement class="mutation-part" style="flex-shrink: 0;">
+                    <ui:VisualElement style="width: 58px; height: 64px; position: absolute; left: 31px; top: 28px; background-image: url(&quot;project://database/Assets/Figma/DBTF---Hyper-Realistic-Wireframe/images/img-1qfhsfz1axs35h-3506.png?fileID=2800000&amp;guid=5a865ddfb6cbe234fa3bc1c95a74546a&amp;type=3#img-1qfhsfz1axs35h-3506&quot;); -unity-background-scale-mode: scale-to-fit;"/>
+                </ui:VisualElement>
+                <ui:VisualElement name="VisualElement" style="display: flex; flex-direction: column; align-items: flex-start; flex-shrink: 0; margin-right: 10px; margin-left: 10px;">
+                    <ui:Label text="Tentacles" class="unity-label" style="flex-shrink: 0; color: rgb(255, 255, 255); font-size: 32px; -unity-font-style: bold; -unity-text-align: middle-center; white-space: nowrap;"/>
+                    <ui:VisualElement style="display: flex; align-items: flex-start; flex-shrink: 0; flex-direction: row;">
+                        <ui:Label text="Slots:" class="unity-label" style="flex-shrink: 0; color: rgb(255, 255, 255); font-size: 14px; -unity-font-style: bold; -unity-text-align: middle-center; white-space: nowrap;"/>
+                        <ui:Label text="Head, Limbs, Back, Tail" class="unity-label" style="flex-shrink: 0; color: rgb(255, 255, 255); font-size: 14px; -unity-text-align: middle-center; white-space: nowrap;"/>
+                    </ui:VisualElement>
+                    <ui:VisualElement name="VisualElement" style="display: flex; align-items: flex-start; flex-shrink: 0; flex-direction: row;">
+                        <ui:Label text="Effect:" class="unity-label" style="flex-shrink: 0; color: rgb(255, 255, 255); font-size: 14px; -unity-font-style: bold; -unity-text-align: middle-center; white-space: nowrap;"/>
+                        <ui:Label text="Increases attack range" class="unity-label" style="flex-shrink: 0; color: rgb(255, 255, 255); font-size: 14px; -unity-text-align: middle-center; white-space: nowrap;"/>
+                    </ui:VisualElement>
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement style="display: flex; width: 468px; flex-direction: column; justify-content: center; align-items: center; border-radius: 12px; position: absolute; left: 36px; top: 67px;">
+            <ui:VisualElement style="display: flex; justify-content: center; align-items: center; flex-shrink: 0; align-self: stretch; flex-direction: row;">
+                <ui:Label text="1/6" class="unity-label" style="flex-shrink: 0; color: rgb(255, 255, 255); font-size: 20px; -unity-font-style: bold; -unity-text-align: middle-center; white-space: nowrap;"/>
+                <ui:Label text="Cow (Level 1)" class="unity-label" style="flex-grow: 1; flex-shrink: 0; flex-basis: 0; color: rgb(255, 255, 255); font-size: 20px; -unity-font-style: bold; -unity-text-align: middle-center; white-space: normal;"/>
+            </ui:VisualElement>
+            <ui:VisualElement style="height: 214px; flex-shrink: 0; align-self: stretch;">
+                <ui:VisualElement style="width: 468px; height: 214px; position: absolute; left: 0; top: 0; background-image: url(&quot;project://database/Assets/Figma/DBTF---Hyper-Realistic-Wireframe/images/img-1a3gsdd1e4jfg2-576758.png?fileID=2800000&amp;guid=5ce93473795128a40ab01909ddc1f1d7&amp;type=3#img-1a3gsdd1e4jfg2-576758&quot;); -unity-background-scale-mode: scale-and-crop;"/>
+                <ui:VisualElement style="width: 30px; height: 30px; position: absolute; left: 416px; top: 107px; background-image: url(&quot;project://database/Assets/Figma/DBTF---Hyper-Realistic-Wireframe/images/img-lrk8og1wxltow-743.png?fileID=2800000&amp;guid=83400c1e8cec2194583a9ac7c926d231&amp;type=3#img-lrk8og1wxltow-743&quot;); -unity-background-scale-mode: scale-to-fit;"/>
+                <ui:VisualElement style="width: 30px; height: 30px; position: absolute; left: 26px; top: 107px; background-image: url(&quot;project://database/Assets/Figma/DBTF---Hyper-Realistic-Wireframe/images/img-2he8y618af6wi-759.png?fileID=2800000&amp;guid=e5740b12ebf7fcc44942e3a87cadf940&amp;type=3#img-2he8y618af6wi-759&quot;); -unity-background-scale-mode: scale-to-fit;"/>
+            </ui:VisualElement>
+            <ui:VisualElement style="display: flex; height: 44px; padding: 10px; justify-content: center; align-items: center; flex-shrink: 0; align-self: stretch; flex-direction: row;">
+                <ui:Label text="HP: 10/100" class="unity-label" style="width: 85px; flex-shrink: 0; color: rgb(255, 255, 255); font-size: 14px; -unity-font-style: bold; -unity-text-align: middle-center; white-space: normal;"/>
+                <ui:VisualElement style="display: flex; align-items: center; flex-shrink: 0; flex-direction: row; margin-top: 10px; margin-right: 10px; margin-bottom: 10px; margin-left: 10px;">
+                    <ui:VisualElement style="width: 69px; height: 24px; flex-shrink: 0; border-radius: 12px 0 0 12px; background-color: rgb(0, 128, 0);"/>
+                    <ui:VisualElement style="width: 169px; height: 24px; flex-shrink: 0; border-radius: 0 12px 12px 0; background-color: rgb(217, 217, 217);"/>
+                </ui:VisualElement>
+                <ui:VisualElement style="display: flex; height: 32px; padding: 10px; justify-content: center; align-items: center; flex-shrink: 0; border-radius: 4px; background-color: rgb(42, 72, 53); flex-direction: row; margin-top: 10px; margin-right: 10px; margin-bottom: 10px; margin-left: 10px;">
+                    <ui:Label text="Heal: 10 🌾" class="unity-label" style="flex-shrink: 0; color: rgb(255, 255, 255); font-size: 14px; -unity-font-style: bold; -unity-text-align: middle-center; white-space: nowrap;"/>
+                </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:VisualElement style="display: flex; padding: 10px; justify-content: center; align-items: center; flex-shrink: 0; flex-direction: row;">
+                <ui:VisualElement name="VisualElement" class="mutation-slot" style="width: 96px; height: 96px; flex-shrink: 0; background-color: rgba(128, 128, 128, 0.6); margin-top: 0; margin-right: 5px; margin-bottom: 0; margin-left: 5px;">
+                    <ui:VisualElement style="width: 50px; height: 56px; position: absolute; left: 23px; top: 20px; background-image: url(&quot;project://database/Assets/Figma/DBTF---Hyper-Realistic-Wireframe/images/img-1oi6s32glhhg0-2410.png?fileID=2800000&amp;guid=9df6fb7f02e920c49ad15b3cdc85cfe4&amp;type=3#img-1oi6s32glhhg0-2410&quot;); -unity-background-scale-mode: scale-to-fit;"/>
+                </ui:VisualElement>
+                <ui:VisualElement class="mutation-part" style="width: 96px; height: 96px; flex-shrink: 0; border-color: rgb(167, 49, 222); background-color: rgba(128, 128, 128, 0.6); margin-right: 5px; margin-left: 5px;">
+                    <ui:VisualElement style="width: 58px; height: 64px; position: absolute; left: 19px; top: 16px; background-image: url(&quot;project://database/Assets/Figma/DBTF---Hyper-Realistic-Wireframe/images/img-178e9x91f0vhre-3967.png?fileID=2800000&amp;guid=2969eac7fb9650e4f84f77a3b3c1ac01&amp;type=3#img-178e9x91f0vhre-3967&quot;); -unity-background-scale-mode: scale-to-fit;"/>
+                </ui:VisualElement>
+                <ui:VisualElement class="mutation-slot" style="width: 96px; height: 96px; flex-shrink: 0; background-color: rgba(128, 128, 128, 0.6); margin-right: 5px; margin-left: 5px;">
+                    <ui:VisualElement style="width: 50px; height: 56px; position: absolute; left: 23px; top: 20px; background-image: url(&quot;project://database/Assets/Figma/DBTF---Hyper-Realistic-Wireframe/images/img-1oi6s32glhhg0-2410.png?fileID=2800000&amp;guid=9df6fb7f02e920c49ad15b3cdc85cfe4&amp;type=3#img-1oi6s32glhhg0-2410&quot;); -unity-background-scale-mode: scale-to-fit;"/>
+                </ui:VisualElement>
+                <ui:VisualElement class="mutation-slot" style="width: 96px; height: 96px; flex-shrink: 0; background-color: rgba(128, 128, 128, 0.6); margin-right: 5px; margin-left: 5px;">
+                    <ui:VisualElement style="width: 50px; height: 56px; position: absolute; left: 23px; top: 20px; background-image: url(&quot;project://database/Assets/Figma/DBTF---Hyper-Realistic-Wireframe/images/img-1oi6s32glhhg0-2410.png?fileID=2800000&amp;guid=9df6fb7f02e920c49ad15b3cdc85cfe4&amp;type=3#img-1oi6s32glhhg0-2410&quot;); -unity-background-scale-mode: scale-to-fit;"/>
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement style="display: flex; width: 247px; padding: 10px; flex-direction: column; justify-content: center; align-items: center; border-radius: 12px; background-color: rgb(22, 38, 32); position: absolute; left: 530px; top: 350px;">
+            <ui:VisualElement style="display: flex; height: 68px; padding: 10px; justify-content: center; align-items: center; flex-shrink: 0; align-self: stretch; border-radius: 4px; background-color: rgb(42, 72, 53); flex-direction: row; margin-top: 5px; margin-right: 5px; margin-bottom: 5px; margin-left: 5px;">
+                <ui:Label text="Mutation Cost: &#10;10 🌾 10 🧬" class="unity-label" style="display: flex; width: 193px; height: 72px; flex-direction: column; justify-content: center; flex-shrink: 0; color: rgb(255, 255, 255); font-size: 20px; -unity-font-style: bold; -unity-text-align: middle-center; white-space: normal;"/>
+            </ui:VisualElement>
+            <ui:VisualElement style="display: flex; align-items: flex-start; flex-shrink: 0; align-self: stretch; flex-direction: row; margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0;">
+                <ui:VisualElement style="height: 32px; flex-grow: 1; flex-shrink: 0; flex-basis: 0; border-radius: 8px; background-color: rgba(128, 128, 128, 0.6); margin-top: 5px; margin-right: 5px; margin-bottom: 5px; margin-left: 5px;">
+                    <ui:Label text="Cancel" class="unity-label" style="color: rgb(255, 255, 255); font-size: 14px; -unity-font-style: bold; -unity-text-align: middle-center; white-space: nowrap; position: relative; left: auto; top: auto; align-self: auto;"/>
+                </ui:VisualElement>
+                <ui:VisualElement name="VisualElement" style="height: 32px; flex-grow: 1; flex-shrink: 0; flex-basis: 0; border-radius: 8px; background-color: rgb(167, 49, 222); margin-top: 5px; margin-right: 5px; margin-bottom: 5px; margin-left: 5px;">
+                    <ui:Label text="Mutate" class="unity-label" style="color: rgb(255, 255, 255); font-size: 14px; -unity-font-style: bold; -unity-text-align: middle-center; white-space: nowrap; position: relative; left: auto; top: auto;"/>
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement style="display: none; width: 303px; height: 61px; padding: 20px; justify-content: center; align-items: center; border-radius: 0 0 0 12px; background-color: rgb(22, 38, 32); flex-direction: row; position: absolute; left: 1072px; top: -51px;">
+            <ui:VisualElement style="width: 64px; height: 24px; flex-shrink: 0;">
+                <ui:Label text="256 🌾" class="unity-label" style="color: rgb(187, 160, 97); font-size: 20px; -unity-font-style: bold; -unity-text-align: middle-center; white-space: nowrap; position: absolute; left: 0; top: 0;"/>
+            </ui:VisualElement>
+            <ui:VisualElement style="width: 64px; height: 24px; flex-shrink: 0;">
+                <ui:Label text="256 🪵" class="unity-label" style="color: rgb(204, 204, 204); font-size: 20px; -unity-font-style: bold; -unity-text-align: middle-center; white-space: nowrap; position: absolute; left: 0; top: 0;"/>
+            </ui:VisualElement>
+            <ui:VisualElement style="width: 64px; height: 24px; flex-shrink: 0;">
+                <ui:Label text="256 🧬" class="unity-label" style="color: rgb(204, 204, 204); font-size: 20px; -unity-font-style: bold; -unity-text-align: middle-center; white-space: nowrap; position: absolute; left: 0; top: 0;"/>
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>
