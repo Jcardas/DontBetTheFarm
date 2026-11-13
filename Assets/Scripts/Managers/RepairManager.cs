@@ -37,41 +37,12 @@ public class RepairManager : MonoBehaviour
     private void Awake()
     {
         cam = Camera.main;
-
-        // GameManager.prefab can't point at the scene's UI, so look the panel up when it isn't assigned.
-        if (!repairPanel) FindPanel();
-        if (!repairPanel || !repairButton || !repairButtonText || !statusText)
-        {
-            Debug.LogWarning("RepairManager: no repair panel in this scene, so repairs are off.");
-            enabled = false;
-            return;
-        }
-
         repairPanel.gameObject.SetActive(false);
         repairButton.onClick.AddListener(RepairSelected);
         repairButton.interactable = false;
     }
 
-    private void OnDestroy()
-    {
-        if (repairButton) repairButton.onClick.RemoveListener(RepairSelected);
-    }
-
-    // The panel lives in UI.prefab (ResourceCanvas > RepairPanel) and starts hidden, so search inactive objects too.
-    private void FindPanel()
-    {
-        foreach (var t in FindObjectsByType<RectTransform>(FindObjectsInactive.Include, FindObjectsSortMode.None))
-        {
-            if (t.name != "RepairPanel") continue;
-
-            repairPanel = t;
-            repairButton = t.GetComponentInChildren<Button>(true);
-            if (repairButton) repairButtonText = repairButton.GetComponentInChildren<TMP_Text>(true);
-            Transform status = t.Find("StatusText");
-            if (status) statusText = status.GetComponent<TMP_Text>();
-            return;
-        }
-    }
+    private void OnDestroy() => repairButton.onClick.RemoveListener(RepairSelected);
 
     private void LateUpdate()
     {

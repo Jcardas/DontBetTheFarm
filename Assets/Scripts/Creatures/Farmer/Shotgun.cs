@@ -1,11 +1,11 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
-// The farmer's only weapon: a double-barrel that sprays pellets toward a point, in a level fan plus a raised row that can
-// reach fliers. He fires it on his own at aliens inside his attack range (Farmer.PerformAttack), and Space (PlayerControls)
-// fires it toward the cursor out to the full range. Two shells, then a reload, shared by both.
-// It works whether or not he is selected, but a knocked-out farmer can't fire.
+// The farmer's own attack, on Space (PlayerControls): a double-barrel that sprays a flat fan of pellets toward the cursor.
+// Two shells, then a reload. It works whether or not he is selected, but a knocked-out farmer can't fire.
+// His automatic melee (Fighter) keeps running alongside it.
 [RequireComponent(typeof(Creature), typeof(AudioSource))]
 public class Shotgun : MonoBehaviour
 {
@@ -14,18 +14,16 @@ public class Shotgun : MonoBehaviour
 
     enum State { Ready, Reloading }
 
-    [Tooltip("Pellets in the level fan, spread evenly across the cone.")]
-    public int pellets = 7;
+    [Tooltip("Pellets per shot, spread evenly across the cone.")]
+    public int pellets = 6;
     [Tooltip("Width of the pellet fan, in degrees.")]
     public float coneDegrees = 30f;
-    [Tooltip("Extra pellets angled upward, spread across the same cone, so a shot can hit flying enemies.")]
-    public int raisedPellets = 3;
-    [Tooltip("How far the raised pellets angle up, in degrees.")]
-    public float raisedDegrees = 15f;
     [Tooltip("How far a pellet flies, from the muzzle.")]
-    public float range = 12f;
+    public float range = 8f;
     [Tooltip("Damage each pellet does to the first enemy it hits.")]
-    public int pelletDamage = 5;
+    public int pelletDamage = 6;
+    [Tooltip("Metres each pellet pushes the enemy it hits, along the pellet's flight.")]
+    public float knockback = 1.5f;
     [Tooltip("Seconds from one shot until the next is allowed, while shells are left.")]
     public float shotCooldown = 0.3f;
     [Tooltip("Seconds to reload both shells once they are spent.")]
@@ -45,6 +43,7 @@ public class Shotgun : MonoBehaviour
     State state;
     int shells = MaxShells;
     float nextShot, reloadedAt;
+    readonly HashSet<Creature> pushed = new();
 
     public int Shells => shells;
     public bool Reloading => state == State.Reloading;
@@ -72,12 +71,13 @@ public class Shotgun : MonoBehaviour
         aim.y = 0f;
         if (aim.sqrMagnitude > 0.001f) transform.rotation = Quaternion.LookRotation(aim);
         Vector3 from = muzzle ? muzzle.position : transform.position + Vector3.up * ChestHeight;
-        // Aim from the barrel, not his middle, so the fan centres on the aim point instead of beside it.
-        Vector3 toAim = aimPoint - from;
-        toAim.y = 0f;
-        Vector3 forward = toAim.sqrMagnitude > 0.25f && Vector3.Dot(toAim, transform.forward) > 0f ? toAim.normalized : transform.forward;
-        Spray(from, forward, pellets, 0f);
-        Spray(from, forward, raisedPellets, raisedDegrees);
+        pushed.Clear();
+        for (int i = 0; i < pellets; i++)
+        {
+            float angle = pellets == 1 ? 0f : Mathf.Lerp(-coneDegrees / 2f, coneDegrees / 2f, i / (pellets - 1f));
+            Vector3 direction = Quaternion.AngleAxis(angle, Vector3.up) * transform.forward;
+            Streak(from, Pellet(from, direction));
+        }
 
         if (toy) toy.Bump();
         if (shot) audioSource.PlayOneShot(shot);
@@ -87,21 +87,9 @@ public class Shotgun : MonoBehaviour
         reloadedAt = Time.time + reloadSeconds;
     }
 
-    // One row of `count` pellets across the cone around `forward`, tilted `upDegrees` above level.
-    void Spray(Vector3 from, Vector3 forward, int count, float upDegrees)
-    {
-        Vector3 tilted = Quaternion.AngleAxis(-upDegrees, Vector3.Cross(Vector3.up, forward)) * forward;
-        for (int i = 0; i < count; i++)
-        {
-            float angle = count == 1 ? 0f : Mathf.Lerp(-coneDegrees / 2f, coneDegrees / 2f, i / (count - 1f));
-            Vector3 direction = Quaternion.AngleAxis(angle, Vector3.up) * tilted;
-            Streak(from, Pellet(from, direction));
-        }
-    }
-
     // Flies through the farmer, his own animals and anyone already down; the first standing enemy takes the hit,
     // and anything else solid (tree, barn, any building) stops the pellet. Returns where it ended.
-    // It only hurts the enemy, never moves it: a shove would knock aliens off their path.
+    // Damage stacks per pellet, but an enemy is pushed only once per shot, or point-blank it would fly pellets x knockback.
     Vector3 Pellet(Vector3 from, Vector3 direction)
     {
         var hits = Physics.RaycastAll(from, direction, range, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore);
@@ -117,6 +105,7 @@ public class Shotgun : MonoBehaviour
                 return hit.point;
             }
             target.TakeDamage(pelletDamage);
+            if (pushed.Add(target) && target.TryGetComponent(out NavMeshAgent agent) && agent.enabled && agent.isOnNavMesh) agent.Move(direction * knockback);
             return hit.point;
         }
         return from + direction * range;
