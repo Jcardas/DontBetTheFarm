@@ -27,7 +27,8 @@ public enum CursorType
     Reload75,
     Reload100,
     MoveTo,
-    OpenMenu
+    OpenMenu,
+    AssignToPen
 }
 
 /// <summary>

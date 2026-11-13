@@ -77,6 +77,7 @@ public class CreatureBrain : MonoBehaviour
         OrderKind.Work => gatherer != null && gatherer.CanWork(order.node),
         OrderKind.Harvest => gatherer != null && creature.HasCapability(CreatureCapabilities.CanHarvestCrops),
         OrderKind.Repair => gatherer != null && creature.HasCapability(CreatureCapabilities.CanRepair),
+        OrderKind.Pen => creature is Animal,
         _ => true,
     };
 

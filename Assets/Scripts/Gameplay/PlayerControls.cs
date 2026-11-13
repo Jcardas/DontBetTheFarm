@@ -6,8 +6,8 @@ using UnityEngine.InputSystem;
 // The player's mouse and keyboard. Nothing is picked at the start. Left-click only selects: click a unit to pick just it,
 // click a picked unit to drop it from the selection, double-click to pick every unit of its type on screen, or drag a box
 // around several (Shift-click toggles one unit, Shift-drag adds, Ctrl-click and Ctrl-drag drop). Left-clicking anything
-// that isn't a unit, or pressing Escape, drops everyone. Right-click the ground, a resource or an alien to order the picked
-// units there; with nobody picked, right-click a building to open its menu (ContextInteractionManager). Ctrl+1..3 saves the picked units as a group, 1..3 picks the group again (Shift+1..3 adds it).
+// that isn't a unit, or pressing Escape, drops everyone. Right-click the ground, a resource, an alien or (for animals) a pen to order
+// the picked units there; with nobody picked, right-click a building to open its menu (ContextInteractionManager). Ctrl+1..3 saves the picked units as a group, 1..3 picks the group again (Shift+1..3 adds it).
 // Space fires the farmer's shotgun toward the cursor.
 // The cursor shows what a right-click would do on whatever the mouse is over, or how far along a shotgun reload is.
 public class PlayerControls : MonoBehaviour
@@ -76,7 +76,7 @@ public class PlayerControls : MonoBehaviour
         if (player.Fire.WasPressedThisFrame() && shotgun && ground.Raycast(ray, out float along)) shotgun.Fire(ray.GetPoint(along));
         bool overSomething = MouseTarget.Find(ray, out RaycastHit hit);
         var unit = overSomething ? hit.collider.GetComponentInParent<Selectable>() : null;
-        if (player.Command.WasPressedThisFrame() && overSomething) Command(hit);
+        if (player.Command.WasPressedThisFrame() && overSomething) Command(ray, hit);
 
         if (left == LeftButton.Idle && player.Select.WasPressedThisFrame())
         {
@@ -145,15 +145,16 @@ public class PlayerControls : MonoBehaviour
     }
 
     // What lights up under the mouse besides units: what a right-click would act on, when a picked unit can do it
-    // (an alien to attack, a tree to chop, a field to harvest), or a building whose menu it would open (a pen).
+    // (an alien to attack, a tree to chop, a field to harvest, a pen for animals), or a building whose menu it would open.
     static Component Target(Ray ray, RaycastHit hit)
     {
-        var order = Order.From(hit);
+        var order = Order.From(ray, hit);
         if (AnyPickedCan(order))
         {
             if (order.enemy) return order.enemy;
             if (order.node) return order.node;
             if (order.field) return order.field;
+            if (order.building) return order.building;
         }
         return MouseTarget.Menu(ray, hit);
     }
@@ -178,12 +179,13 @@ public class PlayerControls : MonoBehaviour
     static CursorType CursorFor(Ray ray, RaycastHit hit, Selectable unit)
     {
         if (MouseTarget.Menu(ray, hit)) return CursorType.OpenMenu;
-        var order = Order.From(hit);
+        var order = Order.From(ray, hit);
         return (AnyPickedCan(order) ? order.kind : OrderKind.Move) switch
         {
             OrderKind.Attack => CursorType.Attack,
             OrderKind.Harvest => CursorType.Harvest,
             OrderKind.Work => CursorType.Chop,
+            OrderKind.Pen => CursorType.AssignToPen,
             _ when unit && !unit.Down => CursorType.Interact,
             _ => AnyPicked ? CursorType.MoveTo : CursorType.Default,
         };
@@ -243,9 +245,9 @@ public class PlayerControls : MonoBehaviour
     }
 
     // Everyone gets the same target; spread points stop a group stacking on one spot when it walks.
-    void Command(RaycastHit hit)
+    void Command(Ray ray, RaycastHit hit)
     {
-        var order = Order.From(hit);
+        var order = Order.From(ray, hit);
         if (marker) Instantiate(marker, order.point, Quaternion.identity).Show(order.kind);
         var group = Selectable.All.Where(s => s.Selected).ToList();
         for (int i = 0; i < group.Count; i++) group[i].Command(order.Offset(Spread(i)));
