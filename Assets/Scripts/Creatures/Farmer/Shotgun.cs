@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -27,8 +26,6 @@ public class Shotgun : MonoBehaviour
     public float range = 12f;
     [Tooltip("Damage each pellet does to the first enemy it hits.")]
     public int pelletDamage = 5;
-    [Tooltip("Metres each pellet pushes the enemy it hits, along the pellet's flight.")]
-    public float knockback = 1.5f;
     [Tooltip("Seconds from one shot until the next is allowed, while shells are left.")]
     public float shotCooldown = 0.3f;
     [Tooltip("Seconds to reload both shells once they are spent.")]
@@ -48,7 +45,6 @@ public class Shotgun : MonoBehaviour
     State state;
     int shells = MaxShells;
     float nextShot, reloadedAt;
-    readonly HashSet<Creature> pushed = new();
 
     public int Shells => shells;
     public bool Reloading => state == State.Reloading;
@@ -80,7 +76,6 @@ public class Shotgun : MonoBehaviour
         Vector3 toAim = aimPoint - from;
         toAim.y = 0f;
         Vector3 forward = toAim.sqrMagnitude > 0.25f && Vector3.Dot(toAim, transform.forward) > 0f ? toAim.normalized : transform.forward;
-        pushed.Clear();
         Spray(from, forward, pellets, 0f);
         Spray(from, forward, raisedPellets, raisedDegrees);
 
@@ -106,7 +101,7 @@ public class Shotgun : MonoBehaviour
 
     // Flies through the farmer, his own animals and anyone already down; the first standing enemy takes the hit,
     // and anything else solid (tree, barn, any building) stops the pellet. Returns where it ended.
-    // Damage stacks per pellet, but an enemy is pushed only once per shot, or point-blank it would fly pellets x knockback.
+    // It only hurts the enemy, never moves it: a shove would knock aliens off their path.
     Vector3 Pellet(Vector3 from, Vector3 direction)
     {
         var hits = Physics.RaycastAll(from, direction, range, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore);
@@ -122,7 +117,6 @@ public class Shotgun : MonoBehaviour
                 return hit.point;
             }
             target.TakeDamage(pelletDamage);
-            if (pushed.Add(target) && target.TryGetComponent(out NavMeshAgent agent) && agent.enabled && agent.isOnNavMesh) agent.Move(direction * knockback);
             return hit.point;
         }
         return from + direction * range;
