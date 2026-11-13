@@ -27,7 +27,9 @@ public class PlayerControls : MonoBehaviour
     Vector2 pressedAt;
     Shotgun shotgun;
     CameraController cameraController;
-    Selectable hovered, lastClicked;
+    Selectable lastClicked;
+    HashSet<Selectable> lit = new();
+    Highlight litTarget;
     CursorType cursor;
     float lastClickAt;
     readonly List<Selectable>[] groups = { new(), new(), new() };
@@ -72,15 +74,8 @@ public class PlayerControls : MonoBehaviour
         Vector2 at = player.Point.ReadValue<Vector2>();
         Ray ray = cam.ScreenPointToRay(at);
         if (player.Fire.WasPressedThisFrame() && shotgun && ground.Raycast(ray, out float along)) shotgun.Fire(ray.GetPoint(along));
-        bool overSomething = Physics.Raycast(
-            ray,
-            out RaycastHit hit,
-            Mathf.Infinity,
-            Physics.DefaultRaycastLayers,
-            QueryTriggerInteraction.Ignore
-        );      
+        bool overSomething = MouseTarget.Find(ray, out RaycastHit hit);
         var unit = overSomething ? hit.collider.GetComponentInParent<Selectable>() : null;
-        Hover(unit);
         if (player.Command.WasPressedThisFrame() && overSomething) Command(hit);
 
         if (left == LeftButton.Idle && player.Select.WasPressedThisFrame())
@@ -89,6 +84,8 @@ public class PlayerControls : MonoBehaviour
             pressedAt = at;
         }
         if (left == LeftButton.Pressed && (at - pressedAt).magnitude > DragPixels) left = LeftButton.Dragging;
+        Hover(left == LeftButton.Dragging ? Selectable.All.Where(s => OnScreen(cam, s, Box(pressedAt, at))) : new[] { unit });
+        HoverTarget(overSomething && left != LeftButton.Dragging ? MouseTarget.Building(ray, hit) : null);
         if (left == LeftButton.Idle || !player.Select.WasReleasedThisFrame()) return;
 
         if (left == LeftButton.Dragging) Pick(Selectable.All.Where(s => OnScreen(cam, s, Box(pressedAt, at))), shift, ctrl);
@@ -109,13 +106,8 @@ public class PlayerControls : MonoBehaviour
 
         Vector2 at = input.Player.Point.ReadValue<Vector2>();
         Ray ray = cam.ScreenPointToRay(at);
-bool overSomething = Physics.Raycast(
-    ray,
-    out RaycastHit hit,
-    Mathf.Infinity,
-    Physics.DefaultRaycastLayers,
-    QueryTriggerInteraction.Ignore
-);        var unit = overSomething
+        bool overSomething = MouseTarget.Find(ray, out RaycastHit hit);
+        var unit = overSomething
             ? hit.collider.GetComponentInParent<Selectable>()
             : null;
 
@@ -143,12 +135,24 @@ bool overSomething = Physics.Raycast(
         foreach (var s in Selectable.All) s.Selected = false;
     }
 
-    void Hover(Selectable unit)
+    // Lights the unit under the mouse or, while dragging, every unit the box would pick.
+    void Hover(IEnumerable<Selectable> units)
     {
-        if (unit == hovered) return;
-        if (hovered) hovered.Hovered = false;
-        hovered = unit;
-        if (unit) unit.Hovered = true;
+        var now = units.Where(s => s != null).ToHashSet();
+        foreach (var s in lit) if (s && !now.Contains(s)) s.Hovered = false;
+        foreach (var s in now) if (!lit.Contains(s)) s.Hovered = true;
+        lit = now;
+    }
+
+    // Lights a building under the mouse the way units light up; it gets its Highlight the first time.
+    void HoverTarget(Component target)
+    {
+        Highlight next = null;
+        if (target && !target.TryGetComponent(out next)) next = target.gameObject.AddComponent<Highlight>();
+        if (next == litTarget) return;
+        if (litTarget) litTarget.Hovered = false;
+        litTarget = next;
+        if (next) next.Hovered = true;
     }
 
     // Same precedence as Order.From, so the cursor always previews the order a right-click would give.
@@ -242,8 +246,8 @@ bool overSomething = Physics.Raycast(
         if (left != LeftButton.Dragging) return;
         Rect r = Box(pressedAt, input.Player.Point.ReadValue<Vector2>());
         r.y = Screen.height - r.yMax; // input is bottom-left origin, IMGUI is top-left
-        var tint = new Color(1f, 0.85f, 0.1f);
-        GUI.DrawTexture(r, Texture2D.whiteTexture, ScaleMode.StretchToFill, true, 0f, new Color(tint.r, tint.g, tint.b, 0.15f), 0f, 0f);
-        GUI.DrawTexture(r, Texture2D.whiteTexture, ScaleMode.StretchToFill, true, 0f, tint, 1f, 0f);
+        var tint = new Color(0.4f, 0.7f, 1f); // blue, like the outlines
+        GUI.DrawTexture(r, Texture2D.whiteTexture, ScaleMode.StretchToFill, true, 0f, new Color(tint.r, tint.g, tint.b, 0.12f), 0f, 0f);
+        GUI.DrawTexture(r, Texture2D.whiteTexture, ScaleMode.StretchToFill, true, 0f, new Color(tint.r, tint.g, tint.b, 0.8f), 1f, 0f);
     }
 }

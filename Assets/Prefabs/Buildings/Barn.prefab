@@ -9,6 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3346646319002434233}
+  - component: {fileID: 3158750976020088301}
   m_Layer: 0
   m_Name: Barn
   m_TagString: Untagged
@@ -33,6 +34,18 @@ Transform:
   - {fileID: 8940771061498715676}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3158750976020088301
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2721993706179493098}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d8b14fb10e7634112832ba5b17538c37, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: '::'
 --- !u!1 &2762065258345752180
 GameObject:
   m_ObjectHideFlags: 0

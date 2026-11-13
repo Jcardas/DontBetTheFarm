@@ -156,9 +156,12 @@ public class ContextInteractionManager : MonoBehaviour
 
         Ray ray = isometricCamera.ScreenPointToRay(screenPos);
 
-        if (Physics.Raycast(ray, out RaycastHit hit, maxRayDistance, interactableLayers, QueryTriggerInteraction.Ignore))
+        if (MouseTarget.Find(ray, out RaycastHit hit, maxRayDistance, interactableLayers))
         {
-            if (hit.collider.GetComponentInParent<IContextInteractable>() is { } interactable)
+            // A click anywhere inside a building's outline, like a gap in a pen's fence, counts as that building
+            var building = MouseTarget.Building(ray, hit);
+            var clicked = building != null ? building.transform : hit.collider.transform;
+            if (clicked.GetComponentInParent<IContextInteractable>() is { } interactable)
             {
                 IReadOnlyList<ContextActionData> actions = interactable.GetContextActions();
                 if (actions != null && actions.Count > 0)
