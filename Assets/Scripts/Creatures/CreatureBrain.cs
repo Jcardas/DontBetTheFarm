@@ -4,9 +4,6 @@ using UnityEngine.AI;
 [RequireComponent(typeof(Creature))]
 public class CreatureBrain : MonoBehaviour
 {
-    [Tooltip("On a move order, a farm animal stops to fight the nearest alien it can see, then carries on to where it was sent.")]
-    [SerializeField] private bool fightOnTheWay = true;
-
     private Creature creature;
     private NavMeshAgent agent;
     private Gatherer gatherer;
@@ -20,7 +17,6 @@ public class CreatureBrain : MonoBehaviour
     private float obeyGraceEnds;
     private bool isObeying;
     private bool retreating;
-    private bool onTheWay; // a farm animal on a move order that hasn't got there yet
 
     public bool IsPassive { get; set; }
     public bool Engaged => currentTarget != null && !currentTarget.Down;
@@ -88,7 +84,6 @@ public class CreatureBrain : MonoBehaviour
     {
         currentTarget = playerOrderedTarget = null;
         isObeying = false;
-        onTheWay = false;
     }
 
     public void Guard(Vector3 point)
@@ -97,7 +92,6 @@ public class CreatureBrain : MonoBehaviour
         currentTarget = playerOrderedTarget = null;
         isObeying = true;
         obeyGraceEnds = Time.time + 0.5f;
-        onTheWay = fightOnTheWay && creature is Animal;
 
         guardPost = NavMesh.SamplePosition(point, out NavMeshHit hit, 3f, NavMesh.AllAreas) ? hit.position : point;
         if (agent.isOnNavMesh)
@@ -113,14 +107,12 @@ public class CreatureBrain : MonoBehaviour
         currentTarget = playerOrderedTarget = null;
         isObeying = true;
         obeyGraceEnds = Time.time + 0.5f;
-        onTheWay = false;
     }
 
     public void Attack(Creature enemy)
     {
         if (gatherer != null) gatherer.AbortWork();
         isObeying = false;
-        onTheWay = false;
         currentTarget = playerOrderedTarget = enemy;
         nextThinkTime = 0f;
     }
@@ -134,7 +126,7 @@ public class CreatureBrain : MonoBehaviour
         if (isObeying)
         {
             bool arrived = !agent.pathPending && (!agent.hasPath || agent.remainingDistance <= agent.stoppingDistance + 0.2f);
-            if (!onTheWay && (Time.time < obeyGraceEnds || !arrived)) return;
+            if (Time.time < obeyGraceEnds || !arrived) return;
             isObeying = false;
         }
 
@@ -148,15 +140,7 @@ public class CreatureBrain : MonoBehaviour
             if (!creature.Anchored && !Engaged)
                 guardPost = transform.position;
 
-            Vector3 toPost = guardPost - transform.position;
-            toPost.y = 0f;
-            if (onTheWay && toPost.magnitude <= agent.stoppingDistance + 0.5f)
-                onTheWay = false;
-
-            // On the way somewhere it fights whatever it passes; at its post, only what comes near the post.
-            currentTarget = playerOrderedTarget != null ? playerOrderedTarget
-                : onTheWay ? NearestEnemyInView()
-                : creature.FindTarget(guardPost);
+            currentTarget = playerOrderedTarget != null ? playerOrderedTarget : creature.FindTarget(guardPost);
 
             if (currentTarget == null)
             {
@@ -205,11 +189,6 @@ public class CreatureBrain : MonoBehaviour
         nextAttackTime = Time.time + 1f / creature.CalculatedAttackSpeed;
         creature.PerformAttack(currentTarget);
     }
-
-    private Creature NearestEnemyInView() =>
-        CreatureManager.Instance != null
-            ? CreatureManager.Instance.GetNearestEnemy(creature.Team, transform.position, transform.position, creature.CalculatedViewRadius)
-            : null;
 
     private void BackAwayFrom(IDamageable enemy, float gap)
     {
