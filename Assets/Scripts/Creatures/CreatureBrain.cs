@@ -137,18 +137,17 @@ public class CreatureBrain : MonoBehaviour
             if (playerOrderedTarget != null && playerOrderedTarget.Down)
                 playerOrderedTarget = null;
 
-            if (!creature.Anchored && !Engaged)
+            // Out of a fight, it looks around from wherever it stands; in one, from where the fight began.
+            if (!Engaged)
                 guardPost = transform.position;
 
+            bool wasFighting = currentTarget != null;
             currentTarget = playerOrderedTarget != null ? playerOrderedTarget : creature.FindTarget(guardPost);
 
+            // Fight over: it stops where it is until it is ordered again or sees another enemy.
             if (currentTarget == null)
             {
-                if (Vector3.Distance(transform.position, guardPost) > agent.stoppingDistance + 0.5f && agent.isOnNavMesh)
-                {
-                    agent.updateRotation = true;
-                    agent.SetDestination(guardPost);
-                }
+                if (wasFighting && agent.isOnNavMesh && agent.hasPath) agent.ResetPath();
                 return;
             }
 
