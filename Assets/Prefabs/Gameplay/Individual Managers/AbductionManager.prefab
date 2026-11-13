@@ -45,5 +45,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AbductionManager
   saucerPrefab: {fileID: 7530360299568405993, guid: 66c8beefa74cfe648ab26c24d7f7f771, type: 3}
+  collarPrefab: {fileID: 3242588647092317322, guid: f123af79cd0fe4302886bac9d8020fa0, type: 3}
   delay: 4
   maxSaucers: 1
