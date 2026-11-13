@@ -58,6 +58,7 @@ public abstract class Creature : MonoBehaviour, IDamageable
     private Gatherer gatherer;
     
     private CreatureMutator creatureMutator;
+    private Highlight highlight;
 
     // Public properties
     
@@ -89,6 +90,7 @@ public abstract class Creature : MonoBehaviour, IDamageable
     public NavMeshAgent NavMeshAgent => navMeshAgent;
     public CreatureBrain CreatureBrain => creatureBrain;
     public CreatureMutator CreatureMutator => creatureMutator;
+    public Highlight Highlight => highlight;
     public Vector3 Position => transform.position;
 
     [Header("Retreat & Despawn")]
@@ -108,6 +110,7 @@ public abstract class Creature : MonoBehaviour, IDamageable
         toyBob = GetComponentInChildren<ToyBob>();
         gatherer = GetComponentInChildren<Gatherer>();
         creatureMutator = GetComponent<CreatureMutator>();
+        highlight = gameObject.AddComponent<Highlight>(); // outlined while hidden, hovered or selected
 
 
         OnMutationsChanged();

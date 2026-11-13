@@ -33,7 +33,7 @@ public class Selectable : MonoBehaviour
         set
         {
             selected = value && !Down;
-            ShowRings();
+            Show();
         }
     }
 
@@ -43,7 +43,7 @@ public class Selectable : MonoBehaviour
         set
         {
             hovered = value && !Down;
-            ShowRings();
+            Show();
         }
     }
 
@@ -63,10 +63,13 @@ public class Selectable : MonoBehaviour
         if (hovered) Hovered = false;
     }
 
-    private void ShowRings()
+    private void Show()
     {
         if (ring) ring.SetActive(selected);
         if (hoverRing) hoverRing.SetActive(hovered && !selected);
+        if (creature == null) return;
+        creature.Highlight.Hovered = hovered;
+        creature.Highlight.Selected = selected;
     }
 
     public void Command(Order order)
