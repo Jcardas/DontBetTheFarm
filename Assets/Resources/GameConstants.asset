@@ -15,13 +15,24 @@ MonoBehaviour:
   teamDefinitions:
   - team: 0
     displayName: Farm
-    teamColor: {r: 0.09873017, g: 0.8050314, b: 0.18095307, a: 0}
+    teamColorConfig:
+      selectedColor: {r: 0.2, g: 0.55, b: 1, a: 0.85490197}
+      hiddenColor: {r: 0.4, g: 0.65, b: 1, a: 0.34901962}
+      hoverColor: {r: 0.35, g: 0.7, b: 1, a: 0.8}
   - team: 1
     displayName: Alien
-    teamColor: {r: 0.8050314, g: 0.03797308, b: 0.74850875, a: 0}
+    teamColorConfig:
+      selectedColor: {r: 0.9622642, g: 0, b: 0, a: 0.8509804}
+      hiddenColor: {r: 1, g: 0.35, b: 0.3, a: 0.34901962}
+      hoverColor: {r: 1, g: 0.5, b: 0.45, a: 0.69803923}
   - team: 2
     displayName: Neutral
-    teamColor: {r: 0.7610062, g: 0.7610062, b: 0.7610062, a: 0}
+    teamColorConfig:
+      selectedColor: {r: 0.8018868, g: 0.8018868, b: 0.8018868, a: 0.8509804}
+      hiddenColor: {r: 0.8018868, g: 0.8018868, b: 0.8018868, a: 0.34901962}
+      hoverColor: {r: 0.7735849, g: 0.7735849, b: 0.7735849, a: 0.69803923}
+  hiddenOutlineWidth: 3
+  litOutlineWidth: 5
   baseFarmerStats:
     speed: 10
     maxHealth: 100
