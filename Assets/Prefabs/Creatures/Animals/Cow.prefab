@@ -934,6 +934,7 @@ MonoBehaviour:
   viewRadius: 8
   anchored: 1
   beamEffectPrefab: {fileID: 6513492497273295794, guid: efbfd504153af464d949dab00121ca2a, type: 3}
+  sourcePrefab: {fileID: 0}
   breedingCost: 5
   healCost: 10
 --- !u!114 &2008345416212060268

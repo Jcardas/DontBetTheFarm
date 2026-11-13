@@ -118,12 +118,13 @@ bool overSomething = Physics.Raycast(
 );        var unit = overSomething
             ? hit.collider.GetComponentInParent<Selectable>()
             : null;
-
         ShowCursor(shotgun && shotgun.Reloading
             ? ReloadCursor(shotgun.ReloadProgress)
-            : overSomething
-                ? CursorFor(hit, unit)
-                : CursorType.Default);
+            : OverBrokenBuilding(ray)
+                ? CursorType.Repair
+                : overSomething
+                    ? CursorFor(hit, unit)
+                    : CursorType.Default);
     }
 
     void ReadKeys(bool shift)
@@ -152,13 +153,31 @@ bool overSomething = Physics.Raycast(
     }
 
     // Same precedence as Order.From, so the cursor always previews the order a right-click would give.
-    static CursorType CursorFor(RaycastHit hit, Selectable unit) => Order.From(hit).kind switch
+    static CursorType CursorFor(RaycastHit hit, Selectable unit)
     {
-        OrderKind.Attack => CursorType.Attack,
-        OrderKind.Harvest => CursorType.Harvest,
-        OrderKind.Work => CursorType.Chop,
-        _ => unit && !unit.Down ? CursorType.Interact : CursorType.Default,
-    };
+
+        return Order.From(hit).kind switch
+        {
+            OrderKind.Attack => CursorType.Attack,
+            OrderKind.Harvest => CursorType.Harvest,
+            OrderKind.Work => CursorType.Chop,
+            _ => unit && !unit.Down ? CursorType.Interact : CursorType.Default,
+        };
+    }
+
+    private bool OverBrokenBuilding(Ray ray)
+    {
+        foreach (var building in FindObjectsByType<RepairableStructure>(FindObjectsSortMode.None))
+        {
+            if (!building.IsBroken) continue;
+
+            foreach (var renderer in building.GetComponentsInChildren<Renderer>())
+                if (renderer.enabled && renderer.bounds.IntersectRay(ray))
+                    return true;
+        }
+
+        return false;
+    }
 
     // Quarter steps. Reload100 is never shown: the frame the reload completes, the hover cursor comes back.
     static CursorType ReloadCursor(float progress) => CursorType.Reload0 + Mathf.Min(3, (int)(progress * 4f));

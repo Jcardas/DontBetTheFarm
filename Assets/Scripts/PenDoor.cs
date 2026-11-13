@@ -5,7 +5,7 @@ using UnityEngine.AI;
 
 [DisallowMultipleComponent]
 [RequireComponent(typeof(AnimalPen))]
-public class AnimalPenGateController : MonoBehaviour
+public class PenDoor : MonoBehaviour
 {
     [Header("Existing Gate Models")]
     [SerializeField] private Transform leftGate;
@@ -29,7 +29,7 @@ public class AnimalPenGateController : MonoBehaviour
     private float nextScan;
     private int gateAreaBit;
 
-    private readonly List<FarmAnimal> animals = new();
+    private readonly List<Animal> animals = new();
 
     private void Start()
     {
@@ -104,8 +104,8 @@ public class AnimalPenGateController : MonoBehaviour
         {
             if (!agent) continue;
 
-            FarmAnimal animal = agent.GetComponentInParent<FarmAnimal>();
-            bool isAnimal = animal != null;
+            Animal animal = agent.GetComponentInParent<Animal>();
+            bool isAnimal = animal != null && animal.Team == GameConstants.Team.Farm;
 
             if (gateAreaBit != 0)
             {
@@ -128,11 +128,12 @@ public class AnimalPenGateController : MonoBehaviour
         float maxDistanceSquared =
             openWhenAnimalWithin * openWhenAnimalWithin;
 
-        foreach (FarmAnimal animal in animals)
+        foreach (Animal animal in animals)
         {
             if (!animal ||
                 !animal.gameObject.activeInHierarchy ||
-                animal.Down)
+                animal.Down ||
+                animal.Team != GameConstants.Team.Farm)
                 continue;
 
             Vector3 difference = animal.transform.position - door;

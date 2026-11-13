@@ -3064,6 +3064,26 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2528311364252122500, guid: 59ba79a8fc03547d5999c44065bd285a, type: 3}
+      propertyPath: cursorList.Array.size
+      value: 20
+      objectReference: {fileID: 0}
+    - target: {fileID: 2528311364252122500, guid: 59ba79a8fc03547d5999c44065bd285a, type: 3}
+      propertyPath: cursorList.Array.data[19].type
+      value: 19
+      objectReference: {fileID: 0}
+    - target: {fileID: 2528311364252122500, guid: 59ba79a8fc03547d5999c44065bd285a, type: 3}
+      propertyPath: cursorList.Array.data[19].texture
+      value: 
+      objectReference: {fileID: 2800000, guid: 8e830de25b7294f4abb594395e582bd4, type: 3}
+    - target: {fileID: 2528311364252122500, guid: 59ba79a8fc03547d5999c44065bd285a, type: 3}
+      propertyPath: cursorList.Array.data[19].hotspot.x
+      value: 16
+      objectReference: {fileID: 0}
+    - target: {fileID: 2528311364252122500, guid: 59ba79a8fc03547d5999c44065bd285a, type: 3}
+      propertyPath: cursorList.Array.data[19].hotspot.y
+      value: 16
+      objectReference: {fileID: 0}
     - target: {fileID: 3664534305661566161, guid: 59ba79a8fc03547d5999c44065bd285a, type: 3}
       propertyPath: m_Name
       value: GameManager
@@ -4864,7 +4884,7 @@ PrefabInstance:
       objectReference: {fileID: 1475100240}
     - target: {fileID: 344877266761302881, guid: ba1129b3a7f104ba89ff8a4af54cc453, type: 3}
       propertyPath: m_VersionIndex
-      value: 60
+      value: 63
       objectReference: {fileID: 0}
     - target: {fileID: 2085119362929318556, guid: ba1129b3a7f104ba89ff8a4af54cc453, type: 3}
       propertyPath: isStartingPen
@@ -4940,7 +4960,7 @@ PrefabInstance:
       objectReference: {fileID: 1442800756}
     - target: {fileID: 5338467768208805012, guid: ba1129b3a7f104ba89ff8a4af54cc453, type: 3}
       propertyPath: m_VersionIndex
-      value: 60
+      value: 63
       objectReference: {fileID: 0}
     - target: {fileID: 5893072022654583545, guid: ba1129b3a7f104ba89ff8a4af54cc453, type: 3}
       propertyPath: m_Mesh
@@ -5184,7 +5204,7 @@ PrefabInstance:
       objectReference: {fileID: 1448995889}
     - target: {fileID: 344877266761302881, guid: ba1129b3a7f104ba89ff8a4af54cc453, type: 3}
       propertyPath: m_VersionIndex
-      value: 60
+      value: 63
       objectReference: {fileID: 0}
     - target: {fileID: 2085119362929318556, guid: ba1129b3a7f104ba89ff8a4af54cc453, type: 3}
       propertyPath: isStartingPen
@@ -5260,7 +5280,7 @@ PrefabInstance:
       objectReference: {fileID: 626592172}
     - target: {fileID: 5338467768208805012, guid: ba1129b3a7f104ba89ff8a4af54cc453, type: 3}
       propertyPath: m_VersionIndex
-      value: 60
+      value: 63
       objectReference: {fileID: 0}
     - target: {fileID: 5893072022654583545, guid: ba1129b3a7f104ba89ff8a4af54cc453, type: 3}
       propertyPath: m_Mesh
@@ -5289,7 +5309,7 @@ PrefabInstance:
       objectReference: {fileID: 334609897}
     - target: {fileID: 344877266761302881, guid: ba1129b3a7f104ba89ff8a4af54cc453, type: 3}
       propertyPath: m_VersionIndex
-      value: 60
+      value: 63
       objectReference: {fileID: 0}
     - target: {fileID: 2085119362929318556, guid: ba1129b3a7f104ba89ff8a4af54cc453, type: 3}
       propertyPath: startsBroken
@@ -5369,7 +5389,7 @@ PrefabInstance:
       objectReference: {fileID: 1023649575}
     - target: {fileID: 5338467768208805012, guid: ba1129b3a7f104ba89ff8a4af54cc453, type: 3}
       propertyPath: m_VersionIndex
-      value: 60
+      value: 63
       objectReference: {fileID: 0}
     - target: {fileID: 5893072022654583545, guid: ba1129b3a7f104ba89ff8a4af54cc453, type: 3}
       propertyPath: m_Mesh

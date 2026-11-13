@@ -25,7 +25,8 @@ public enum CursorType
     Reload25,
     Reload50,
     Reload75,
-    Reload100
+    Reload100,
+    Repair
 }
 
 /// <summary>
