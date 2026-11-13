@@ -119,7 +119,12 @@ public class AbductionManager : MonoBehaviour
             if (collars.Remove(a, out GameObject collar) && collar != null) Destroy(collar);
             if (WaveManager.Instance != null) WaveManager.Instance.UnregisterEnemy(a);
             a.SetTeam(GameConstants.Team.Farm);
-            a.HealToFull();
+            
+            // TODO: Instead of healing to full, leave the animal downed, the farmer (or a healing capable creature) can heal it back up.
+            // a.HealToFull(); 
+            // For now this is just commented out, but eventually we will remove
+            // all this because the player will have to heal the animal back up to get it back on their side.
+            
             a.CreatureBrain.Guard(a.Position); // forget the farm creature it was attacking
             if (a.TryGetComponent(out Selectable selectable)) selectable.enabled = true;
         }
