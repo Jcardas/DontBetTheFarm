@@ -37,6 +37,7 @@ public class Farmer : Creature
     protected override void HandleZeroHealth()
     {
         // When the farmer's health reaches zero, trigger the game over sequence.
+        base.HandleZeroHealth();
         GameOver();
     }
 

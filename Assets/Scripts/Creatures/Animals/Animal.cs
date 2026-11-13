@@ -7,8 +7,25 @@ using UnityEngine;
 [RequireComponent(typeof(Selectable), typeof(Gatherer))]
 public class Animal : Creature
 {
+    [Header("Prefab Reference")]
+    [Tooltip("Prefab reference for the farm animal. This is used for spawning and instantiation.")]
+    [SerializeField] protected Animal sourcePrefab;
+    
+    [Header("Abducted Animal Modifiers")]
+    [Tooltip("Size of the animal's neck. This can be used to adjust the appearance of the mind control collar " +
+             "when it is abducted by a UFO and returns as an enemy.")]
+    [SerializeField] protected float neckSize = 1f;
+    
     [SerializeField] protected int breedingCost;
     [SerializeField] protected int healCost;
+
+    public Animal SourcePrefab
+    {
+        get => sourcePrefab != null ? sourcePrefab : this;
+        set => sourcePrefab = value;
+    }
+    
+    public float NeckSize => neckSize;
     
     public int BreedingCost => breedingCost;
     public int HealCost => healCost;
@@ -28,13 +45,15 @@ public class Animal : Creature
 
     protected override void HandleZeroHealth()
     {
-        // Animals do not die, they are knocked out.
+        // Animals do not die, they are knocked out. The base turns off its NavMeshAgent so the others walk past it.
         AnimalKnockedOut();
+        base.HandleZeroHealth();
     }
     
     protected override void HandleRevive()
     {
         // When a farm animal is revived, it should be reset to its default state.
+        base.HandleRevive();
     }
 
     protected virtual void AnimalKnockedOut()
