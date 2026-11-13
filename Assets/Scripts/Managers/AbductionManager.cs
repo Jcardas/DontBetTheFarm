@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -16,7 +17,8 @@ public class AbductionManager : MonoBehaviour
     void Update()
     {
         saucers.RemoveAll(s => s == null);
-        if (CreatureManager.Instance == null || WaveManager.Instance == null || saucerPrefab == null) return;
+        
+        if (CreatureManager.Instance == null || TimeManager.Instance == null || WaveManager.Instance == null || saucerPrefab == null) return;
 
         foreach (Creature c in CreatureManager.Instance.GetEnemies(GameConstants.Team.Alien))
         {
@@ -27,7 +29,17 @@ public class AbductionManager : MonoBehaviour
                 continue;
             }
             if (!downSince.TryGetValue(c, out float since)) downSince[c] = since = Time.time;
-            if (Time.time - since >= delay && saucers.Count < maxSaucers) Send(c);
+            if (Time.time - since >= delay && saucers.Count < maxSaucers && !TimeManager.Instance.IsDayTime()) Send(c);
+        }
+        
+        if (saucers.Count > 0 && TimeManager.Instance.IsDayTime())
+        {
+            foreach (UFO saucer in saucers)
+                if (saucer != null)
+                {
+                    if (saucer.IsVictimInUFO()) continue; // Already got its target, so let it leave on its own.
+                    saucer.Retreat();
+                }
         }
     }
 
