@@ -47,7 +47,7 @@ public class GameConstants : ScriptableObject
 
             _ => false
         };
-        
+
     }
 
     [System.Serializable]
@@ -65,23 +65,36 @@ public class GameConstants : ScriptableObject
     }
 
     [System.Serializable]
+    public struct TeamColorConfig
+    {
+        public Color selectedColor;
+        public Color hiddenColor;
+        public Color hoverColor;
+    }
+
+    [System.Serializable]
     public struct TeamConfig
     {
         public Team team;
         public string displayName;
-        public Color teamColor;
+        public TeamColorConfig teamColorConfig;
     }
 
-    [Header("Global Team Visuals/Settings")] [SerializeField]
-    private TeamConfig[] teamDefinitions;
+    [Header("Global Team Visuals/Settings")] 
+    [SerializeField] private TeamConfig[] teamDefinitions;
+    [SerializeField] private float hiddenOutlineWidth = 2f;
+    [SerializeField] private float litOutlineWidth = 2f;
+    
+    public float HiddenOutlineWidth => hiddenOutlineWidth;
+    public float LitOutlineWidth => litOutlineWidth;
 
     [Header("Farmer Settings")] [SerializeField]
     private CreatureStats baseFarmerStats;
 
     [Header("Animal Settings")] [SerializeField]
     private CreatureStats baseAnimalStats;
-    [SerializeField]
-    private int baseBreedingCost; // Cost in hay to breed animals
+
+    [SerializeField] private int baseBreedingCost; // Cost in hay to breed animals
     [SerializeField] private int baseHealCost; // Cost in hay to heal animals
 
     [Header("Alien Settings")] [SerializeField]
@@ -92,49 +105,60 @@ public class GameConstants : ScriptableObject
     public int BaseBreedingCost => baseBreedingCost;
     public int BaseHealCost => baseHealCost;
     public CreatureStats BaseAlien => baseAlienStats;
-    
+
     [System.Serializable]
     public struct BuildingStats
     {
         [SerializeField] private int maxHealth;
         [SerializeField] private int buildingCost;
         [SerializeField] private ResourceType resourceType;
-        
+
         public int MaxHealth => maxHealth;
         public int BuildingCost => buildingCost;
         public ResourceType ResourceType => resourceType;
-        
+
     }
-    
-    [Header("Building Settings")] 
-    [SerializeField] private int MaxNumberOfBuildings;
+
+    [Header("Building Settings")] [SerializeField]
+    private int MaxNumberOfBuildings;
+
     [SerializeField] private BuildingStats baseBuildingStats;
-    
+
     public BuildingStats BaseBuilding => baseBuildingStats;
-    
-    [Header("Animal Pen Settings")]
-    [SerializeField] private int maxAnimalsInPen;
+
+    [Header("Animal Pen Settings")] [SerializeField]
+    private int maxAnimalsInPen;
+
     [SerializeField] private BuildingStats baseAnimalPenStats;
-    
+
     public BuildingStats BaseAnimalPen => baseAnimalPenStats;
     public int MaxAnimalsInPen => maxAnimalsInPen;
-    
-    [Header("Wheat Field Settings")]
-    [SerializeField] private BuildingStats baseWheatFieldStats;
+
+    [Header("Wheat Field Settings")] [SerializeField]
+    private BuildingStats baseWheatFieldStats;
 
     public BuildingStats BaseWheatField => baseWheatFieldStats;
-
-
-    public Color GetTeamColor(Team type)
+    
+    /// <summary>
+    /// Returns the TeamColorConfig for the specified team.
+    /// If no configuration is found, a warning is logged and
+    /// a default value is returned.
+    /// </summary>
+    /// <param name="team"></param>
+    /// <returns></returns>
+    public TeamColorConfig GetTeamColors(Team team)
     {
         if (teamDefinitions != null)
         {
             for (int i = 0; i < teamDefinitions.Length; i++)
             {
-                if (teamDefinitions[i].team == type) return teamDefinitions[i].teamColor;
+                if (teamDefinitions[i].team == team)
+                    return teamDefinitions[i].teamColorConfig;
             }
         }
 
-        return Color.white;
+        Debug.LogWarning($"[GameConstants] No TeamConfig found for team: {team}");
+        return default;
     }
+
 }
