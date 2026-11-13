@@ -2946,8 +2946,12 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1467218761359130414, guid: 59ba79a8fc03547d5999c44065bd285a, type: 3}
       propertyPath: motherships.Array.size
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 1467218761359130414, guid: 59ba79a8fc03547d5999c44065bd285a, type: 3}
+      propertyPath: 'motherships.Array.data[0]'
+      value: 
+      objectReference: {fileID: 1231094279}
     - target: {fileID: 1467218761359130414, guid: 59ba79a8fc03547d5999c44065bd285a, type: 3}
       propertyPath: 'spawnPoints.Array.data[0]'
       value: 
@@ -3421,6 +3425,17 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 3940249657317254809, guid: 9d833c5f7f7f75e4aa5141d004a6aa89, type: 3}
   m_PrefabInstance: {fileID: 1785334554}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1231094279 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4741511822424173482, guid: d82d01f91d69c6544a6303dc428e866e, type: 3}
+  m_PrefabInstance: {fileID: 1116852762}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9435e37b75034ff419eaeccdcac58da8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Spawner
 --- !u!1001 &1238291283
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4638,7 +4653,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2085119362929318556, guid: ba1129b3a7f104ba89ff8a4af54cc453, type: 3}
       propertyPath: isStartingPen
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2085119362929318556, guid: ba1129b3a7f104ba89ff8a4af54cc453, type: 3}
       propertyPath: startingAnimals.Array.size
@@ -4938,7 +4953,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2085119362929318556, guid: ba1129b3a7f104ba89ff8a4af54cc453, type: 3}
       propertyPath: isStartingPen
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2085119362929318556, guid: ba1129b3a7f104ba89ff8a4af54cc453, type: 3}
       propertyPath: startingAnimals.Array.size

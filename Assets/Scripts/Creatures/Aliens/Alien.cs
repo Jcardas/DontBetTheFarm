@@ -67,7 +67,8 @@ public class Alien : Creature
     
     protected override void HandleZeroHealth()
     {
-        // Aliens die when their health reaches zero.
+        // Aliens die when their health reaches zero. The body stays, but the base stops it blocking anyone.
+        base.HandleZeroHealth();
         Die();
     }
 

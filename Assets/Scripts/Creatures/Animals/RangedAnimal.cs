@@ -23,7 +23,7 @@ public class RangedAnimal : Animal
         }
 
         Vector3 from = transform.position + Vector3.up * launchHeight + transform.forward * 0.5f;
-        Instantiate(projectile, from, transform.rotation).Launch(target, attackDamage);
+        Instantiate(projectile, from, transform.rotation).Launch(target, CalculatedAttackDamage);
         TriggerAttackVisual();
     }
 }

@@ -80,6 +80,8 @@ public class WaveManager : MonoBehaviour
         activeEnemies.Add(enemy);
     }
 
+    public void UnregisterEnemy(Creature enemy) => activeEnemies.Remove(enemy);
+
     public int GetActiveAlienCount()
     {
         activeEnemies.RemoveAll(enemy => enemy == null || enemy.Down);
