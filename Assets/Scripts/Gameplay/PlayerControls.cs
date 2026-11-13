@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.AI;
 using UnityEngine.InputSystem;
 
 // The player's mouse and keyboard. Nothing is picked at the start. Left-click only selects: click a unit to pick just it,
@@ -13,7 +14,7 @@ using UnityEngine.InputSystem;
 public class PlayerControls : MonoBehaviour
 {
     const float DragPixels = 8f;
-    const float Spacing = 1.2f;
+    const float Gap = 0.4f; // between the edges of units standing side by side after a group order
     const float DoubleClickSeconds = 0.35f;
 
     enum LeftButton { Idle, Pressed, Dragging }
@@ -239,25 +240,61 @@ public class PlayerControls : MonoBehaviour
         return p.z > 0f && area.Contains(p);
     }
 
-    // Everyone gets the same target; spread points stop a group stacking on one spot when it walks.
+    // Everyone gets the same order, but each unit walks to its own spot around the clicked point, so a group stands
+    // side by side there instead of shoving for one spot.
     void Command(RaycastHit hit)
     {
         var order = Order.From(hit);
         if (marker) Instantiate(marker, order.point, Quaternion.identity).Show(order.kind);
         var group = Selectable.All.Where(s => s.Selected).ToList();
-        for (int i = 0; i < group.Count; i++) group[i].Command(order.Offset(Spread(i)));
+        var spots = Spots(order.point, group.Count, SpacingFor(group));
+        foreach (var (unit, spot) in Pair(group, spots)) unit.Command(order.Offset(spot - order.point));
     }
 
-    // Unit 0 stands on the point; the rest fill rings Spacing apart. Ring k holds 6k units,
-    // which keeps neighbours on a ring about Spacing apart too.
+    // Centre to centre, room for the widest picked unit plus a little gap.
+    static float SpacingFor(List<Selectable> group) =>
+        Gap + 2f * group.Select(s => s.TryGetComponent(out NavMeshAgent a) ? a.radius * s.transform.lossyScale.x : 0f).DefaultIfEmpty().Max();
+
+    // `count` spots on the NavMesh around `centre`, at least `spacing` apart: the centre first, then rings outwards.
+    // Spots inside a wall or a fence are skipped, so the group packs round obstacles.
+    static List<Vector3> Spots(Vector3 centre, int count, float spacing)
+    {
+        var spots = new List<Vector3>();
+        for (int i = 0; spots.Count < count && i < count * 4 + 30; i++)
+        {
+            if (!NavMesh.SamplePosition(centre + Spread(i) * spacing, out NavMeshHit hit, spacing / 2f, NavMesh.AllAreas)) continue;
+            if (spots.Any(s => Vector3.Distance(s, hit.position) < spacing * 0.9f)) continue;
+            spots.Add(hit.position);
+        }
+        while (spots.Count < count) spots.Add(centre); // nowhere left to stand nearby
+        return spots;
+    }
+
+    // Closest unit-and-spot pairs first, so units don't cross each other's paths to get to their spots.
+    static IEnumerable<(Selectable, Vector3)> Pair(List<Selectable> units, List<Vector3> spots)
+    {
+        var free = units.ToList();
+        var open = spots.ToList();
+        while (free.Count > 0)
+        {
+            var (unit, spot) = free.SelectMany(u => open.Select(s => (u, s)))
+                .OrderBy(p => (p.u.transform.position - p.s).sqrMagnitude).First();
+            free.Remove(unit);
+            open.Remove(spot);
+            yield return (unit, spot);
+        }
+    }
+
+    // Spot 0 is the point; the rest fill rings one step apart. Ring k holds 6k spots,
+    // which keeps neighbours on a ring about one step apart too.
     static Vector3 Spread(int i)
     {
         if (i == 0) return Vector3.zero;
         int ring = 1;
-        while (i > 3 * ring * (ring + 1)) ring++; // rings 1..k hold 6 + 12 + ... + 6k = 3k(k+1) units
+        while (i > 3 * ring * (ring + 1)) ring++; // rings 1..k hold 6 + 12 + ... + 6k = 3k(k+1) spots
         int firstOnRing = 3 * (ring - 1) * ring + 1;
         float angle = (i - firstOnRing) * 2f * Mathf.PI / (6 * ring);
-        return new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle)) * (ring * Spacing);
+        return new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle)) * ring;
     }
 
     static Rect Box(Vector2 a, Vector2 b) =>

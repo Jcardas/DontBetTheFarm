@@ -125,8 +125,11 @@ public class CreatureBrain : MonoBehaviour
 
         if (isObeying)
         {
-            bool arrived = !agent.pathPending && (!agent.hasPath || agent.remainingDistance <= agent.stoppingDistance + 0.2f);
-            if (Time.time < obeyGraceEnds || !arrived) return;
+            // Close enough, or held up by its neighbours a few steps short: either way it has reached the area.
+            bool near = !agent.pathPending && (!agent.hasPath || agent.remainingDistance <= agent.stoppingDistance + 1f);
+            bool stalled = !agent.pathPending && agent.hasPath && agent.remainingDistance <= 3f && agent.velocity.sqrMagnitude < 0.04f;
+            if (Time.time < obeyGraceEnds || !(near || stalled)) return;
+            if (stalled) agent.ResetPath();
             isObeying = false;
         }
 
