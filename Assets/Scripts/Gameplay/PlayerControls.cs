@@ -161,6 +161,8 @@ public class PlayerControls : MonoBehaviour
 
     static bool AnyPickedCan(Order order) => Selectable.All.Any(s => s.Selected && s.CanObey(order));
 
+    static bool AnyPicked => Selectable.All.Any(s => s.Selected);
+
     // Lights the target the way units light up; it gets its Highlight the first time.
     void HoverTarget(Component target)
     {
@@ -173,7 +175,7 @@ public class PlayerControls : MonoBehaviour
     }
 
     // Same precedence as Order.From, so the cursor always previews the order a right-click would give, and only
-    // when a picked unit can carry it out: with just cows picked, a tree shows the plain cursor.
+    // when a picked unit can carry it out: with just cows picked, a tree shows the walk-here cursor, since they walk there.
     static CursorType CursorFor(RaycastHit hit, Selectable unit)
     {
         var order = Order.From(hit);
@@ -182,7 +184,8 @@ public class PlayerControls : MonoBehaviour
             OrderKind.Attack => CursorType.Attack,
             OrderKind.Harvest => CursorType.Harvest,
             OrderKind.Work => CursorType.Chop,
-            _ => unit && !unit.Down ? CursorType.Interact : CursorType.Default,
+            _ when unit && !unit.Down => CursorType.Interact,
+            _ => AnyPicked ? CursorType.MoveTo : CursorType.Default,
         };
     }
 
