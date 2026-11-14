@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 // What the mouse is over, the same answer for every script that asks. A creature wins, even one behind a building
@@ -9,9 +10,15 @@ public static class MouseTarget
     static readonly int Creatures = LayerMask.GetMask("Creature");
     static readonly List<MeshRenderer> parts = new();
 
-    public static bool Find(Ray ray, out RaycastHit hit, float maxDistance = Mathf.Infinity, int layers = Physics.DefaultRaycastLayers) =>
-        Physics.Raycast(ray, out hit, maxDistance, Creatures & layers, QueryTriggerInteraction.Ignore)
-        || Physics.Raycast(ray, out hit, maxDistance, layers, QueryTriggerInteraction.Ignore);
+    // The barn is the exception: in front of a creature it keeps the mouse, so it can still be hovered and right-clicked.
+    public static bool Find(Ray ray, out RaycastHit hit, float maxDistance = Mathf.Infinity, int layers = Physics.DefaultRaycastLayers)
+    {
+        bool any = Physics.Raycast(ray, out hit, maxDistance, layers, QueryTriggerInteraction.Ignore);
+        if (any && hit.collider.GetComponentInParent<Barn>() != null) return true;
+        if (!Physics.Raycast(ray, out RaycastHit creature, maxDistance, Creatures & layers, QueryTriggerInteraction.Ignore)) return any;
+        hit = creature;
+        return true;
+    }
 
     // The building the ray reaches before `hit`, judged by one box around all its parts, so the gaps in a pen's
     // fence still count as the pen. No collider is added, so nothing walks into or bumps that box.
@@ -33,4 +40,12 @@ public static class MouseTarget
         }
         return nearest;
     }
+
+    // The building whose menu a right-click opens: one that has a menu, while no unit is picked
+    // (picked units take a right-click as an order), or the barn while the farmer is in it.
+    public static Buildable Menu(Ray ray, RaycastHit hit) =>
+        Building(ray, hit) is IContextInteractable building &&
+        (building is Barn { HasFarmer: true } || !Selectable.All.Any(s => s.Selected))
+            ? (Buildable)building
+            : null;
 }

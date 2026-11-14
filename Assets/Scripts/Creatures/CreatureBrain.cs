@@ -41,6 +41,13 @@ public class CreatureBrain : MonoBehaviour
             return;
         }
 
+        if (order.kind == OrderKind.Barn && creature is Farmer farmer && order.building is Barn barn)
+        {
+            Guard(barn.Door);
+            barn.TakeIn(farmer);
+            return;
+        }
+
         if (gatherer != null)
         {
             if (order.kind == OrderKind.Work && gatherer.CanWork(order.node))
@@ -77,6 +84,8 @@ public class CreatureBrain : MonoBehaviour
         OrderKind.Work => gatherer != null && gatherer.CanWork(order.node),
         OrderKind.Harvest => gatherer != null && creature.HasCapability(CreatureCapabilities.CanHarvestCrops),
         OrderKind.Repair => gatherer != null && creature.HasCapability(CreatureCapabilities.CanRepair),
+        OrderKind.Pen => creature is Animal,
+        OrderKind.Barn => creature is Farmer,
         _ => true,
     };
 

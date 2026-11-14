@@ -7,8 +7,10 @@ using UnityEngine.InputSystem;
 // The player's mouse and keyboard. Nothing is picked at the start. Left-click only selects: click a unit to pick just it,
 // click a picked unit to drop it from the selection, double-click to pick every unit of its type on screen, or drag a box
 // around several (Shift-click toggles one unit, Shift-drag adds, Ctrl-click and Ctrl-drag drop). Left-clicking anything
-// that isn't a unit, or pressing Escape, drops everyone. Right-click the ground, a resource or an alien to order the picked
-// units there. Ctrl+1..3 saves the picked units as a group, 1..3 picks the group again (Shift+1..3 adds it).
+// that isn't a unit, or pressing Escape, drops everyone. Right-click the ground, a resource, an alien, a broken structure
+// (for repairers), (for animals) a pen or (for the farmer) the barn to order the picked units there; with nobody picked,
+// right-click an intact building to open its menu (ContextInteractionManager). Ctrl+1..3 saves the picked units as a group,
+// 1..3 picks the group again (Shift+1..3 adds it).
 // Space fires the farmer's shotgun toward the cursor.
 // The cursor shows what a right-click would do on whatever the mouse is over, or how far along a shotgun reload is.
 public class PlayerControls : MonoBehaviour
@@ -74,16 +76,18 @@ public class PlayerControls : MonoBehaviour
 
         Vector2 at = player.Point.ReadValue<Vector2>();
         Ray ray = cam.ScreenPointToRay(at);
-        if (player.Fire.WasPressedThisFrame() && shotgun && ground.Raycast(ray, out float along)) shotgun.Fire(ray.GetPoint(along));
+        if (player.Fire.WasPressedThisFrame() && shotgun && shotgun.isActiveAndEnabled && ground.Raycast(ray, out float along))
+            shotgun.Fire(ray.GetPoint(along));
+
         bool overSomething = MouseTarget.Find(ray, out RaycastHit hit);
         var unit = overSomething ? hit.collider.GetComponentInParent<Selectable>() : null;
 
-        // Right-click a broken structure to repair only when at least one picked unit can repair it.
+        // Right-click a broken structure to repair when at least one picked unit can repair it; otherwise resolve normally.
         if (player.Command.WasPressedThisFrame())
         {
             Buildable broken = BrokenTargetAt(ray);
             if (broken) Command(Order.ForRepair(broken));
-            else if (overSomething) Command(Order.From(hit));
+            else if (overSomething) Command(ray, hit);
         }
 
         // Ignore left-clicks over UI so clicking the repair button doesn't clear selection or dismiss the panel early.
@@ -126,7 +130,9 @@ public class PlayerControls : MonoBehaviour
             ? ReloadCursor(shotgun.ReloadProgress)
             : BrokenTargetAt(ray) != null
                 ? CursorType.Repair
-                : overSomething ? CursorFor(hit, unit) : CursorType.Default);
+                : overSomething
+                    ? CursorFor(ray, hit, unit)
+                    : CursorType.Default);
     }
 
     void ReadKeys(bool shift)
@@ -163,15 +169,16 @@ public class PlayerControls : MonoBehaviour
         return broken && AnyPickedCan(Order.ForRepair(broken)) ? broken : null;
     }
 
-    // What lights up under the mouse besides units: only what a right-click would actually act on with the current
-    // selection (an alien to attack, a tree to chop, a field to harvest, or a broken building to repair).
+    // What lights up under the mouse besides units: what a right-click would act on, when a picked unit can do it
+    // (an alien to attack, a tree to chop, a field to harvest, a pen for animals, or a broken building to repair),
+    // or an intact building whose menu it would open.
     static Component Target(Ray ray, bool overSomething, RaycastHit hit)
     {
         var broken = BrokenTargetAt(ray);
         if (broken != null) return broken;
         if (!overSomething) return null;
 
-        var order = Order.From(hit);
+        var order = Order.From(ray, hit);
         if (AnyPickedCan(order))
         {
             if (order.enemy) return order.enemy;
@@ -179,10 +186,15 @@ public class PlayerControls : MonoBehaviour
             if (order.field) return order.field;
             if (order.building) return order.building;
         }
-        return null;
+
+        // Only open/highlight context menus on non-broken buildings.
+        var menuTarget = MouseTarget.Menu(ray, hit);
+        return menuTarget is Buildable b && b.IsBroken ? null : menuTarget;
     }
 
     static bool AnyPickedCan(Order order) => Selectable.All.Any(s => s.Selected && s.CanObey(order));
+
+    static bool AnyPicked => Selectable.All.Any(s => s.Selected);
 
     // Lights the target the way units light up; it gets its Highlight the first time.
     void HoverTarget(Component target)
@@ -196,17 +208,23 @@ public class PlayerControls : MonoBehaviour
     }
 
     // Same precedence as Order.From, so the cursor always previews the order a right-click would give, and only
-    // when a picked unit can carry it out: with just cows picked, a tree shows the plain cursor.
-    static CursorType CursorFor(RaycastHit hit, Selectable unit)
+    // when a picked unit can carry it out: with just cows picked, a tree shows the walk-here cursor, since they walk there.
+    static CursorType CursorFor(Ray ray, RaycastHit hit, Selectable unit)
     {
-        var order = Order.From(hit);
+        var menuTarget = MouseTarget.Menu(ray, hit);
+        if (menuTarget && !(menuTarget is Buildable b && b.IsBroken)) return CursorType.OpenMenu;
+
+        var order = Order.From(ray, hit);
         return (AnyPickedCan(order) ? order.kind : OrderKind.Move) switch
         {
             OrderKind.Attack => CursorType.Attack,
             OrderKind.Harvest => CursorType.Harvest,
             OrderKind.Work => CursorType.Chop,
             OrderKind.Repair => CursorType.Repair,
-            _ => unit && !unit.Down ? CursorType.Interact : CursorType.Default,
+            OrderKind.Pen => CursorType.AssignToPen,
+            OrderKind.Barn => CursorType.EnterBarn,
+            _ when unit && !unit.Down => CursorType.Interact,
+            _ => AnyPicked ? CursorType.MoveTo : CursorType.Default,
         };
     }
 
@@ -265,6 +283,18 @@ public class PlayerControls : MonoBehaviour
     {
         Vector3 p = cam.WorldToScreenPoint(s.transform.position);
         return p.z > 0f && area.Contains(p);
+    }
+
+    // Resolves a standard right-click against the world; a right-click that opens an intact building's menu is not an order.
+    void Command(Ray ray, RaycastHit hit)
+    {
+        var menuTarget = MouseTarget.Menu(ray, hit);
+        if (menuTarget && !(menuTarget is Buildable b && b.IsBroken))
+        {
+            Gatherer.DismissRepairUI();
+            return;
+        }
+        Command(Order.From(ray, hit));
     }
 
     // Everyone gets the same target; spread points stop a group stacking on one spot when it walks.
