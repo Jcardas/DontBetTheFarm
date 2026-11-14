@@ -1,0 +1,26 @@
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <ui:Template name="MutationIcon" src="project://database/Assets/UI/Components/MutationIcon.uxml?fileID=9197481963319205126&amp;guid=fb4438fa962014e43be13f25767f04a4&amp;type=3#MutationIcon"/>
+    <Style src="project://database/Assets/UI/StyleSheets/InteractionUI.uss?fileID=7433441132597879392&amp;guid=3c26107ceb91787478132dd32f00eb5c&amp;type=3#InteractionUI"/>
+    <ui:VisualElement name="SelectedMutationContainer" class="SolidPanel" style="flex-grow: 0; aspect-ratio: auto; flex-direction: row; align-items: stretch; justify-content: space-around; width: auto; margin-top: 10px; margin-bottom: 10px; height: 160px; max-height: none; max-width: none; min-height: auto;">
+        <ui:Instance template="MutationIcon" name="MutationIcon" style="aspect-ratio: 1; align-items: center; flex-direction: column; justify-content: flex-start; align-self: auto; align-content: auto; max-height: none;"/>
+        <ui:VisualElement name="DescriptionContainer" style="flex-grow: 1; flex-direction: row; width: 100%; padding-right: 20px;">
+            <ui:VisualElement name="Description" style="flex-grow: 1; flex-direction: column; width: 100%; padding-left: 10px; padding-right: 10px;">
+                <ui:VisualElement name="NameSection" style="flex-grow: 1; flex-direction: row; justify-content: flex-start; align-self: auto; align-items: center;">
+                    <ui:Label text="PART_NAME" name="PartName" class="header" style="-unity-text-align: middle-left;"/>
+                </ui:VisualElement>
+                <ui:VisualElement name="SlotsSection" style="flex-grow: 1; flex-direction: row; align-items: center;">
+                    <ui:Label text="Slots:" name="PartSlots" class="descriptionHeader" style="-unity-text-align: middle-left;"/>
+                    <ui:Label text="Insert slots here" name="PartDescription" class="description-text" style="-unity-text-align: middle-left;"/>
+                </ui:VisualElement>
+                <ui:VisualElement name="EffectSection" style="flex-grow: 1; flex-direction: row; align-items: center;">
+                    <ui:Label text="Effect:" name="PartEffect" class="descriptionHeader" style="-unity-text-align: middle-left;"/>
+                    <ui:Label text="Insert Effect description here" name="PartDescription" class="description-text" style="-unity-text-align: middle-left;"/>
+                </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:VisualElement name="Cost" style="flex-grow: 1; width: auto; flex-direction: row; align-self: center; align-items: center; justify-content: center; aspect-ratio: 1;">
+                <ui:Label text="#" name="CostAmount" class="header"/>
+                <ui:Image source="project://database/Assets/UI/Icons/PROTOTYPE_MISSING_ICON.png?fileID=8520217413990361559&amp;guid=b91736b96387c4d4ab44ad2fd62ca7a8&amp;type=3#PROTOTYPE_MISSING_ICON_0" style="aspect-ratio: 1; max-width: 75px;"/>
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

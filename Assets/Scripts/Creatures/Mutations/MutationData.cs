@@ -23,6 +23,10 @@ public class MutationData : ScriptableObject
     public bool pairedPrefab; // True if the prefab has two meshes (One named "Name"_L and one named "Name"_R) for left/right limbs like wings, false if the prefab has a single mesh for head, back, tail, or a single limb like a tentacle.
     
     public GameObject prefab;
+
+    [Tooltip(
+        "The sprite used in the UI to represent this mutation. It should be a square image with a transparent background, and the mutation should be centered in the image.")]
+    public Sprite prefabSprite;
     
     public float localScale = 1f;
 
