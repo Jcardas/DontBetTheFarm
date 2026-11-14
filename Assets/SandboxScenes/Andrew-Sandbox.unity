@@ -351,11 +351,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MutationMenuManager
   menuDocument: {fileID: 25493504}
   slotTemplate: {fileID: 9197481963319205126, guid: fb4438fa962014e43be13f25767f04a4, type: 3}
-  headPlaceholder: {fileID: -6940944650096720487, guid: a63ff144064ddaf4d948979ac848bffd, type: 3}
-  backPlaceholder: {fileID: -2389278446680308781, guid: 0ae226dc60339c848bc174a7d93a2e26, type: 3}
-  limbsPlaceholder: {fileID: 6308549905938073964, guid: 116a58c16902c424e8a6d3bba5006c16, type: 3}
-  tailPlaceholder: {fileID: -5965195624950805028, guid: f928c17cea3427f44abdbcd0b1b1217a, type: 3}
-  lockedPlaceholder: {fileID: -8611341293911561696, guid: 6e2669d84eb2ec844a2a23fff906f339, type: 3}
+  filledMutationTemplate: {fileID: 0}
 --- !u!4 &699148093
 Transform:
   m_ObjectHideFlags: 0
@@ -710,6 +706,10 @@ PrefabInstance:
     - target: {fileID: 3468876227710701661, guid: eb4911211c89a1148b2887854aacaeda, type: 3}
       propertyPath: m_Name
       value: Menu_Visuals
+      objectReference: {fileID: 0}
+    - target: {fileID: 3468876227710701661, guid: eb4911211c89a1148b2887854aacaeda, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
