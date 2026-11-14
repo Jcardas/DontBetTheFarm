@@ -33,7 +33,7 @@ public readonly struct Order
         new(OrderKind.Repair, target.transform.position, building: target);
     
     // `ray` finds a pen or the barn by its whole outline, so a gap in a pen's fence still counts as the pen.
-    public static Order From(RaycastHit hit)
+    public static Order From(Ray ray, RaycastHit hit)
     {
         var enemy = hit.collider.GetComponentInParent<Creature>();
         if (enemy != null &&
@@ -59,9 +59,9 @@ public readonly struct Order
             return new Order(OrderKind.Work, hit.point, node: node);
 
         var building = MouseTarget.Building(ray, hit);
-        if (building is AnimalPen pen)
+        if (building is AnimalPen pen && !pen.IsBroken)
             return new Order(OrderKind.Pen, pen.transform.position, building: pen);
-        if (building is Barn barn && !barn.Down)
+        if (building is Barn barn && !barn.Down && !barn.IsBroken)
             return new Order(OrderKind.Barn, barn.Door, building: barn);
 
         return new Order(OrderKind.Move, hit.point);
