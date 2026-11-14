@@ -1,0 +1,5 @@
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <ui:VisualElement name="MutationIconContainer" class="mutationContainer" style="flex-grow: 1; aspect-ratio: 1; width: 25px; height: 25px;">
+        <ui:VisualElement name="Mutation3DItem" style="flex-grow: 1;"/>
+    </ui:VisualElement>
+</ui:UXML>

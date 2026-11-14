@@ -1,0 +1,52 @@
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Assets/UI/StyleSheets/InteractionUI.uss?fileID=7433441132597879392&amp;guid=3c26107ceb91787478132dd32f00eb5c&amp;type=3#InteractionUI"/>
+    <ui:VisualElement name="UIPaneContainer" style="flex-grow: 1; padding-left: 50px; padding-right: 50px; padding-top: 50px; padding-bottom: 50px;">
+        <ui:VisualElement name="PanelContainer" style="flex-grow: 1; justify-content: flex-start;">
+            <ui:VisualElement name="NavHeader" style="flex-grow: 1; height: auto; justify-content: center; align-items: flex-start; max-height: 75px; margin-bottom: 20px;">
+                <ui:VisualElement name="NavigationContainer" style="flex-grow: 1; flex-direction: row; height: auto; max-height: 62px; max-width: none; align-items: stretch; justify-content: flex-start; background-color: rgb(22, 38, 32); border-top-left-radius: 12px; border-top-right-radius: 12px; border-bottom-right-radius: 12px; border-bottom-left-radius: 12px; padding-top: 6px; padding-right: 6px; padding-bottom: 6px; padding-left: 6px;">
+                    <ui:Button text="" name="BackButton" icon-image="project://database/Assets/UI/Cursors/Unused/arrow_w.png?fileID=2800000&amp;guid=3e30aa2d7d8b8a84c8f4b674ed72eacb&amp;type=3#arrow_w" class="button" style="background-color: rgba(0, 0, 0, 0); border-left-color: rgba(0, 0, 0, 0); border-right-color: rgba(0, 0, 0, 0); border-top-color: rgba(0, 0, 0, 0); border-bottom-color: rgba(0, 0, 0, 0); aspect-ratio: 1; align-self: center;"/>
+                    <ui:VisualElement name="Tabs" style="flex-grow: 1; flex-direction: row; align-content: auto; align-self: auto; justify-content: flex-start; align-items: auto; max-width: 100%;">
+                        <ui:Button text="Research" name="ResearchButton" icon-image="project://database/Assets/UI/MutationMenuAssets/ResearchHouseIcon.png?fileID=2800000&amp;guid=31e42f9b218a37f4d8178d15f86c83a7&amp;type=3#ResearchHouseIcon" class="button" style="align-items: stretch; align-content: flex-start; font-size: 24px; border-left-color: rgba(149, 149, 149, 0); border-right-color: rgba(149, 149, 149, 0); border-top-color: rgba(149, 149, 149, 0); border-bottom-color: rgba(149, 149, 149, 0); border-top-width: 0; border-right-width: 0; border-bottom-width: 0; border-left-width: 0;"/>
+                    </ui:VisualElement>
+                </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:VisualElement name="LowerContent" style="flex-grow: 1; flex-direction: row; max-height: 100%;">
+                <ui:VisualElement name="PreviewPane" class="translucentPanel" style="flex-grow: 1; justify-content: flex-start; align-items: center; align-self: auto; padding-top: 16px; padding-right: 16px; padding-bottom: 16px; padding-left: 16px; max-width: 960px; border-top-left-radius: 12px; border-top-right-radius: 12px; border-bottom-right-radius: 12px; border-bottom-left-radius: 12px; margin-right: 24px;">
+                    <ui:VisualElement name="AlienSelectionHeader" style="flex-grow: 1; flex-direction: row; justify-content: space-between; align-items: auto; max-width: 960%; width: 100%;">
+                        <ui:Label text="Alien Name" name="AlienHeader" class="header" style="align-self: center;"/>
+                        <ui:Label text="1/10" name="AliensInBarnCount" class="header" style="align-self: center;"/>
+                    </ui:VisualElement>
+                    <ui:VisualElement name="CreaturePreview" style="flex-direction: row; justify-content: center; align-items: auto; align-self: center; align-content: auto;">
+                        <ui:Button text="" name="Back" icon-image="project://database/Assets/UI/Cursors/Unused/arrow_w.png?fileID=2800000&amp;guid=3e30aa2d7d8b8a84c8f4b674ed72eacb&amp;type=3#arrow_w" class="button" style="aspect-ratio: 1; height: 60px; align-self: center; border-left-color: rgba(149, 149, 149, 0); border-right-color: rgba(149, 149, 149, 0); border-top-color: rgba(149, 149, 149, 0); border-bottom-color: rgba(149, 149, 149, 0); border-top-width: 0; border-right-width: 0; border-bottom-width: 0; border-left-width: 0;"/>
+                        <ui:VisualElement name="Creature3DRender" style="aspect-ratio: 1; width: 500px; align-items: stretch; margin-left: 50px; margin-right: 50px;"/>
+                        <ui:Button text="" name="Forward" icon-image="project://database/Assets/UI/Cursors/Unused/arrow_e.png?fileID=2800000&amp;guid=4b94d942001957c4d963232d656f2aa7&amp;type=3#arrow_e" class="button" style="aspect-ratio: 1; height: 60px; align-self: center; border-left-color: rgba(149, 149, 149, 0); border-right-color: rgba(149, 149, 149, 0); border-top-color: rgba(149, 149, 149, 0); border-bottom-color: rgba(149, 149, 149, 0);"/>
+                    </ui:VisualElement>
+                    <ui:VisualElement name="MutationsSection" style="flex-grow: 1;">
+                        <ui:Label text="Select Mutations to Unlock" name="MutationSelectionHeader" class="header" style="align-self: center;"/>
+                        <ui:VisualElement name="MutationsList" style="flex-grow: 1; flex-direction: row; align-self: auto; justify-content: center; align-items: center; align-content: auto; width: 800px;">
+                            <ui:VisualElement name="MutationIconContainer" class="mutationContainer" style="flex-grow: 1; aspect-ratio: 1; width: 25px; height: 25px;">
+                                <ui:VisualElement name="Mutation3DItem" style="flex-grow: 1;"/>
+                            </ui:VisualElement>
+                            <ui:VisualElement name="MutationIconContainer" class="mutationContainer" style="flex-grow: 1; aspect-ratio: 1; width: 25px; height: 25px;">
+                                <ui:VisualElement name="Mutation3DItem" style="flex-grow: 1;"/>
+                            </ui:VisualElement>
+                            <ui:VisualElement name="MutationIconContainer" class="mutationContainer" style="flex-grow: 1; aspect-ratio: 1; width: 25px; height: 25px;">
+                                <ui:VisualElement name="Mutation3DItem" style="flex-grow: 1;"/>
+                            </ui:VisualElement>
+                            <ui:VisualElement name="MutationIconContainer" class="mutationContainer" style="flex-grow: 1; aspect-ratio: 1; width: 25px; height: 25px;">
+                                <ui:VisualElement name="Mutation3DItem" style="flex-grow: 1;"/>
+                            </ui:VisualElement>
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+                </ui:VisualElement>
+                <ui:VisualElement name="ContentPane" style="flex-grow: 1;">
+                    <ui:VisualElement name="MutationConfirmationContainer" class="translucentPanel" style="flex-grow: 1; margin-bottom: 20px;"/>
+                    <ui:VisualElement name="MutationCheckoutList" class="TabSelector" style="flex-grow: 1; max-height: 120px; flex-direction: row; justify-content: space-between;">
+                        <ui:Button text="Cancel" name="ResearchButton" class="button cancelButton" style="align-items: stretch; align-content: flex-start; font-size: 24px; border-left-color: rgba(149, 149, 149, 0); border-right-color: rgba(149, 149, 149, 0); border-top-color: rgba(149, 149, 149, 0); border-bottom-color: rgba(149, 149, 149, 0); border-top-width: 0; border-right-width: 0; border-bottom-width: 0; border-left-width: 0; align-self: auto; justify-content: flex-start; width: 100%; max-width: 300px;"/>
+                        <ui:Button text="Unlock" name="ResearchButton" icon-image="project://database/Assets/UI/Cursors/Unused/lock_unlocked.png?fileID=2800000&amp;guid=c72fbccd26495554e8f1314f8eeefd57&amp;type=3#lock_unlocked" class="button" style="align-items: stretch; align-content: flex-start; font-size: 24px; border-left-color: rgba(149, 149, 149, 0); border-right-color: rgba(149, 149, 149, 0); border-top-color: rgba(149, 149, 149, 0); border-bottom-color: rgba(149, 149, 149, 0); border-top-width: 0; border-right-width: 0; border-bottom-width: 0; border-left-width: 0; width: 75%; max-width: 100%; flex-grow: 1; flex-shrink: 1; align-self: auto; justify-content: center;"/>
+                    </ui:VisualElement>
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

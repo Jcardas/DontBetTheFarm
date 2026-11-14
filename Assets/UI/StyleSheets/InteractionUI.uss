@@ -1,0 +1,62 @@
+:root {
+}
+
+.header {
+    font-size: 32px;
+    -unity-font-style: bold;
+    color: rgb(255, 255, 255);
+}
+
+.button {
+    font-size: 32px;
+    color: rgb(255, 255, 255);
+    -unity-font-style: bold;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 8px;
+    border-bottom-left-radius: 8px;
+    background-color: rgb(42, 72, 53);
+    cursor: url("project://database/Assets/UI/Cursors/Unused/cursor_none.png?fileID=2800000&guid=5d57860a59f978c439a26fd604138427&type=3#cursor_none");
+}
+
+.TabSelector {
+    background-color: rgb(22, 38, 32);
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+    border-bottom-right-radius: 12px;
+    border-bottom-left-radius: 12px;
+    border-left-color: rgba(0, 0, 0, 0);
+    border-right-color: rgba(0, 0, 0, 0);
+    border-top-color: rgba(0, 0, 0, 0);
+    border-bottom-color: rgba(0, 0, 0, 0);
+    padding-top: 6px;
+    padding-right: 6px;
+    padding-bottom: 6px;
+    padding-left: 6px;
+}
+
+.translucentPanel {
+    background-color: rgba(22, 38, 32, 0.51);
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+    border-bottom-right-radius: 12px;
+    border-bottom-left-radius: 12px;
+}
+
+.mutationContainer {
+    background-color: rgba(42, 72, 53, 0.678);
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+    border-bottom-right-radius: 12px;
+    border-bottom-left-radius: 12px;
+    margin-left: 4px;
+    margin-right: 4px;
+}
+
+.cancelButton {
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+    border-bottom-right-radius: 12px;
+    border-bottom-left-radius: 12px;
+    background-color: rgb(79, 79, 79);
+}

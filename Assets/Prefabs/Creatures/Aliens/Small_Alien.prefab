@@ -209,6 +209,7 @@ MonoBehaviour:
   attackRange: 1
   viewRadius: 8
   anchored: 1
+  beamEffectPrefab: {fileID: 0}
 --- !u!114 &-1807932057669856012
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -273,8 +274,6 @@ MonoBehaviour:
     slot: 4
   - mutation: {fileID: 11400000, guid: f730b7380f49e134c8aa7347bc062467, type: 2}
     slot: 1
-  - mutation: {fileID: 11400000, guid: ed6ed41f8168ec342ae8e012a8262beb, type: 2}
-    slot: 2
 --- !u!1 &4650746187239923855
 GameObject:
   m_ObjectHideFlags: 0
