@@ -5,6 +5,7 @@
     font-size: 32px;
     -unity-font-style: bold;
     color: rgb(255, 255, 255);
+    -unity-font-definition: url("project://database/Assets/UI%20Toolkit/UnityThemes/UnityDefaultRuntimeTheme.tss?fileID=2230732570650464555&guid=cbce476ed8aef1b48a1fd5ca72adeec2&type=3#NotInter-Regular");
 }
 
 .button {
@@ -33,6 +34,8 @@
     padding-right: 6px;
     padding-bottom: 6px;
     padding-left: 6px;
+    max-height: 62px;
+    max-width: 100%;
 }
 
 .translucentPanel {
