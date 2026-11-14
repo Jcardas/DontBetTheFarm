@@ -76,13 +76,12 @@ public class PlayerControls : MonoBehaviour
         if (player.Fire.WasPressedThisFrame() && shotgun && ground.Raycast(ray, out float along)) shotgun.Fire(ray.GetPoint(along));
         bool overSomething = MouseTarget.Find(ray, out RaycastHit hit);
         var unit = overSomething ? hit.collider.GetComponentInParent<Selectable>() : null;
-        Hover(unit);
         // Right-click a broken structure to repair, even if it has no collider.
         if (player.Command.WasPressedThisFrame())
         {
             Buildable broken = Order.BrokenAt(ray);
             if (broken) Command(Order.ForRepair(broken));
-            else if (overSomething) Command(hit);
+            else if (overSomething) Command(Order.From(hit));
         }
 
         if (left == LeftButton.Idle && player.Select.WasPressedThisFrame())
@@ -248,10 +247,8 @@ public class PlayerControls : MonoBehaviour
     }
 
     // Everyone gets the same target; spread points stop a group stacking on one spot when it walks.
-    void Command(RaycastHit hit)
+    void Command(Order order)
     {
-        var order = Order.From(hit);
-        
         var group = Selectable.All.Where(s => s.Selected).ToList();
 
         // Only one worker should operate the shared repair panel.
@@ -269,7 +266,6 @@ public class PlayerControls : MonoBehaviour
         }
 
         if (marker) Instantiate(marker, order.point, Quaternion.identity).Show(order.kind);
-        var group = Selectable.All.Where(s => s.Selected).ToList();
         for (int i = 0; i < group.Count; i++) group[i].Command(order.Offset(Spread(i)));
     }
 
