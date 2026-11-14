@@ -1,8 +1,6 @@
 <ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
     <Style src="project://database/Assets/UI/StyleSheets/InteractionUI.uss?fileID=7433441132597879392&amp;guid=3c26107ceb91787478132dd32f00eb5c&amp;type=3#InteractionUI"/>
-    <ui:VisualElement name="MutationIconContainer" class="mutationContainer" style="flex-grow: 1; aspect-ratio: 1; width: 25px; height: 25px;">
-        <ui:VisualElement name="Mutation3DItem" style="flex-grow: 1; background-image: none;">
-            <ui:Image source="project://database/Assets/UI/Icons/sickle.png?fileID=-7243430734322799159&amp;guid=d0eda91362852403aa0a927f9472f0ed&amp;type=3#sickle_0" name="MutationIcon" enabled="true" style="height: 100%; padding-top: 32px; padding-right: 32px; padding-bottom: 32px; padding-left: 32px;"/>
-        </ui:VisualElement>
+    <ui:VisualElement name="slot-container" style="flex-grow: 0; width: 128px; height: 128px; border-left-color: rgb(26, 26, 26); border-right-color: rgb(26, 26, 26); border-top-color: rgb(26, 26, 26); border-bottom-color: rgb(26, 26, 26); border-top-width: 3px; border-right-width: 3px; border-bottom-width: 3px; border-left-width: 3px; border-top-left-radius: 12px; border-top-right-radius: 12px; border-bottom-right-radius: 12px; border-bottom-left-radius: 12px; flex-direction: row; justify-content: space-between;">
+        <ui:VisualElement name="mutation-icon" style="flex-grow: 1; width: 100%; height: 100%; -unity-background-scale-mode: scale-to-fit; background-image: none;"/>
     </ui:VisualElement>
 </ui:UXML>
