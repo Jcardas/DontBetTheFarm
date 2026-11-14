@@ -1,5 +1,6 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
     <Style src="project://database/Assets/Figma/DBTF---Hyper-Realistic-Wireframe/Pen---Breeding.uss?fileID=7433441132597879392&amp;guid=d7fa796ba90fee64680845cf506b9856&amp;type=3#Pen---Breeding"/>
+    <Style src="project://database/Assets/UI/StyleSheets/InteractionUI.uss?fileID=7433441132597879392&amp;guid=3c26107ceb91787478132dd32f00eb5c&amp;type=3#InteractionUI"/>
     <ui:VisualElement style="width: 1280px; height: 720px; border-radius: 12px; flex-shrink: 0;">
         <ui:VisualElement style="display: none; width: 1280px; height: 720px; position: absolute; left: 0; top: 0; background-image: url(&quot;project://database/Assets/Figma/DBTF---Hyper-Realistic-Wireframe/images/img-a4jhpe1vpfmx0-149.png?fileID=2800000&amp;guid=71f7444b37e60294fbc52ce828700fd8&amp;type=3#img-a4jhpe1vpfmx0-149&quot;); -unity-background-scale-mode: scale-to-fit;"/>
         <ui:VisualElement style="width: 1035px; height: 720px; position: absolute; left: 0; top: 0;">
