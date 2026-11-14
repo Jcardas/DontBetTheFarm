@@ -29,9 +29,13 @@ public class Highlight : MonoBehaviour
         creature = GetComponent<Creature>();
         mutator = GetComponent<CreatureMutator>();
         // A creature's outline goes on its model (ToyBob's object), so the rings under it aren't outlined too.
-        // A building's goes on its ground plate: one calm line round the footprint, not round every fence rail.
+        // A building's goes on its ground plate when it has an active renderer, or on the root so broken visuals outline cleanly.
         Component model = GetComponentInChildren<ToyBob>();
-        if (model == null && TryGetComponent(out Buildable building)) model = building.GroundElement;
+        if (model == null && TryGetComponent(out Buildable building) &&
+            building.GroundElement != null && building.GroundElement.GetComponentInChildren<Renderer>() != null)
+        {
+            model = building.GroundElement;
+        }
         outline = (model != null ? model.gameObject : gameObject).AddComponent<Outline>();
         Show();
     }
@@ -48,6 +52,12 @@ public class Highlight : MonoBehaviour
 
     void PartsChanged() => partsChanged = true;
 
+    // Re-indexes child renderers whenever a building swaps between its repaired and broken models.
+    public void Refresh()
+    {
+        if (outline != null) outline.Refresh();
+    }
+
     // Once per frame however many parts were swapped.
     void LateUpdate()
     {
@@ -61,7 +71,7 @@ public class Highlight : MonoBehaviour
     {
         bool lit = hovered || selected;
         bool on = lit || creature != null;
-        if (on && !outline.enabled) outline.Refresh(); // a building may have been broken or repaired since it was lit
+        if (on) outline.Refresh(); // refresh cached renderers in case the building broke or was repaired since last lit
         outline.enabled = on;
         outline.OutlineMode = lit ? Outline.Mode.OutlineAll : Outline.Mode.OutlineHidden;
         outline.OutlineWidth = lit ? GameConstants.Instance.LitOutlineWidth : GameConstants.Instance.HiddenOutlineWidth;

@@ -123,6 +123,8 @@ public abstract class Buildable : MonoBehaviour, IDamageable
         if (repairedVisual) repairedVisual.SetActive(!IsBroken);
         if (brokenVisual) brokenVisual.SetActive(IsBroken);
         if (obstacle) obstacle.enabled = !IsBroken;
+        // Refresh cached outline renderers whenever the active visual mesh swaps.
+        if (TryGetComponent(out Highlight highlight)) highlight.Refresh();
     }
 
     public void ApplyDamage(int damage)

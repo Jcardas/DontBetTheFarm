@@ -48,6 +48,22 @@ public class Gatherer : MonoBehaviour
                              creature.HasCapability(CreatureCapabilities.CanRepair);
     public Buildable CurrentRepairTarget => building;
 
+    // True when `unit` is the worker currently holding the shared repair panel.
+    public static bool IsActiveRepairer(Selectable unit) =>
+        unit != null && activeRepairer != null && unit.gameObject == activeRepairer.gameObject;
+
+    // True when `unit` is already queued up to repair `target`.
+    public static bool IsActiveRepairerOn(Selectable unit, Buildable target) =>
+        IsActiveRepairer(unit) && activeRepairer.building == target;
+
+    // Closes the shared repair panel and cancels any pending repair stance when the player clicks elsewhere.
+    public static void DismissRepairUI()
+    {
+        if (activeRepairer == null) return;
+        if (!activeRepairer.repairing) activeRepairer.AbortWork();
+        else if (activeRepairer.repairPanel) activeRepairer.repairPanel.gameObject.SetActive(false);
+    }
+
     private void Awake()
     {
         agent = GetComponent<NavMeshAgent>();

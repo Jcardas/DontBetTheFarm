@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 
 // The player's mouse and keyboard. Nothing is picked at the start. Left-click only selects: click a unit to pick just it,
@@ -76,22 +77,26 @@ public class PlayerControls : MonoBehaviour
         if (player.Fire.WasPressedThisFrame() && shotgun && ground.Raycast(ray, out float along)) shotgun.Fire(ray.GetPoint(along));
         bool overSomething = MouseTarget.Find(ray, out RaycastHit hit);
         var unit = overSomething ? hit.collider.GetComponentInParent<Selectable>() : null;
-        // Right-click a broken structure to repair, even if it has no collider.
+
+        // Right-click a broken structure to repair only when at least one picked unit can repair it.
         if (player.Command.WasPressedThisFrame())
         {
-            Buildable broken = Order.BrokenAt(ray);
+            Buildable broken = BrokenTargetAt(ray);
             if (broken) Command(Order.ForRepair(broken));
             else if (overSomething) Command(Order.From(hit));
         }
 
-        if (left == LeftButton.Idle && player.Select.WasPressedThisFrame())
+        // Ignore left-clicks over UI so clicking the repair button doesn't clear selection or dismiss the panel early.
+        bool overUI = EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
+        if (left == LeftButton.Idle && player.Select.WasPressedThisFrame() && !overUI)
         {
             left = LeftButton.Pressed;
             pressedAt = at;
         }
         if (left == LeftButton.Pressed && (at - pressedAt).magnitude > DragPixels) left = LeftButton.Dragging;
         Hover(left == LeftButton.Dragging ? Selectable.All.Where(s => OnScreen(cam, s, Box(pressedAt, at))) : new[] { unit });
-        HoverTarget(overSomething && left != LeftButton.Dragging ? Target(ray, hit) : null);
+        // Do not gate on overSomething: broken buildings without colliders are still found via renderer bounds.
+        HoverTarget(left != LeftButton.Dragging ? Target(ray, overSomething, hit) : null);
         if (left == LeftButton.Idle || !player.Select.WasReleasedThisFrame()) return;
 
         if (left == LeftButton.Dragging) Pick(Selectable.All.Where(s => OnScreen(cam, s, Box(pressedAt, at))), shift, ctrl);
@@ -119,7 +124,7 @@ public class PlayerControls : MonoBehaviour
 
         ShowCursor(shotgun && shotgun.Reloading
             ? ReloadCursor(shotgun.ReloadProgress)
-            : Order.BrokenAt(ray)
+            : BrokenTargetAt(ray) != null
                 ? CursorType.Repair
                 : overSomething ? CursorFor(hit, unit) : CursorType.Default);
     }
@@ -139,6 +144,7 @@ public class PlayerControls : MonoBehaviour
     static void Clear()
     {
         foreach (var s in Selectable.All) s.Selected = false;
+        Gatherer.DismissRepairUI();
     }
 
     // Lights the unit under the mouse or, while dragging, every unit the box would pick.
@@ -150,19 +156,30 @@ public class PlayerControls : MonoBehaviour
         lit = now;
     }
 
-    // What lights up under the mouse besides units: what a right-click would act on, when a picked unit can do it
-    // (an alien to attack, a tree to chop, a field to harvest), or else a building with its own menu (a pen).
-    static Component Target(Ray ray, RaycastHit hit)
+    // Returns the broken building under the ray only when a picked unit can repair it.
+    static Buildable BrokenTargetAt(Ray ray)
     {
+        Buildable broken = Order.BrokenAt(ray);
+        return broken && AnyPickedCan(Order.ForRepair(broken)) ? broken : null;
+    }
+
+    // What lights up under the mouse besides units: only what a right-click would actually act on with the current
+    // selection (an alien to attack, a tree to chop, a field to harvest, or a broken building to repair).
+    static Component Target(Ray ray, bool overSomething, RaycastHit hit)
+    {
+        var broken = BrokenTargetAt(ray);
+        if (broken != null) return broken;
+        if (!overSomething) return null;
+
         var order = Order.From(hit);
         if (AnyPickedCan(order))
         {
             if (order.enemy) return order.enemy;
             if (order.node) return order.node;
             if (order.field) return order.field;
+            if (order.building) return order.building;
         }
-        var building = MouseTarget.Building(ray, hit);
-        return building is IContextInteractable ? building : null;
+        return null;
     }
 
     static bool AnyPickedCan(Order order) => Selectable.All.Any(s => s.Selected && s.CanObey(order));
@@ -216,6 +233,10 @@ public class PlayerControls : MonoBehaviour
         lastClicked = unit;
         lastClickAt = Time.unscaledTime;
 
+        // Left-clicking the ground or another unit dismisses any open repair panel unless the active repairer was clicked.
+        if (unit == null || !Gatherer.IsActiveRepairer(unit))
+            Gatherer.DismissRepairUI();
+
         if (unit == null)
         {
             if (!shift && !ctrl) Clear();
@@ -250,6 +271,12 @@ public class PlayerControls : MonoBehaviour
     void Command(Order order)
     {
         var group = Selectable.All.Where(s => s.Selected).ToList();
+
+        // Any right-click dismisses an open repair panel unless re-issuing repair on the same building to the active repairer.
+        bool keepingSameRepair = order.kind == OrderKind.Repair &&
+                                 group.Any(s => Gatherer.IsActiveRepairerOn(s, order.building));
+        if (!keepingSameRepair)
+            Gatherer.DismissRepairUI();
 
         // Only one worker should operate the shared repair panel.
         if (order.kind == OrderKind.Repair)
