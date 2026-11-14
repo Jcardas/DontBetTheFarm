@@ -11,6 +11,11 @@ public class Animal : Creature
     [Tooltip("Prefab reference for the farm animal. This is used for spawning and instantiation.")]
     [SerializeField] protected Animal sourcePrefab;
     
+    [Header("Abducted Animal Modifiers")]
+    [Tooltip("Size of the animal's neck. This can be used to adjust the appearance of the mind control collar " +
+             "when it is abducted by a UFO and returns as an enemy.")]
+    [SerializeField] protected float neckSize = 1f;
+    
     [SerializeField] protected int breedingCost;
     [SerializeField] protected int healCost;
 
@@ -19,6 +24,8 @@ public class Animal : Creature
         get => sourcePrefab != null ? sourcePrefab : this;
         set => sourcePrefab = value;
     }
+    
+    public float NeckSize => neckSize;
     
     public int BreedingCost => breedingCost;
     public int HealCost => healCost;

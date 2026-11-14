@@ -58,6 +58,7 @@ public abstract class Creature : MonoBehaviour, IDamageable
     private Gatherer gatherer;
     
     private CreatureMutator creatureMutator;
+    private Highlight highlight;
 
     // Public properties
     
@@ -89,6 +90,7 @@ public abstract class Creature : MonoBehaviour, IDamageable
     public NavMeshAgent NavMeshAgent => navMeshAgent;
     public CreatureBrain CreatureBrain => creatureBrain;
     public CreatureMutator CreatureMutator => creatureMutator;
+    public Highlight Highlight => highlight;
     public Vector3 Position => transform.position;
 
     [Header("Retreat & Despawn")]
@@ -108,6 +110,7 @@ public abstract class Creature : MonoBehaviour, IDamageable
         toyBob = GetComponentInChildren<ToyBob>();
         gatherer = GetComponentInChildren<Gatherer>();
         creatureMutator = GetComponent<CreatureMutator>();
+        highlight = gameObject.AddComponent<Highlight>(); // outlined while hidden, hovered or selected
 
 
         OnMutationsChanged();
@@ -264,6 +267,14 @@ public abstract class Creature : MonoBehaviour, IDamageable
             navMeshAgent.ResetPath();
             navMeshAgent.enabled = false;
         }
+    }
+
+    // Switches sides (a stolen animal the aliens send back) and re-files it with the CreatureManager under the new team.
+    public void SetTeam(GameConstants.Team newTeam)
+    {
+        if (CreatureManager.Instance != null) CreatureManager.Instance.Unregister(this);
+        team = newTeam;
+        if (isActiveAndEnabled && CreatureManager.Instance != null) CreatureManager.Instance.Register(this);
     }
 
     // Ranged creatures back away when an enemy gets closer than this, so they keep fighting from range. 0 = stand and fight.

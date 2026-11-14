@@ -27,7 +27,9 @@ public class PlayerControls : MonoBehaviour
     Vector2 pressedAt;
     Shotgun shotgun;
     CameraController cameraController;
-    Selectable hovered, lastClicked;
+    Selectable lastClicked;
+    HashSet<Selectable> lit = new();
+    Highlight litTarget;
     CursorType cursor;
     float lastClickAt;
     readonly List<Selectable>[] groups = { new(), new(), new() };
@@ -72,13 +74,7 @@ public class PlayerControls : MonoBehaviour
         Vector2 at = player.Point.ReadValue<Vector2>();
         Ray ray = cam.ScreenPointToRay(at);
         if (player.Fire.WasPressedThisFrame() && shotgun && ground.Raycast(ray, out float along)) shotgun.Fire(ray.GetPoint(along));
-        bool overSomething = Physics.Raycast(
-            ray,
-            out RaycastHit hit,
-            Mathf.Infinity,
-            Physics.DefaultRaycastLayers,
-            QueryTriggerInteraction.Ignore
-        );      
+        bool overSomething = MouseTarget.Find(ray, out RaycastHit hit);
         var unit = overSomething ? hit.collider.GetComponentInParent<Selectable>() : null;
         Hover(unit);
         // Right-click a broken structure to repair, even if it has no collider.
@@ -86,7 +82,7 @@ public class PlayerControls : MonoBehaviour
         {
             Buildable broken = Order.BrokenAt(ray);
             if (broken) Command(Order.ForRepair(broken));
-            else if (overSomething) Command(Order.From(hit));
+            else if (overSomething) Command(hit);
         }
 
         if (left == LeftButton.Idle && player.Select.WasPressedThisFrame())
@@ -95,6 +91,8 @@ public class PlayerControls : MonoBehaviour
             pressedAt = at;
         }
         if (left == LeftButton.Pressed && (at - pressedAt).magnitude > DragPixels) left = LeftButton.Dragging;
+        Hover(left == LeftButton.Dragging ? Selectable.All.Where(s => OnScreen(cam, s, Box(pressedAt, at))) : new[] { unit });
+        HoverTarget(overSomething && left != LeftButton.Dragging ? Target(ray, hit) : null);
         if (left == LeftButton.Idle || !player.Select.WasReleasedThisFrame()) return;
 
         if (left == LeftButton.Dragging) Pick(Selectable.All.Where(s => OnScreen(cam, s, Box(pressedAt, at))), shift, ctrl);
@@ -106,15 +104,19 @@ public class PlayerControls : MonoBehaviour
     {
         if (cameraController != null &&
             (cameraController.IsDragging || cameraController.IsEdgeScrolling))
+        {
             return;
+        }
 
         Camera cam = Camera.main;
         if (cam == null) return;
 
-        Ray ray = cam.ScreenPointToRay(input.Player.Point.ReadValue<Vector2>());
-        bool overSomething = Physics.Raycast(ray, out RaycastHit hit,
-            Mathf.Infinity, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore);
-        Selectable unit = overSomething ? hit.collider.GetComponentInParent<Selectable>() : null;
+        Vector2 at = input.Player.Point.ReadValue<Vector2>();
+        Ray ray = cam.ScreenPointToRay(at);
+        bool overSomething = MouseTarget.Find(ray, out RaycastHit hit);
+        var unit = overSomething
+            ? hit.collider.GetComponentInParent<Selectable>()
+            : null;
 
         ShowCursor(shotgun && shotgun.Reloading
             ? ReloadCursor(shotgun.ReloadProgress)
@@ -140,18 +142,49 @@ public class PlayerControls : MonoBehaviour
         foreach (var s in Selectable.All) s.Selected = false;
     }
 
-    void Hover(Selectable unit)
+    // Lights the unit under the mouse or, while dragging, every unit the box would pick.
+    void Hover(IEnumerable<Selectable> units)
     {
-        if (unit == hovered) return;
-        if (hovered) hovered.Hovered = false;
-        hovered = unit;
-        if (unit) unit.Hovered = true;
+        var now = units.Where(s => s != null).ToHashSet();
+        foreach (var s in lit) if (s && !now.Contains(s)) s.Hovered = false;
+        foreach (var s in now) if (!lit.Contains(s)) s.Hovered = true;
+        lit = now;
     }
 
-    // Same precedence as Order.From, so the cursor always previews the order a right-click would give.
+    // What lights up under the mouse besides units: what a right-click would act on, when a picked unit can do it
+    // (an alien to attack, a tree to chop, a field to harvest), or else a building with its own menu (a pen).
+    static Component Target(Ray ray, RaycastHit hit)
+    {
+        var order = Order.From(hit);
+        if (AnyPickedCan(order))
+        {
+            if (order.enemy) return order.enemy;
+            if (order.node) return order.node;
+            if (order.field) return order.field;
+        }
+        var building = MouseTarget.Building(ray, hit);
+        return building is IContextInteractable ? building : null;
+    }
+
+    static bool AnyPickedCan(Order order) => Selectable.All.Any(s => s.Selected && s.CanObey(order));
+
+    // Lights the target the way units light up; it gets its Highlight the first time.
+    void HoverTarget(Component target)
+    {
+        Highlight next = null;
+        if (target && !target.TryGetComponent(out next)) next = target.gameObject.AddComponent<Highlight>();
+        if (next == litTarget) return;
+        if (litTarget) litTarget.Hovered = false;
+        litTarget = next;
+        if (next) next.Hovered = true;
+    }
+
+    // Same precedence as Order.From, so the cursor always previews the order a right-click would give, and only
+    // when a picked unit can carry it out: with just cows picked, a tree shows the plain cursor.
     static CursorType CursorFor(RaycastHit hit, Selectable unit)
     {
-        return Order.From(hit).kind switch
+        var order = Order.From(hit);
+        return (AnyPickedCan(order) ? order.kind : OrderKind.Move) switch
         {
             OrderKind.Attack => CursorType.Attack,
             OrderKind.Harvest => CursorType.Harvest,
@@ -215,8 +248,10 @@ public class PlayerControls : MonoBehaviour
     }
 
     // Everyone gets the same target; spread points stop a group stacking on one spot when it walks.
-    void Command(Order order)
+    void Command(RaycastHit hit)
     {
+        var order = Order.From(hit);
+        
         var group = Selectable.All.Where(s => s.Selected).ToList();
 
         // Only one worker should operate the shared repair panel.
@@ -234,8 +269,8 @@ public class PlayerControls : MonoBehaviour
         }
 
         if (marker) Instantiate(marker, order.point, Quaternion.identity).Show(order.kind);
-        for (int i = 0; i < group.Count; i++)
-            group[i].Command(order.Offset(Spread(i)));
+        var group = Selectable.All.Where(s => s.Selected).ToList();
+        for (int i = 0; i < group.Count; i++) group[i].Command(order.Offset(Spread(i)));
     }
 
     // Unit 0 stands on the point; the rest fill rings Spacing apart. Ring k holds 6k units,
@@ -258,8 +293,8 @@ public class PlayerControls : MonoBehaviour
         if (left != LeftButton.Dragging) return;
         Rect r = Box(pressedAt, input.Player.Point.ReadValue<Vector2>());
         r.y = Screen.height - r.yMax; // input is bottom-left origin, IMGUI is top-left
-        var tint = new Color(1f, 0.85f, 0.1f);
-        GUI.DrawTexture(r, Texture2D.whiteTexture, ScaleMode.StretchToFill, true, 0f, new Color(tint.r, tint.g, tint.b, 0.15f), 0f, 0f);
-        GUI.DrawTexture(r, Texture2D.whiteTexture, ScaleMode.StretchToFill, true, 0f, tint, 1f, 0f);
+        var tint = new Color(0.4f, 0.7f, 1f); // blue, like the outlines
+        GUI.DrawTexture(r, Texture2D.whiteTexture, ScaleMode.StretchToFill, true, 0f, new Color(tint.r, tint.g, tint.b, 0.12f), 0f, 0f);
+        GUI.DrawTexture(r, Texture2D.whiteTexture, ScaleMode.StretchToFill, true, 0f, new Color(tint.r, tint.g, tint.b, 0.8f), 1f, 0f);
     }
 }

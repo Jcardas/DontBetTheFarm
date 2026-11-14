@@ -71,6 +71,7 @@ public class Spawner : MonoBehaviour
             if (target != null)
             {
                 yield return StartCoroutine(FlyToPosistion(target.transform.position + Vector3.up * flightHeight));
+                if (AbductionManager.Instance != null) AbductionManager.Instance.ReturnStolen(target, beamEffectPrefab, waveManager);
 
                 for (int i = 0 ; i < currentWave.batchSize; i++)
                 {

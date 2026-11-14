@@ -70,6 +70,16 @@ public class CreatureBrain : MonoBehaviour
         Guard(order.point);
     }
 
+    // Whether ExecuteCommand would carry this order out rather than just walk to its point (the same checks).
+    public bool CanObey(Order order) => order.kind switch
+    {
+        OrderKind.Attack => creature.CalculatedAttackDamage > 0,
+        OrderKind.Work => gatherer != null && gatherer.CanWork(order.node),
+        OrderKind.Harvest => gatherer != null && creature.HasCapability(CreatureCapabilities.CanHarvestCrops),
+        OrderKind.Repair => gatherer != null && creature.HasCapability(CreatureCapabilities.CanRepair),
+        _ => true,
+    };
+
     private void ClearCombatAndObey()
     {
         currentTarget = playerOrderedTarget = null;

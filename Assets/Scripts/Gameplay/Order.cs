@@ -34,7 +34,7 @@ public readonly struct Order
 
     public static Order From(RaycastHit hit)
     {
-        Creature enemy = hit.collider.GetComponentInParent<Creature>();
+        var enemy = hit.collider.GetComponentInParent<Creature>();
         if (enemy != null &&
             enemy.Team == GameConstants.Team.Alien &&
             !enemy.Down)
@@ -49,12 +49,12 @@ public readonly struct Order
         if (broken && broken.IsBroken)
             return ForRepair(broken);
 
-        WheatField field = hit.collider.GetComponentInParent<WheatField>();
+        var field = hit.collider.GetComponentInParent<WheatField>();
         if (field && !field.IsBroken)
             return new Order(OrderKind.Harvest, hit.point, field: field);
 
-        ResourceNode node = hit.collider.GetComponentInParent<ResourceNode>();
-        if (node)
+        var node = hit.collider.GetComponentInParent<ResourceNode>();
+        if (node != null)
             return new Order(OrderKind.Work, hit.point, node: node);
 
         return new Order(OrderKind.Move, hit.point);

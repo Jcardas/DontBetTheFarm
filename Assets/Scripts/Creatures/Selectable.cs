@@ -24,7 +24,8 @@ public class Selectable : MonoBehaviour
     private bool hovered;
 
     public Creature Creature => creature;
-    public bool Down => creature == null || creature.Down;
+    // Knocked out, or switched off while the unit is on the aliens' side: either way it can't be picked or ordered.
+    public bool Down => creature == null || creature.Down || !enabled;
 
     public bool Selected
     {
@@ -32,7 +33,7 @@ public class Selectable : MonoBehaviour
         set
         {
             selected = value && !Down;
-            ShowRings();
+            Show();
         }
     }
 
@@ -42,7 +43,7 @@ public class Selectable : MonoBehaviour
         set
         {
             hovered = value && !Down;
-            ShowRings();
+            Show();
         }
     }
 
@@ -62,10 +63,13 @@ public class Selectable : MonoBehaviour
         if (hovered) Hovered = false;
     }
 
-    private void ShowRings()
+    private void Show()
     {
         if (ring) ring.SetActive(selected);
         if (hoverRing) hoverRing.SetActive(hovered && !selected);
+        if (creature == null) return;
+        creature.Highlight.Hovered = hovered;
+        creature.Highlight.Selected = selected;
     }
 
     public void Command(Order order)
@@ -77,6 +81,8 @@ public class Selectable : MonoBehaviour
         if (toward.sqrMagnitude > 0.01f) transform.rotation = Quaternion.LookRotation(toward);
         brain.ExecuteCommand(order);
     }
+
+    public bool CanObey(Order order) => !Down && brain != null && brain.CanObey(order);
 
     public string GetCreatureName()
     {

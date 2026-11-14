@@ -20,7 +20,7 @@ public class TimeManager : MonoBehaviour
     public float timePassed =    0f;        // Total time passed in seconds
     public float starEmissionRate = 1000f;
 
-    bool isDayTimeFlag = false;
+    protected bool isDayTimeFlag = false;
 
     public Transform celestialRig;
     public Light sunLight;
@@ -182,5 +182,11 @@ public class TimeManager : MonoBehaviour
     public float getClockDegrees()
     {
         return (getHour() / DAY_LENGTH) * CIRCLE_DEGREES;
+    }
+    
+    // Returns true if it is currently daytime, false if it is nighttime
+    public bool IsDayTime()
+    {
+        return isDayTimeFlag;
     }
 }
