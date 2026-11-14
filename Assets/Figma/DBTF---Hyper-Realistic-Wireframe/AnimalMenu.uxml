@@ -1,7 +1,7 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
     <Style src="project://database/Assets/Figma/DBTF---Hyper-Realistic-Wireframe/AnimalMenu.uss?fileID=7433441132597879392&amp;guid=764b8b81ba0d6904e92b4170a8e6e600&amp;type=3#AnimalMenu"/>
-    <ui:VisualElement style="width: 1280px; height: 720px; border-radius: 12px; flex-shrink: 0;">
-        <ui:VisualElement style="display: flex; height: 62px; padding: 10px; align-items: flex-start; border-radius: 12px; background-color: rgb(22, 38, 32); flex-direction: row; position: absolute; left: 0; top: 0;">
+    <ui:VisualElement name="AnimalMenuParentContainer" style="width: 1280px; height: 720px; border-radius: 12px; flex-shrink: 0;">
+        <ui:VisualElement name="TabBarContainer" style="display: flex; height: 62px; padding: 10px; align-items: flex-start; border-radius: 12px; background-color: rgb(22, 38, 32); flex-direction: row; position: absolute; left: 0; top: 0;">
             <ui:VisualElement name="Btn_Back" style="display: flex; padding: 10px; justify-content: center; align-items: center; flex-shrink: 0; align-self: stretch; border-radius: 8px; background-color: rgb(22, 38, 32); flex-direction: row;">
                 <ui:VisualElement style="width: 32px; height: 32px; flex-shrink: 0;">
                     <ui:VisualElement style="width: 32px; height: 32px; position: absolute; left: 0; top: 0; background-image: url(&quot;project://database/Assets/Figma/DBTF---Hyper-Realistic-Wireframe/images/img-a4jhpe1vpfmx0-149.png?fileID=2800000&amp;guid=71f7444b37e60294fbc52ce828700fd8&amp;type=3#img-a4jhpe1vpfmx0-149&quot;); -unity-background-scale-mode: scale-to-fit;"/>
@@ -19,7 +19,7 @@
                 <ui:Label text="Breeding" class="unity-label" style="flex-shrink: 0; color: rgb(204, 204, 204); font-size: 20px; -unity-font-style: bold; white-space: nowrap; -unity-text-align: middle-left;"/>
             </ui:VisualElement>
         </ui:VisualElement>
-        <ui:VisualElement style="width: 790px; height: 213px; padding: 10px; border-radius: 12px; background-color: rgba(22, 38, 32, 0.45); position: absolute; left: 0; top: 507px;">
+        <ui:VisualElement name="MutationInventoryContainer" style="width: 790px; height: 213px; padding: 10px; border-radius: 12px; background-color: rgba(22, 38, 32, 0.45); position: absolute; left: 0; top: 507px;">
             <ui:VisualElement class="mutation-part" style="width: 96px; height: 96px; position: absolute; left: 10px; top: 10px;">
                 <ui:VisualElement style="width: 58px; height: 64px; position: absolute; left: 19px; top: 16px; background-image: url(&quot;project://database/Assets/Figma/DBTF---Hyper-Realistic-Wireframe/images/img-1qfhsfz1axs35h-3506.png?fileID=2800000&amp;guid=5a865ddfb6cbe234fa3bc1c95a74546a&amp;type=3#img-1qfhsfz1axs35h-3506&quot;); -unity-background-scale-mode: scale-to-fit;"/>
             </ui:VisualElement>
@@ -63,8 +63,8 @@
                 <ui:VisualElement style="width: 58px; height: 64px; position: absolute; left: 19px; top: 16px; background-image: url(&quot;project://database/Assets/Figma/DBTF---Hyper-Realistic-Wireframe/images/img-1qfhsfz1axs35h-3506.png?fileID=2800000&amp;guid=5a865ddfb6cbe234fa3bc1c95a74546a&amp;type=3#img-1qfhsfz1axs35h-3506&quot;); -unity-background-scale-mode: scale-to-fit;"/>
             </ui:VisualElement>
         </ui:VisualElement>
-        <ui:VisualElement style="display: flex; width: 490px; height: 720px; padding: 10px; flex-direction: column; align-items: flex-start; border-radius: 12px; background-color: rgba(22, 38, 32, 0.45); position: absolute; left: 790px; top: 0;">
-            <ui:VisualElement style="display: flex; flex-direction: column; align-items: flex-start; flex-shrink: 0;">
+        <ui:VisualElement name="StatsMutationMenuContainer" style="display: flex; width: 490px; height: 720px; padding: 10px; flex-direction: column; align-items: flex-start; border-radius: 12px; background-color: rgba(22, 38, 32, 0.45); position: absolute; left: 790px; top: 0;">
+            <ui:VisualElement name="StatsContainer" style="display: flex; flex-direction: column; align-items: flex-start; flex-shrink: 0;">
                 <ui:Label text="Stats:" class="unity-label" style="flex-shrink: 0; color: rgb(255, 255, 255); font-size: 32px; -unity-font-style: bold; -unity-text-align: middle-center; white-space: nowrap;"/>
                 <ui:VisualElement style="display: flex; align-items: flex-start; flex-shrink: 0; flex-direction: row;">
                     <ui:Label text="Level:" class="unity-label" style="flex-shrink: 0; color: rgb(255, 255, 255); font-size: 14px; -unity-font-style: bold; -unity-text-align: middle-center; white-space: nowrap;"/>
@@ -87,8 +87,8 @@
                     <ui:Label text="0" class="unity-label" style="flex-shrink: 0; color: rgb(255, 255, 255); font-size: 14px; -unity-text-align: middle-center; white-space: nowrap;"/>
                 </ui:VisualElement>
             </ui:VisualElement>
-            <ui:VisualElement style="width: 450px; height: 2px; flex-shrink: 0; background-image: url(&quot;project://database/Assets/Figma/DBTF---Hyper-Realistic-Wireframe/images/img-1kce47v57vvky-179.png?fileID=2800000&amp;guid=d923f9b840ec8f641bc14ae26f00e688&amp;type=3#img-1kce47v57vvky-179&quot;); -unity-background-scale-mode: scale-to-fit;"/>
-            <ui:VisualElement style="display: flex; flex-direction: column; align-items: flex-start; flex-shrink: 0; align-self: stretch;">
+            <ui:VisualElement name="StatsMutationSeparator" style="width: 450px; height: 2px; flex-shrink: 0; background-image: url(&quot;project://database/Assets/Figma/DBTF---Hyper-Realistic-Wireframe/images/img-1kce47v57vvky-179.png?fileID=2800000&amp;guid=d923f9b840ec8f641bc14ae26f00e688&amp;type=3#img-1kce47v57vvky-179&quot;); -unity-background-scale-mode: scale-to-fit;"/>
+            <ui:VisualElement name="MutationContainer" style="display: flex; flex-direction: column; align-items: flex-start; flex-shrink: 0; align-self: stretch;">
                 <ui:Label text="Mutations:" class="unity-label" style="flex-shrink: 0; color: rgb(255, 255, 255); font-size: 32px; -unity-font-style: bold; -unity-text-align: middle-center; white-space: nowrap;"/>
                 <ui:VisualElement style="display: flex; flex-direction: column; align-items: flex-start; flex-shrink: 0; align-self: stretch;">
                     <ui:VisualElement style="display: flex; width: auto; align-items: flex-start; flex-shrink: 0; flex-direction: row;">
