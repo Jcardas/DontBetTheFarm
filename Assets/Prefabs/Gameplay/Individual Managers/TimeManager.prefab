@@ -46,11 +46,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TimeManager
   timePaused: 0
   currentDay: 0
-  lengthOfHour: 10
+  lengthOfHour: 5
+  currentTime: 0
   timePassed: 0
   starEmissionRate: 1000
   celestialRig: {fileID: 0}
   sunLight: {fileID: 0}
   moonLight: {fileID: 0}
   starSystem: {fileID: 0}
-  waveManager: {fileID: 0}
