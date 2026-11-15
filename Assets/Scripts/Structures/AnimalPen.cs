@@ -210,7 +210,7 @@ public class AnimalPen : Buildable, IContextInteractable
 
     public int CalculateBreedingCost(Animal parentA, Animal parentB)
     {
-        if (parentA == null && parentB == null) return 10;
+        if (parentA == null && parentB == null) return 0;
 
         int baseCost = parentA != null
             ? parentA.BreedingCost

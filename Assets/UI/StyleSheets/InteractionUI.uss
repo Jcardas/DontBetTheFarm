@@ -192,20 +192,51 @@
 .horizontalScrollbar .unity-scroller--horizontal .unity-base-slider__dragger:active {
     background-color: rgb(76, 205, 130);
 }
-
-
-.slot-drop-valid {
-    border-color: rgb(110, 220, 130);
-    border-width: 3px;
+.breeding-parent-slot {
+    width: 320px;
+    height: 320px;
+    border-top-width: 2px;
+    border-bottom-width: 2px;
+    border-left-width: 2px;
+    border-right-width: 2px;
+    border-top-color: rgba(255, 255, 255, 0.5);
+    border-bottom-color: rgba(255, 255, 255, 0.5);
+    border-left-color: rgba(255, 255, 255, 0.5);
+    border-right-color: rgba(255, 255, 255, 0.5);
+    border-radius: 12px;
+    background-color: rgba(22, 38, 32, 0.35);
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
 }
 
-.slot-drop-invalid {
-    border-color: rgb(210, 80, 80);
-    border-width: 2px;
+.slot-drop-valid,
+.breeding-parent-slot.slot-drop-valid {
+    border-top-color: rgb(110, 220, 130);
+    border-bottom-color: rgb(110, 220, 130);
+    border-left-color: rgb(110, 220, 130);
+    border-right-color: rgb(110, 220, 130);
+    border-top-width: 3px;
+    border-bottom-width: 3px;
+    border-left-width: 3px;
+    border-right-width: 3px;
+}
+
+.slot-drop-invalid,
+.breeding-parent-slot.slot-drop-invalid {
+    border-top-color: rgb(210, 80, 80);
+    border-bottom-color: rgb(210, 80, 80);
+    border-left-color: rgb(210, 80, 80);
+    border-right-color: rgb(210, 80, 80);
+    border-top-width: 2px;
+    border-bottom-width: 2px;
+    border-left-width: 2px;
+    border-right-width: 2px;
     opacity: 0.5;
 }
 
-.slot-drop-hover {
-    scale: 1.08 1.08;
+.slot-drop-hover,
+.breeding-parent-slot.slot-drop-hover {
+    scale: 1.05 1.05;
     background-color: rgba(110, 220, 130, 0.25);
 }
