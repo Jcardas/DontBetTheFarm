@@ -24,6 +24,12 @@ public class CameraController : MonoBehaviour
     [SerializeField] private float maxOrthoSize = 25f;
     [SerializeField] private float zoomDamping = 10f;
 
+    [SerializeField] private float minX = -10f;
+    [SerializeField] private float maxX = 10f;
+    [SerializeField] private float minY = -10f;
+    [SerializeField] private float maxY = 10f;
+
+
     [Header("Camera Reference")] [SerializeField]
     private Transform cameraTransform;
 
@@ -175,6 +181,7 @@ public class CameraController : MonoBehaviour
         }
 
         HandleZoomToCursor();
+        ClampCameraPosition();
         ApplyMovement();
     }
 
@@ -329,6 +336,15 @@ public class CameraController : MonoBehaviour
                                * unitsPerPixel * dragPanMultiplier;
 
         _targetPosition += dragMovement;
+    }
+
+    /// <summary>
+    /// Restricts the target position to the defined min and max bounds.
+    /// </summary>
+    private void ClampCameraPosition()
+    {
+        _targetPosition.x = Mathf.Clamp(_targetPosition.x, minX, maxX);
+        _targetPosition.z = Mathf.Clamp(_targetPosition.z, minY, maxY);
     }
 
     /// <summary>
