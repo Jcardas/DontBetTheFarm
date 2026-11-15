@@ -170,7 +170,7 @@
                     <ui:Label text="Animals In Pen:" name="AnimalsInPenHeader" style="color: rgb(255, 255, 255); font-size: 20px; -unity-font-style: bold;"/>
                     <ui:Label text="0/6" name="PenRosterCountLabel" style="color: rgb(255, 255, 255); font-size: 20px; -unity-font-style: bold;"/>
                 </ui:VisualElement>
-                <ui:ScrollView mode="Horizontal" horizontal-scroller-visibility="AlwaysVisible" name="AnimalsInPenScrollbar" class="horizontalScrollbar" style="height: 205px; min-height: 205px;">
+                <ui:ScrollView mode="Horizontal" horizontal-scroller-visibility="Hidden" name="AnimalsInPenScrollbar" class="horizontalScrollbar" style="height: 205px; min-height: 205px;">
                     <ui:Instance template="BreedingAnimalCard"/>
                     <ui:Instance template="BreedingAnimalCard"/>
                     <ui:Instance template="BreedingAnimalCard"/>
