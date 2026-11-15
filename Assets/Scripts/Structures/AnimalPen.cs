@@ -426,7 +426,7 @@ public class AnimalPen : Buildable, IContextInteractable
         for (int i = animalsInPen.Count - 1; i >= 0; i--)
         {
             Animal a = animalsInPen[i];
-            if (a == null || !a.isActiveAndEnabled || a.Team != GameConstants.Team.Farm)
+            if (a == null || !a.isActiveAndEnabled || a.Team != GameConstants.Team.Farm || UFO.Abducted.Contains(a))
             {
                 if (a != null && a.AssignedPen == this)
                     a.AssignedPen = null;

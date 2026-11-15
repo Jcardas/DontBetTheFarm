@@ -19,10 +19,14 @@ public class PenUIController : MonoBehaviour
     private PenAnimalsTab _animalsTab;
     private PenBreedingTab _breedingTab;
 
+    
+    private int _lastSyncedCount = -1;
+    
     public bool IsOpen { get; private set; }
     public int Capacity => _activePen != null ? _activePen.Capacity : 6;
     public IReadOnlyList<Animal> Animals => _animals;
     public AnimalPen ActivePen => _activePen;
+    
 
     public void OpenMenu() => OpenMenu(_activePen);
 
@@ -30,6 +34,7 @@ public class PenUIController : MonoBehaviour
     {
         _activePen = pen;
         SyncAnimals();
+        _lastSyncedCount = _animals.Count;
         if (!gameObject.activeSelf) gameObject.SetActive(true);
         IsOpen = true;
 
@@ -86,8 +91,32 @@ public class PenUIController : MonoBehaviour
 
     private void Update()
     {
-        if (IsOpen && Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
+        if (!IsOpen) return;
+
+        if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
+        {
             CloseMenu();
+            return;
+        }
+
+        // 1. If the active pen was destroyed or broken while open, close immediately
+        if (_activePen != null && (!_activePen || _activePen.IsBroken || !_activePen.gameObject.activeInHierarchy))
+        {
+            _activePen = null;
+            CloseMenu();
+            return;
+        }
+
+        // 2. Live-sync animal roster (removes abducted animals immediately while open)
+        SyncAnimals();
+        if (_animals.Count != _lastSyncedCount)
+        {
+            _lastSyncedCount = _animals.Count;
+            if (_breedingView != null && _breedingView.style.display == DisplayStyle.Flex)
+                _breedingTab?.Refresh();
+            else
+                _animalsTab?.Refresh();
+        }
     }
 
     private void ShowAnimalsTab()
