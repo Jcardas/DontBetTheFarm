@@ -144,8 +144,11 @@ public class CreatureBrain : MonoBehaviour
 
         if (isObeying)
         {
-            bool arrived = !agent.pathPending && (!agent.hasPath || agent.remainingDistance <= agent.stoppingDistance + 0.2f);
-            if (Time.time < obeyGraceEnds || !arrived) return;
+            // Close enough, or held up by its neighbours a few steps short: either way it has reached the area.
+            bool near = !agent.pathPending && (!agent.hasPath || agent.remainingDistance <= agent.stoppingDistance + 1f);
+            bool stalled = !agent.pathPending && agent.hasPath && agent.remainingDistance <= 3f && agent.velocity.sqrMagnitude < 0.04f;
+            if (Time.time < obeyGraceEnds || !(near || stalled)) return;
+            if (stalled) agent.ResetPath();
             isObeying = false;
         }
 
@@ -156,18 +159,17 @@ public class CreatureBrain : MonoBehaviour
             if (playerOrderedTarget != null && playerOrderedTarget.Down)
                 playerOrderedTarget = null;
 
-            if (!creature.Anchored && !Engaged)
+            // Out of a fight, it looks around from wherever it stands; in one, from where the fight began.
+            if (!Engaged)
                 guardPost = transform.position;
 
+            bool wasFighting = currentTarget != null;
             currentTarget = playerOrderedTarget != null ? playerOrderedTarget : creature.FindTarget(guardPost);
 
+            // Fight over: it stops where it is until it is ordered again or sees another enemy.
             if (currentTarget == null)
             {
-                if (Vector3.Distance(transform.position, guardPost) > agent.stoppingDistance + 0.5f && agent.isOnNavMesh)
-                {
-                    agent.updateRotation = true;
-                    agent.SetDestination(guardPost);
-                }
+                if (wasFighting && agent.isOnNavMesh && agent.hasPath) agent.ResetPath();
                 return;
             }
 
