@@ -34,6 +34,8 @@ public class AnimalPen : Buildable, IContextInteractable
         }
     }
 
+    [SerializeField] private PenMenuController penMenuController;
+
     public override (ResourceType, int) CostAndResource =>
         (GameConstants.Instance.BaseAnimalPen.ResourceType, GameConstants.Instance.BaseAnimalPen.BuildingCost);
 
@@ -265,6 +267,44 @@ public class AnimalPen : Buildable, IContextInteractable
         animalsInPen.RemoveAll(a => a == null || !a.isActiveAndEnabled || a.Team != GameConstants.Team.Farm);
     }
 
+    private void OpenPenMenu()
+    {
+        if (penMenuController != null)
+        {
+            // This calls the exact method you just showed me in PenMenuController.cs
+            penMenuController.OpenMenu();
+        }
+        else
+        {
+            Debug.LogWarning("PenMenuController is missing! Please drag it into the AnimalPen script in the Inspector.");
+        }
+    }
+
+    private void AssignSelectedAnimal()
+    {
+        // Find all currently selected units in the game
+        var selectedUnits = Selectable.All.Where(s => s.Selected).ToList();
+
+        if (selectedUnits.Count == 0)
+        {
+            Debug.Log("No animals currently selected to assign!");
+            return;
+        }
+
+        foreach (Selectable unit in selectedUnits)
+        {
+            // Check if the unit is an animal that can be assigned
+            if (unit.TryGetComponent<Animal>(out Animal animal))
+            {
+                // IMPORTANT: Replace this with your actual method for assigning an animal to a pen!
+                // Example: animal.AssignToPen(this); 
+                // Or if using the Order system: animal.Command(Order.ForPen(this));
+
+                Debug.Log($"Assigning {animal.name} to the pen!");
+            }
+        }
+    }
+
     #region IContextInteractable Implementation
 
     public IReadOnlyList<ContextActionData> GetContextActions()
@@ -272,70 +312,24 @@ public class AnimalPen : Buildable, IContextInteractable
         PruneGoneAnimals();
 
         var actions = new List<ContextActionData>();
-        int currentHay = ResourceManager.Count(ResourceType.Hay);
 
-        // Breed Action
-        bool hasSpace = animalsInPen.Count < MaxAnimals;
-        bool hasBreedingPair = TryGetBreedableAnimal(out Animal breedableAnimal);
-        bool hasHayForBreeding = breedableAnimal != null && currentHay >= breedableAnimal.BreedingCost;
-        bool enoughAnimalsToBreed = hasBreedingPair && animalsInPen.Count(a => a != null && !a.Down && GetSpeciesKey(a) == GetSpeciesKey(breedableAnimal)) >= 2;
-        bool canBreed = hasSpace && hasBreedingPair && hasHayForBreeding && enoughAnimalsToBreed;
+        // 1. Open Pen UI
+        // Replace 'OpenPenMenu' with whatever your actual method is called to open the breeding/animal UI
+        actions.Add(new ContextActionData("Open Pen UI", OpenPenMenu));
 
-        string breedLabel;
-        if (!hasSpace)
+        // 2. Assign Animal to Pen
+        // To get the name dynamically, we check if there's already an animal in the pen.
+        // If empty, it defaults to "Animal". 
+        string animalName = "Animal";
+        if (animalsInPen.Count > 0 && animalsInPen[0] != null)
         {
-            breedLabel = $"Breed (Full {animalsInPen.Count}/{MaxAnimals})";
-        }
-        else if (!hasBreedingPair)
-        {
-            breedLabel = "Can't Breed (<2 Same Species)";
-        }
-        else
-        {
-            string speciesName = GetSpeciesKey(breedableAnimal);
-            breedLabel = hasHayForBreeding
-                ? $"Breed {speciesName}'s ({breedableAnimal.BreedingCost} Hay)"
-                : $"Breed {speciesName}'s (Need {breedableAnimal.BreedingCost} Hay)";
+            animalName = GetSpeciesKey(animalsInPen[0]);
         }
 
-        actions.Add(new ContextActionData(
-            label: breedLabel,
-            onExecute: BreedAnimals,
-            icon: breedIcon,
-            textColor: canBreed ? Color.white : new Color(0.75f, 0.75f, 0.75f, 1f),
-            buttonTint: canBreed ? enabledButtonTint : disabledButtonTint
-        ));
+        string assignLabel = $"Assign {animalName} to pen ({animalsInPen.Count}/{MaxAnimals})";
 
-        // Heal Action
-        List<Animal> injuredAnimals = GetInjuredAnimals();
-        bool hasInjured = injuredAnimals.Count > 0;
-        int healHayCost = hasInjured ? CalculateHealingHayCost(injuredAnimals) : 0;
-        bool hasHayForHeal = currentHay >= healHayCost;
-        bool canHeal = hasInjured && hasHayForHeal;
-
-        string healLabel;
-        if (animalsInPen.Count == 0)
-        {
-            healLabel = "Heal All (Pen Empty)";
-        }
-        else if (!hasInjured)
-        {
-            healLabel = "Heal All (All Healthy)";
-        }
-        else
-        {
-            healLabel = hasHayForHeal
-                ? $"Heal All ({injuredAnimals.Count}) [{healHayCost} Hay]"
-                : $"Heal All ({injuredAnimals.Count}) [Need {healHayCost} Hay]";
-        }
-
-        actions.Add(new ContextActionData(
-            label: healLabel,
-            onExecute: HealAllAnimals,
-            icon: healIcon,
-            textColor: canHeal ? Color.white : new Color(0.75f, 0.75f, 0.75f, 1f),
-            buttonTint: canHeal ? enabledButtonTint : disabledButtonTint
-        ));
+        // Replace 'AssignSelectedAnimal' with the method your player controls use to assign the unit
+        actions.Add(new ContextActionData(assignLabel, AssignSelectedAnimal));
 
         return actions;
     }

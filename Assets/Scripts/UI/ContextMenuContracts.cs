@@ -61,13 +61,13 @@ public interface IContextInteractable
 /// </summary>
 public static class ContextMenuEventBus
 {
-    public static event Action<IReadOnlyList<ContextActionData>, Vector2> OnRequestOpen;
+    // Changed Vector2 to Transform
+    public static event Action<IReadOnlyList<ContextActionData>, Transform, string, string> OnRequestOpen;
     public static event Action OnRequestClose;
 
-    public static void RequestOpen(IReadOnlyList<ContextActionData> actions, Vector2 screenPosition)
+    public static void RequestOpen(IReadOnlyList<ContextActionData> actions, Transform targetTransform, string title, string subtitle)
     {
-        if (actions == null || actions.Count == 0) return;
-        OnRequestOpen?.Invoke(actions, screenPosition);
+        OnRequestOpen?.Invoke(actions, targetTransform, title, subtitle);
     }
 
     public static void RequestClose() => OnRequestClose?.Invoke();
