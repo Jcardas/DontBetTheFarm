@@ -3,7 +3,7 @@
     <ui:Template name="CreaturePreview" src="project://database/Assets/UI/Components/CreaturePreview.uxml?fileID=9197481963319205126&amp;guid=57901363b21e3664cb2253c932256d34&amp;type=3#CreaturePreview"/>
     <ui:Template name="MutationIcon" src="project://database/Assets/UI/Components/MutationIcon.uxml?fileID=9197481963319205126&amp;guid=fb4438fa962014e43be13f25767f04a4&amp;type=3#MutationIcon"/>
     <ui:Template name="SelectedMutationContainer" src="project://database/Assets/UI/Components/SelectedMutationContainer.uxml?fileID=9197481963319205126&amp;guid=92365090be28b5641a121009c7cf89c4&amp;type=3#SelectedMutationContainer"/>
-    <Style src="project://database/Assets/UI/StyleSheets/InteractionUI.uss?fileID=7433441132597879392&amp;guid=3c26107ceb91787478132dd32f00eb5c&amp;type=3"/>
+    <Style src="project://database/Assets/UI/StyleSheets/InteractionUI.uss?fileID=7433441132597879392&amp;guid=3c26107ceb91787478132dd32f00eb5c&amp;type=3#InteractionUI"/>
     <ui:VisualElement name="UI_PANE" style="flex-grow: 1; padding-left: 50px; padding-right: 50px; padding-top: 50px; padding-bottom: 50px;">
         <ui:VisualElement name="Background" style="flex-grow: 1; position: absolute; left: 0; top: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.549); margin-top: 30px; margin-right: 30px; margin-bottom: 30px; margin-left: 30px; border-top-left-radius: 12px; border-top-right-radius: 12px; border-bottom-right-radius: 12px; border-bottom-left-radius: 12px; filter: blur(2);"/>
         <ui:VisualElement name="TopBar" style="flex-grow: 0; flex-shrink: 0; height: auto; justify-content: center; align-items: flex-start; max-height: 75px; margin-bottom: 20px;">
@@ -15,7 +15,7 @@
                 </ui:VisualElement>
             </ui:VisualElement>
         </ui:VisualElement>
-        <ui:VisualElement name="AnimalsView" style="flex-grow: 1; flex-shrink: 1; flex-basis: 0; flex-direction: row; display: flex;">
+        <ui:VisualElement name="AnimalsView" enabled="true" style="flex-grow: 1; flex-shrink: 1; flex-basis: 0; flex-direction: row; display: none;">
             <ui:VisualElement name="LeftPreviewPane" class="translucentPanel" style="flex-grow: 1; max-width: 60%; margin-right: 10px; padding: 16px; justify-content: space-between;">
                 <ui:VisualElement name="AnimalSelectionHeader" style="flex-direction: row; justify-content: space-between; align-items: center; width: 100%; height: 42px; flex-shrink: 0;">
                     <ui:Label text="1/6" name="AnimalCountLabel" class="header"/>
@@ -35,7 +35,7 @@
                 </ui:VisualElement>
                 <ui:VisualElement name="EquippedSlotsContainer" style="flex-direction: row; align-items: center; justify-content: center; flex-shrink: 1; max-height: 150px; background-color: rgba(22, 38, 32, 0.678); border-top-left-radius: 12px; border-top-right-radius: 12px; border-bottom-right-radius: 12px; border-bottom-left-radius: 12px; width: auto; height: auto; align-self: center;">
                     <ui:VisualElement name="HeadSlotIcon" template="MutationIcon" style="margin-right: 8px;">
-                        <Style src="project://database/Assets/UI/StyleSheets/InteractionUI.uss?fileID=7433441132597879392&amp;guid=3c26107ceb91787478132dd32f00eb5c&amp;type=3"/>
+                        <Style src="project://database/Assets/UI/StyleSheets/InteractionUI.uss?fileID=7433441132597879392&amp;guid=3c26107ceb91787478132dd32f00eb5c&amp;type=3#InteractionUI"/>
                         <ui:VisualElement name="MutationIconContainer" class="mutationContainer cursor-clickable" style="flex-grow: 1; aspect-ratio: 1; width: 100%; height: 100%; max-width: 100%; margin-left: 10px; margin-top: 10px; margin-right: 10px; margin-bottom: 10px; cursor: url(&quot;project://database/Assets/UI/Cursors/hand_small_point.png?fileID=2800000&amp;guid=fedc076baeb05804cab1ff17dd39e132&amp;type=3#hand_small_point&quot;);">
                             <ui:VisualElement name="Mutation3DItem" style="flex-grow: 1; width: 100%; height: 100%; max-width: 100%; max-height: 100%; aspect-ratio: 1;">
                                 <ui:Image source="project://database/Assets/UI/Icons/HeadIcon.png?fileID=-6940944650096720487&amp;guid=a63ff144064ddaf4d948979ac848bffd&amp;type=3#HeadIcon_0" style="flex-grow: 1;"/>
@@ -43,7 +43,7 @@
                         </ui:VisualElement>
                     </ui:VisualElement>
                     <ui:VisualElement name="BackSlotIcon" template="MutationIcon" style="margin-right: 8px;">
-                        <Style src="project://database/Assets/UI/StyleSheets/InteractionUI.uss?fileID=7433441132597879392&amp;guid=3c26107ceb91787478132dd32f00eb5c&amp;type=3"/>
+                        <Style src="project://database/Assets/UI/StyleSheets/InteractionUI.uss?fileID=7433441132597879392&amp;guid=3c26107ceb91787478132dd32f00eb5c&amp;type=3#InteractionUI"/>
                         <ui:VisualElement name="MutationIconContainer" class="mutationContainer cursor-clickable" style="flex-grow: 1; aspect-ratio: 1; width: 100%; height: 100%; max-width: 100%; margin-left: 10px; margin-top: 10px; margin-right: 10px; margin-bottom: 10px; cursor: url(&quot;project://database/Assets/UI/Cursors/hand_small_point.png?fileID=2800000&amp;guid=fedc076baeb05804cab1ff17dd39e132&amp;type=3#hand_small_point&quot;);">
                             <ui:VisualElement name="Mutation3DItem" style="flex-grow: 1; width: 100%; height: 100%; max-width: 100%; max-height: 100%; aspect-ratio: 1;">
                                 <ui:Image source="project://database/Assets/UI/Icons/BackIcon.png?fileID=-2389278446680308781&amp;guid=0ae226dc60339c848bc174a7d93a2e26&amp;type=3#BackIcon_0" style="flex-grow: 1;"/>
@@ -51,7 +51,7 @@
                         </ui:VisualElement>
                     </ui:VisualElement>
                     <ui:VisualElement name="LimbsSlotIcon" template="MutationIcon" style="margin-right: 8px;">
-                        <Style src="project://database/Assets/UI/StyleSheets/InteractionUI.uss?fileID=7433441132597879392&amp;guid=3c26107ceb91787478132dd32f00eb5c&amp;type=3"/>
+                        <Style src="project://database/Assets/UI/StyleSheets/InteractionUI.uss?fileID=7433441132597879392&amp;guid=3c26107ceb91787478132dd32f00eb5c&amp;type=3#InteractionUI"/>
                         <ui:VisualElement name="MutationIconContainer" class="mutationContainer cursor-clickable" style="flex-grow: 1; aspect-ratio: 1; width: 100%; height: 100%; max-width: 100%; margin-left: 10px; margin-top: 10px; margin-right: 10px; margin-bottom: 10px; cursor: url(&quot;project://database/Assets/UI/Cursors/hand_small_point.png?fileID=2800000&amp;guid=fedc076baeb05804cab1ff17dd39e132&amp;type=3#hand_small_point&quot;);">
                             <ui:VisualElement name="Mutation3DItem" style="flex-grow: 1; width: 100%; height: 100%; max-width: 100%; max-height: 100%; aspect-ratio: 1;">
                                 <ui:Image source="project://database/Assets/UI/Icons/LimbIcon.png?fileID=6308549905938073964&amp;guid=116a58c16902c424e8a6d3bba5006c16&amp;type=3#LimbIcon_0" style="flex-grow: 1;"/>
@@ -59,7 +59,7 @@
                         </ui:VisualElement>
                     </ui:VisualElement>
                     <ui:VisualElement name="TailSlotIcon" template="MutationIcon">
-                        <Style src="project://database/Assets/UI/StyleSheets/InteractionUI.uss?fileID=7433441132597879392&amp;guid=3c26107ceb91787478132dd32f00eb5c&amp;type=3"/>
+                        <Style src="project://database/Assets/UI/StyleSheets/InteractionUI.uss?fileID=7433441132597879392&amp;guid=3c26107ceb91787478132dd32f00eb5c&amp;type=3#InteractionUI"/>
                         <ui:VisualElement name="MutationIconContainer" class="mutationContainer cursor-clickable" style="flex-grow: 1; aspect-ratio: 1; width: 100%; height: 100%; max-width: 100%; margin-left: 10px; margin-top: 10px; margin-right: 10px; margin-bottom: 10px; cursor: url(&quot;project://database/Assets/UI/Cursors/hand_small_point.png?fileID=2800000&amp;guid=fedc076baeb05804cab1ff17dd39e132&amp;type=3#hand_small_point&quot;);">
                             <ui:VisualElement name="Mutation3DItem" style="flex-grow: 1; width: 100%; height: 100%; max-width: 100%; max-height: 100%; aspect-ratio: 1;">
                                 <ui:Image source="project://database/Assets/UI/Icons/TailIcon.png?fileID=-6254662425824378823&amp;guid=9f6cc3eb301afaa4189e075b3f16de1b&amp;type=3#tail_0" style="flex-grow: 1;"/>
@@ -152,17 +152,17 @@
                 </ui:Instance>
             </ui:VisualElement>
         </ui:VisualElement>
-        <ui:VisualElement name="BreedingView" style="flex-grow: 1; flex-shrink: 1; flex-basis: 0; display: none; flex-direction: column; align-items: center; justify-content: space-between; padding-top: 10px;">
+        <ui:VisualElement name="BreedingView" style="flex-grow: 1; flex-shrink: 1; flex-basis: 0; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding-top: 10px;">
             <ui:VisualElement name="BreedingStage" style="flex-direction: row; align-items: center; justify-content: center; flex-grow: 1; width: 100%;">
-                <ui:VisualElement name="ParentSlotA" style="width: 415px; height: 290px; border-width: 2px; border-color: rgba(255, 255, 255, 0.5); border-radius: 12px; background-color: rgba(22, 38, 32, 0.35); align-items: center; justify-content: center; aspect-ratio: 1;">
-                    <ui:Instance template="BreedingAnimalCard" name="TemplateContainer" style="flex-grow: 1; justify-content: center; width: 100%; align-self: center; align-items: center;"/>
+                <ui:VisualElement name="ParentSlotA" style="width: 320px; height: 320px; border-width: 2px; border-color: rgba(255, 255, 255, 0.5); border-radius: 12px; background-color: rgba(22, 38, 32, 0.35); align-items: center; justify-content: center; overflow: hidden;">
+                    <ui:Instance template="BreedingAnimalCard" name="TemplateContainer" style="width: 100%; height: 100%;"/>
                 </ui:VisualElement>
-                <ui:Button name="BreedButton" class="button" style="flex-direction: row; align-items: center; justify-content: center; margin-left: 36px; margin-right: 36px; padding-left: 28px; padding-right: 28px; padding-top: 16px; padding-bottom: 16px; border-radius: 12px; border-width: 2px; border-color: rgb(235, 195, 75); background-color: rgb(22, 38, 32); border-left-color: rgba(0, 0, 0, 0); border-right-color: rgba(0, 0, 0, 0); border-top-color: rgba(0, 0, 0, 0); border-bottom-color: rgba(0, 0, 0, 0);">
+                <ui:Button name="BreedButton" text="" class="button" style="flex-direction: row; align-items: center; justify-content: center; margin-left: 36px; margin-right: 36px; padding-left: 28px; padding-right: 28px; padding-top: 16px; padding-bottom: 16px; border-radius: 12px; border-width: 2px; border-color: rgb(235, 195, 75); border-top-width: 0; border-right-width: 0; border-bottom-width: 0; border-left-width: 0; border-left-color: rgba(0, 0, 0, 0); border-right-color: rgba(0, 0, 0, 0); border-top-color: rgba(0, 0, 0, 0); border-bottom-color: rgba(0, 0, 0, 0);">
                     <ui:Label text="Breed: " style="color: rgb(255, 255, 255); font-size: 24px; -unity-font-style: bold;"/>
-                    <ui:Label text="10" name="BreedCostLabel" style="color: rgb(235, 195, 75); font-size: 24px; -unity-font-style: bold;"/>
+                    <ui:Label text="0" name="BreedCostLabel" style="color: rgb(235, 195, 75); font-size: 24px; -unity-font-style: bold;"/>
                 </ui:Button>
-                <ui:VisualElement name="ParentSlotB" style="width: 415px; height: 290px; border-width: 2px; border-color: rgba(255, 255, 255, 0.5); border-radius: 12px; background-color: rgba(22, 38, 32, 0.35); align-items: center; justify-content: center; aspect-ratio: 1;">
-                    <ui:Instance template="BreedingAnimalCard"/>
+                <ui:VisualElement name="ParentSlotB" style="width: 320px; height: 320px; border-width: 2px; border-color: rgba(255, 255, 255, 0.5); border-radius: 12px; background-color: rgba(22, 38, 32, 0.35); align-items: center; justify-content: center; overflow: hidden;">
+                    <ui:Instance template="BreedingAnimalCard" style="width: 100%; height: 100%;"/>
                 </ui:VisualElement>
             </ui:VisualElement>
             <ui:VisualElement name="AnimalsInPenPanel" class="solidPanel" style="background-color: rgb(22, 38, 32); border-radius: 14px; padding: 16px; width: 1200px; flex-shrink: 0; display: flex;">
@@ -170,7 +170,7 @@
                     <ui:Label text="Animals In Pen:" name="AnimalsInPenHeader" style="color: rgb(255, 255, 255); font-size: 20px; -unity-font-style: bold;"/>
                     <ui:Label text="0/6" name="PenRosterCountLabel" style="color: rgb(255, 255, 255); font-size: 20px; -unity-font-style: bold;"/>
                 </ui:VisualElement>
-                <ui:ScrollView mode="Horizontal" horizontal-scroller-visibility="AlwaysVisible" name="AnimalsInPenScrollbar" class="horizontalScrollbar">
+                <ui:ScrollView mode="Horizontal" horizontal-scroller-visibility="AlwaysVisible" name="AnimalsInPenScrollbar" class="horizontalScrollbar" style="height: 205px; min-height: 205px;">
                     <ui:Instance template="BreedingAnimalCard"/>
                     <ui:Instance template="BreedingAnimalCard"/>
                     <ui:Instance template="BreedingAnimalCard"/>

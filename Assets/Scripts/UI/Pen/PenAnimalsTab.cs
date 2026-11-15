@@ -140,6 +140,7 @@ public class PenAnimalsTab
 
         UpdateHealthUI(animal);
     }
+
     private void UpdateHealthUI(Animal animal)
     {
         if (animal == null) return;
@@ -253,6 +254,7 @@ public class PenAnimalsTab
             }
         }
 
+        // Projected Stats & Equipped List
         int bonusHp = 0, bonusDmg = 0;
         float bonusSpd = 0f;
         foreach (var s in Slots)
@@ -271,6 +273,12 @@ public class PenAnimalsTab
                 bonusSpd += m.bonusMoveSpeed;
             }
         }
+
+        if (_lvlLbl != null) _lvlLbl.text = "1";
+        if (_hpStatLbl != null) _hpStatLbl.text = Mathf.RoundToInt(animal.MaxHealth + bonusHp).ToString();
+        if (_spdLbl != null) _spdLbl.text = (animal.CalculatedMoveSpeed + bonusSpd).ToString("0.#");
+        if (_meleeLbl != null) _meleeLbl.text = Mathf.RoundToInt(animal.CalculatedAttackDamage + bonusDmg).ToString();
+        if (_rangedLbl != null) _rangedLbl.text = "0";
 
         // Cost Box & 3D Preview
         var addedMutations = _staged.Values.Where(m => m != null).ToList();
@@ -601,18 +609,6 @@ public class PenAnimalsTab
         labels[0].style.whiteSpace = WhiteSpace.Normal;
         labels[0].text = m != null ? m.mutationName : "Select a Mutation";
         labels[2].text = m != null ? string.Join(", ", Slots.Where(s => (m.allowedSlots & s) != 0)) : "None";
-        labels[4].text = m != null ? m.GetEffectSummary() : "Hover or drag a mutation";    }
-
-    private static string Describe(MutationData m)
-    {
-        var list = new List<string>();
-        if (m.bonusMaxHealth != 0) list.Add($"{m.bonusMaxHealth:+#;-#} Max Health");
-        if (m.damageResistance != 0) list.Add($"{m.damageResistance:+#;-#}% Resistance");
-        if (m.bonusMoveSpeed != 0) list.Add($"{m.bonusMoveSpeed:+#.##;-#.##}x Speed");
-        if (m.bonusAttackDamage != 0) list.Add($"{m.bonusAttackDamage:+#;-#} Damage");
-        if (m.bonusAttackRange != 0) list.Add($"{m.bonusAttackRange * 100f:+#;-#}% Range");
-        if (m.bonusAttackSpeed != 0) list.Add($"{m.bonusAttackSpeed:+#.##;-#.##} Attack Speed");
-        if (m.overridesAttack) list.Add("Replaces Basic Attack");
-        return list.Count > 0 ? string.Join(", ", list) : "Special capability";
+        labels[4].text = m != null ? m.GetEffectSummary() : "Hover or drag a mutation";
     }
 }

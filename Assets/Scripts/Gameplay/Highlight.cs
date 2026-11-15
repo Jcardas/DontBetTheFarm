@@ -69,6 +69,9 @@ public class Highlight : MonoBehaviour
     // Lit (hovered or selected) shows through everything; otherwise a creature shows only where it is hidden.
     void Show()
     {
+        if (outline == null)
+            outline = GetComponent<Outline>() ?? gameObject.AddComponent<Outline>();
+
         bool lit = hovered || selected;
         bool on = lit || creature != null;
         if (on) outline.Refresh(); // refresh cached renderers in case the building broke or was repaired since last lit

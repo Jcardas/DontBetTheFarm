@@ -5,6 +5,8 @@ using UnityEngine;
 
 public class AnimalPen : Buildable, IContextInteractable
 {
+    private const int BreedingCostPerMutation = 5;
+
     [SerializeField]
     private bool isStartingPen; // Determines if this pen is a starting pen for the player
 
@@ -112,7 +114,6 @@ public class AnimalPen : Buildable, IContextInteractable
             return;
         }
 
-        // Use the pen collider to choose positions across its interior, away from the fence.
         BoxCollider penArea = GetComponent<BoxCollider>();
         if (!penArea) return;
 
@@ -149,37 +150,118 @@ public class AnimalPen : Buildable, IContextInteractable
 
         if (!positionFound) return;
 
-        // Instantiate the animals original prefab at the calculated position and rotation, and parent it to the pen
-        Animal newAnimal = Instantiate(animalPrefab, spawnPosition, spawnRotation, CreatureManager.AnimalContainer);
-        newAnimal.SourcePrefab = animalPrefab.SourcePrefab;
+        Animal prefabAsset = ResolveAnimalPrefab(animalPrefab);
+        if (prefabAsset == null)
+        {
+            Debug.LogWarning($"[{name}] Could not resolve a prefab asset for '{animalPrefab.name}'.");
+            return;
+        }
+
+        bool isAsset = !prefabAsset.gameObject.scene.IsValid();
+        Animal newAnimal = Instantiate(prefabAsset, spawnPosition, spawnRotation, CreatureManager.AnimalContainer);
+        if (isAsset)
+        {
+            newAnimal.SourcePrefab = prefabAsset;
+        }
+        else
+        {
+            // Cloned from a live scene parent: restore full HP and strip parent's equipped mutations before inheriting
+            newAnimal.HealToFull();
+            if (newAnimal.TryGetComponent<CreatureMutator>(out var clonedMut))
+            {
+                foreach (SlotType slot in new[] { SlotType.Head, SlotType.Back, SlotType.Limbs, SlotType.Tail })
+                    clonedMut.UnequipMutation(slot);
+            }
+        }
 
         AddAnimal(newAnimal);
     }
 
+    private Animal ResolveAnimalPrefab(Animal source)
+    {
+        if (source == null) return null;
+        if (!source.gameObject.scene.IsValid()) return source;
+        if (source.SourcePrefab != null && !source.SourcePrefab.gameObject.scene.IsValid())
+            return source.SourcePrefab;
+
+        string species = GetSpeciesKey(source);
+
+        // 1. Check startingAnimals on this pen and all other pens
+        foreach (var pen in FindObjectsByType<AnimalPen>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+        {
+            if (pen.startingAnimals == null) continue;
+            foreach (var candidate in pen.startingAnimals)
+            {
+                if (candidate != null && !candidate.gameObject.scene.IsValid() && GetSpeciesKey(candidate) == species)
+                    return candidate;
+            }
+        }
+
+        // 2. Check all loaded Animal prefab assets in memory (e.g., referenced by GameConstants, spawners, etc.)
+        foreach (var candidate in Resources.FindObjectsOfTypeAll<Animal>())
+        {
+            if (candidate != null && !candidate.gameObject.scene.IsValid() && GetSpeciesKey(candidate) == species)
+                return candidate;
+        }
+
+        // 3. Fallback to the live parent instance (safe now that Highlight.Show() null-guards outline)
+        return source;
+    }
+
+    public int CalculateBreedingCost(Animal parentA, Animal parentB)
+    {
+        if (parentA == null && parentB == null) return 10;
+
+        int baseCost = parentA != null
+            ? parentA.BreedingCost
+            : parentB.BreedingCost;
+
+        int mutationCount = CountEquippedMutations(parentA) + CountEquippedMutations(parentB);
+        return Mathf.Max(0, baseCost + mutationCount * BreedingCostPerMutation);
+    }
+
+    private static int CountEquippedMutations(Animal animal)
+    {
+        if (animal == null || !animal.TryGetComponent<CreatureMutator>(out var mut))
+            return 0;
+
+        int count = 0;
+        foreach (SlotType slot in new[] { SlotType.Head, SlotType.Back, SlotType.Limbs, SlotType.Tail })
+        {
+            if (mut.GetEquippedMutation(slot) != null)
+                count++;
+        }
+        return count;
+    }
+
     public bool CanBreedPair(Animal parentA, Animal parentB, out int hayCost)
     {
-        hayCost = 0;
+        hayCost = CalculateBreedingCost(parentA, parentB);
         PruneGoneAnimals();
 
         if (parentA == null || parentB == null || parentA == parentB) return false;
         if (parentA.Down || parentB.Down) return false;
         if (animalsInPen.Count >= MaxAnimals) return false;
         if (GetSpeciesKey(parentA) != GetSpeciesKey(parentB)) return false;
+        if (ResolveAnimalPrefab(parentA) == null) return false;
 
-        hayCost = parentA.BreedingCost;
         return ResourceManager.Count(ResourceType.Hay) >= hayCost;
     }
 
     public Animal BreedPair(Animal parentA, Animal parentB)
     {
         if (!CanBreedPair(parentA, parentB, out int hayCost)) return null;
-        if (!TryConsumeHay(hayCost)) return null;
 
+        Animal breedTemplate = ResolveAnimalPrefab(parentA);
+        if (breedTemplate == null) return null;
+
+        // Spawn first BEFORE spending Hay so a failed spawn position check never wastes Hay
         int beforeCount = animalsInPen.Count;
-        SpawnAnimal(parentA.SourcePrefab);
+        SpawnAnimal(breedTemplate);
 
         if (animalsInPen.Count > beforeCount)
         {
+            TryConsumeHay(hayCost);
             Animal offspring = animalsInPen[^1];
 
             if (offspring.TryGetComponent<CreatureMutator>(out var childMutator))
@@ -203,6 +285,8 @@ public class AnimalPen : Buildable, IContextInteractable
 
         return null;
     }
+
+    private static bool IsAnimalInjured(Animal animal) => animal.CurrentHealth < animal.CalculatedMaxHealth;
 
     public bool TryHealSingleAnimal(Animal animal)
     {
@@ -242,7 +326,7 @@ public class AnimalPen : Buildable, IContextInteractable
             return;
         }
 
-        SpawnAnimal(parentTemplate.SourcePrefab);
+        SpawnAnimal(parentTemplate);
     }
 
     private void HealAllAnimals()
@@ -285,8 +369,6 @@ public class AnimalPen : Buildable, IContextInteractable
         return injured;
     }
 
-    private static bool IsAnimalInjured(Animal animal) => animal.CurrentHealth < animal.MaxHealth;
-
     private static void HealAnimal(Animal animal) => animal.HealToFull();
 
     private static int CalculateHealingHayCost(List<Animal> injuredAnimals)
@@ -327,7 +409,11 @@ public class AnimalPen : Buildable, IContextInteractable
 
     private static string GetSpeciesKey(Animal animal)
     {
-        return animal.name.Replace("(Clone)", string.Empty).Trim();
+        if (animal == null) return string.Empty;
+        string creatureName = animal.GetCreatureName();
+        return !string.IsNullOrWhiteSpace(creatureName)
+            ? creatureName.Trim()
+            : animal.name.Replace("(Clone)", string.Empty).Trim();
     }
 
     private static bool TryConsumeHay(int hayCost)
@@ -349,6 +435,7 @@ public class AnimalPen : Buildable, IContextInteractable
             }
         }
     }
+
     public void OpenPenMenu()
     {
         ContextMenuEventBus.RequestClose();

@@ -145,12 +145,41 @@ public class CreaturePreviewBooth : MonoBehaviour
         bool hadLive = _liveInstance != null && _liveInstance.activeSelf;
         if (hadLive) _liveInstance.SetActive(false);
 
-        GameObject clone = BuildCleanPreview(target, spawnPoint.rotation * Quaternion.Euler(0f, 35f, 0f));
+        Quaternion yawRot = GetTargetRotation(target) * Quaternion.Euler(0f, 30f, 0f);
+        GameObject clone = BuildCleanPreview(target, yawRot);
 
         var tempRT = RenderTexture.GetTemporary(256, 256, 16, RenderTextureFormat.ARGB32);
         var prevTarget = previewCamera.targetTexture;
         var prevActive = RenderTexture.active;
         bool prevEnabled = previewCamera.enabled;
+        Vector3 prevCamPos = previewCamera.transform.position;
+        Quaternion prevCamRot = previewCamera.transform.rotation;
+        float prevOrthoSize = previewCamera.orthographicSize;
+
+        // Frame the camera tightly around the clone's visible bounds so it fills the portrait card
+        var renderers = clone.GetComponentsInChildren<Renderer>(true);
+        if (renderers.Length > 0)
+        {
+            Bounds bounds = renderers[0].bounds;
+            for (int i = 1; i < renderers.Length; i++)
+                bounds.Encapsulate(renderers[i].bounds);
+
+            float radius = Mathf.Max(bounds.extents.x, bounds.extents.y, bounds.extents.z, 0.4f);
+            Vector3 dir = (prevCamPos - spawnPoint.position).normalized;
+            if (dir.sqrMagnitude < 0.001f) dir = new Vector3(0f, 0.35f, 1f).normalized;
+
+            if (previewCamera.orthographic)
+            {
+                previewCamera.orthographicSize = radius * 1.15f;
+                previewCamera.transform.position = bounds.center + dir * 5f;
+            }
+            else
+            {
+                float dist = (radius * 1.2f) / Mathf.Tan(previewCamera.fieldOfView * 0.5f * Mathf.Deg2Rad);
+                previewCamera.transform.position = bounds.center + dir * dist;
+            }
+            previewCamera.transform.LookAt(bounds.center);
+        }
 
         previewCamera.targetTexture = tempRT;
         previewCamera.enabled = true;
@@ -161,6 +190,9 @@ public class CreaturePreviewBooth : MonoBehaviour
         tex.ReadPixels(new Rect(0, 0, 256, 256), 0, 0);
         tex.Apply();
 
+        // Restore camera transform & projection settings for the live Animals tab
+        previewCamera.transform.SetPositionAndRotation(prevCamPos, prevCamRot);
+        previewCamera.orthographicSize = prevOrthoSize;
         previewCamera.targetTexture = prevTarget;
         previewCamera.enabled = prevEnabled;
         RenderTexture.active = prevActive;
