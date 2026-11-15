@@ -25,7 +25,12 @@ public enum CursorType
     Reload25,
     Reload50,
     Reload75,
-    Reload100
+    Reload100,
+    MoveTo,
+    OpenMenu,
+    AssignToPen,
+    EnterBarn,
+    Repair
 }
 
 /// <summary>

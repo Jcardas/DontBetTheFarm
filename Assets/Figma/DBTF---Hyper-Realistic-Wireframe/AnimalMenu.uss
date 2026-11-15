@@ -1,0 +1,16 @@
+.mutation-part {
+    width: 120px;
+    height: 120px;
+    border-radius: 8px;
+    border-width: 2px;
+    border-color: #CCC;
+}
+
+.mutation-slot {
+    width: 120px;
+    height: 120px;
+    border-radius: 8px;
+    border-width: 2px;
+    border-color: #CCC;
+}
+

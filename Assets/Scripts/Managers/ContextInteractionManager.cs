@@ -158,12 +158,18 @@ public class ContextInteractionManager : MonoBehaviour
 
         if (MouseTarget.Find(ray, out RaycastHit hit, maxRayDistance, interactableLayers))
         {
-            // A click anywhere inside a building's outline, like a gap in a pen's fence, counts as that building
-            var building = MouseTarget.Building(ray, hit);
-            var clicked = building != null ? building.transform : hit.collider.transform;
-            if (clicked.GetComponentInParent<IContextInteractable>() is { } interactable)
+            // A right-click anywhere inside a building's outline, like a gap in a pen's fence, counts as that building
+            if (MouseTarget.Menu(ray, hit) is IContextInteractable interactable)
             {
                 IReadOnlyList<ContextActionData> actions = interactable.GetContextActions();
+                // One choice needs no popup: it just happens
+                if (actions != null && actions.Count == 1)
+                {
+                    actions[0].onExecute?.Invoke();
+                    ContextMenuEventBus.RequestClose();
+                    return;
+                }
+
                 if (actions != null && actions.Count > 0)
                 {
                     ContextMenuEventBus.RequestOpen(actions, screenPos);

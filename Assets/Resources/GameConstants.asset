@@ -64,3 +64,4 @@ MonoBehaviour:
     maxHealth: 100
     buildingCost: 5
     resourceType: 0
+  defaultSprite: {fileID: 8520217413990361559, guid: b91736b96387c4d4ab44ad2fd62ca7a8, type: 3}

@@ -371,4 +371,16 @@ public class CreatureMutator : MonoBehaviour
     
         return part;
     }
+    
+    public MutationData GetEquippedMutation(SlotType slot)
+    {
+        equippedMutations.TryGetValue(slot, out var mutation);
+        return mutation;
+    }
+    
+    public IEnumerable<MutationData> GetConfiguredStartingMutations()
+    {
+        // Return your serialized starting/default mutations list/array from CreatureMutator
+        return defaultMutations.ConvertAll(entry => entry.mutation); 
+    }
 }

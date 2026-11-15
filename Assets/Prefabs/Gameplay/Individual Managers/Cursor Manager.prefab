@@ -79,7 +79,7 @@ MonoBehaviour:
     texture: {fileID: 2800000, guid: ea0da02326c539a4bb7ed3faeccddf1b, type: 3}
     hotspot: {x: 16, y: 16}
   - type: 11
-    texture: {fileID: 2800000, guid: a29280c5ba5648a44a9ded17e22189d7, type: 3}
+    texture: {fileID: 2800000, guid: fedc076baeb05804cab1ff17dd39e132, type: 3}
     hotspot: {x: 16, y: 16}
   - type: 12
     texture: {fileID: 2800000, guid: 899c49f956b0b8142b136c7162f5195c, type: 3}
@@ -101,4 +101,19 @@ MonoBehaviour:
     hotspot: {x: 16, y: 16}
   - type: 18
     texture: {fileID: 2800000, guid: 788d69befd254caa9d4d02892959fa04, type: 3}
+    hotspot: {x: 16, y: 16}
+  - type: 19
+    texture: {fileID: 2800000, guid: 72d77a9a7755800429694012f8a353c7, type: 3}
+    hotspot: {x: 16, y: 12}
+  - type: 20
+    texture: {fileID: 2800000, guid: f0231a0496223c34d92e9bd5d2cea485, type: 3}
+    hotspot: {x: 16, y: 16}
+  - type: 21
+    texture: {fileID: 2800000, guid: b21ad3b7013521a42a052f4deb1520cd, type: 3}
+    hotspot: {x: 16, y: 16}
+  - type: 22
+    texture: {fileID: 2800000, guid: e535bfe710a2d7d4fbef74e37bb43a70, type: 3}
+    hotspot: {x: 16, y: 16}
+  - type: 23
+    texture: {fileID: 2800000, guid: 8e830de25b7294f4abb594395e582bd4, type: 3}
     hotspot: {x: 16, y: 16}

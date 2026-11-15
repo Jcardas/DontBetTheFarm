@@ -4,7 +4,7 @@ using UnityEngine;
 public class EnemySpawnWeight
 {
     public GameObject enemyPrefab;
-    public int weight;
+    public int weight = 1;
 }
 
 [System.Serializable]

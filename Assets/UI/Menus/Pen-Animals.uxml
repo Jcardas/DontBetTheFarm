@@ -1,0 +1,16 @@
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Assets/UI/StyleSheets/InteractionUI.uss?fileID=7433441132597879392&amp;guid=3c26107ceb91787478132dd32f00eb5c&amp;type=3#InteractionUI"/>
+    <ui:VisualElement name="UIPaneContainer" style="flex-grow: 1; padding-left: 50px; padding-right: 50px; padding-top: 50px; padding-bottom: 50px;">
+        <ui:VisualElement name="PanelContainer" style="flex-grow: 1; justify-content: flex-start;">
+            <ui:VisualElement name="Navbar" style="flex-grow: 1;">
+                <ui:VisualElement name="Tabselector" class="TabSelector" style="flex-grow: 1; flex-direction: row;">
+                    <ui:Button text="Button" class="button"/>
+                    <ui:Button text="Button" class="button"/>
+                    <ui:Button text="Button" class="button"/>
+                </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:VisualElement style="flex-grow: 1;"/>
+            <ui:VisualElement style="flex-grow: 1;"/>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

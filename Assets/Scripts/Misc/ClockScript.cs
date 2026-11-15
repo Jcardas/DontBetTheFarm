@@ -11,7 +11,7 @@ public class ClockScript : MonoBehaviour
 
     void Update()
     {
-        clockFace.rectTransform.rotation = Quaternion.Euler(0, 0, -TimeManager.Instance.getClockDegrees());
+        clockFace.rectTransform.rotation = Quaternion.Euler(0, 0, TimeManager.Instance.getClockDegrees());
         dayText.text = "Day " + TimeManager.Instance.getDay().ToString();
     }
 }
