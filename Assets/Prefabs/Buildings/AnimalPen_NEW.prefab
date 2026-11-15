@@ -10,11 +10,11 @@ GameObject:
   m_Component:
   - component: {fileID: 1123566658728888689}
   - component: {fileID: 2130195200296432696}
-  - component: {fileID: 3852096031500536355}
-  - component: {fileID: 2259464356260001748}
+  - component: {fileID: 1587506994296217887}
+  - component: {fileID: 3033903680182267260}
   m_Layer: 8
   m_Name: AnimalPen_NEW
-  m_TagString: Untagged
+  m_TagString: Building
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -65,23 +65,27 @@ MonoBehaviour:
   healIcon: {fileID: 0}
   enabledButtonTint: {r: 0.18, g: 0.28, b: 0.2, a: 1}
   disabledButtonTint: {r: 0.25, g: 0.25, b: 0.25, a: 0.7}
---- !u!208 &3852096031500536355
-NavMeshObstacle:
+--- !u!114 &1587506994296217887
+MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 14193148227024692}
   m_Enabled: 1
-  serializedVersion: 3
-  m_Shape: 1
-  m_Extents: {x: 4, y: 1, z: 4}
-  m_MoveThreshold: 0.1
-  m_Carve: 1
-  m_CarveOnlyStationary: 1
-  m_Center: {x: 0, y: 0, z: 0}
-  m_TimeToStationary: 0.5
---- !u!65 &2259464356260001748
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9bc4d84ebbfb04a619115ae42b8396b7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PenDoor
+  leftGate: {fileID: 168610362229634447}
+  rightGate: {fileID: 3099930300543114721}
+  gateCenter: {fileID: 6895776904387833211}
+  slideDistance: 1.6
+  secondsToOpen: 0.5
+  openWhenAnimalWithin: 3
+  animalGateAreaName: AnimalGate
+  scanEverySeconds: 0.6
+--- !u!65 &3033903680182267260
 BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -372,6 +376,86 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!1 &496711997412098350
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6895776904387833211}
+  m_Layer: 8
+  m_Name: GateCenter
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6895776904387833211
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 496711997412098350}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: -3.5600004}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1325165150359109097}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &558858419211543074
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4533887835858297508}
+  - component: {fileID: 2285375904445939360}
+  m_Layer: 8
+  m_Name: GatePassage
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4533887835858297508
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 558858419211543074}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: -3.8000002}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1325165150359109097}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2285375904445939360
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 558858419211543074}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 35e95dc5ff2b64380880dd7ac5922847, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.AI.Navigation::Unity.AI.Navigation.NavMeshModifierVolume
+  m_SerializedVersion: 0
+  m_Size: {x: 3.8, y: 2, z: 2}
+  m_Center: {x: 0, y: 0.5, z: 0}
+  m_Area: 3
+  m_AffectedAgents: ffffffff
 --- !u!1 &812398563713282233
 GameObject:
   m_ObjectHideFlags: 0
@@ -613,6 +697,8 @@ Transform:
   - {fileID: 6362861231934731726}
   - {fileID: 168610362229634447}
   - {fileID: 3099930300543114721}
+  - {fileID: 6895776904387833211}
+  - {fileID: 4533887835858297508}
   m_Father: {fileID: 1123566658728888689}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1934841730509221779
@@ -1704,6 +1790,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4760797612724766186}
+  - component: {fileID: 7254218890507642113}
   m_Layer: 8
   m_Name: Broken_AnimalPen
   m_TagString: Untagged
@@ -1727,6 +1814,27 @@ Transform:
   - {fileID: 140823121588209205}
   m_Father: {fileID: 1123566658728888689}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &7254218890507642113
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5285555361507221328}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 9, y: 1, z: 9}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &5626995692879974501
 GameObject:
   m_ObjectHideFlags: 0
@@ -2638,6 +2746,7 @@ GameObject:
   - component: {fileID: 168610362229634447}
   - component: {fileID: 6991846043917638895}
   - component: {fileID: 4732074065974006262}
+  - component: {fileID: 8905835397603443134}
   m_Layer: 8
   m_Name: FenceGate L
   m_TagString: Untagged
@@ -2717,6 +2826,26 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &8905835397603443134
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7301821641019202901}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1e3fdca004f2d45fe8abbed571a8abd5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.AI.Navigation::Unity.AI.Navigation.NavMeshModifier
+  m_SerializedVersion: 0
+  m_OverrideArea: 0
+  m_Area: 0
+  m_OverrideGenerateLinks: 0
+  m_GenerateLinks: 0
+  m_IgnoreFromBuild: 1
+  m_ApplyToChildren: 1
+  m_AffectedAgents: ffffffff
 --- !u!1 &7518186614673564467
 GameObject:
   m_ObjectHideFlags: 0
@@ -3178,6 +3307,7 @@ GameObject:
   - component: {fileID: 3099930300543114721}
   - component: {fileID: 3115681234542920628}
   - component: {fileID: 7501309502092915841}
+  - component: {fileID: 5744089208286088750}
   m_Layer: 8
   m_Name: FenceGate R
   m_TagString: Untagged
@@ -3257,3 +3387,23 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &5744089208286088750
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9034647465072649420}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1e3fdca004f2d45fe8abbed571a8abd5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.AI.Navigation::Unity.AI.Navigation.NavMeshModifier
+  m_SerializedVersion: 0
+  m_OverrideArea: 0
+  m_Area: 0
+  m_OverrideGenerateLinks: 0
+  m_GenerateLinks: 0
+  m_IgnoreFromBuild: 1
+  m_ApplyToChildren: 1
+  m_AffectedAgents: ffffffff

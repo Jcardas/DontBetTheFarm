@@ -160,5 +160,10 @@ public class GameConstants : ScriptableObject
         Debug.LogWarning($"[GameConstants] No TeamConfig found for team: {team}");
         return default;
     }
+    
+    // Default Sprite / icon for a creature or building that doesn't have a specific sprite assigned.
+    [Header("Default Sprite")] [SerializeField] private Sprite defaultSprite;
+    
+    public Sprite DefaultSprite => defaultSprite;
 
 }

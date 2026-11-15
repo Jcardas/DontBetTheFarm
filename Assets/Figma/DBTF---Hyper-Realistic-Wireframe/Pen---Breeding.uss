@@ -1,0 +1,19 @@
+.mutation-part-2 {
+    display: flex;
+    width: 132.5px;
+    height: 132.5px;
+    padding: 10px 10px 0px;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border-radius: 8px;
+    border-width: 2px;
+    border-color: #CCC;
+    background-color: rgba(128, 128, 128, 0.60);
+    color: #FFF;
+    font-size: 20px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+    white-space: nowrap;
+}
+

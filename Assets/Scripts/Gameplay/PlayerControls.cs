@@ -37,6 +37,8 @@ public class PlayerControls : MonoBehaviour
     float lastClickAt;
     readonly List<Selectable>[] groups = { new(), new(), new() };
     readonly Plane ground = new(Vector3.up, Vector3.zero);
+    
+    BarnResearchUIController barnUI;
 
     void Awake()
     {
@@ -63,6 +65,7 @@ public class PlayerControls : MonoBehaviour
     {
         shotgun = FindAnyObjectByType<Shotgun>();
         cameraController = FindAnyObjectByType<CameraController>();
+        barnUI = FindAnyObjectByType<BarnResearchUIController>();
     }
 
     void Update()
@@ -70,6 +73,14 @@ public class PlayerControls : MonoBehaviour
         var player = input.Player;
         bool shift = player.Add.IsPressed(), ctrl = player.SaveGroup.IsPressed();
         ReadKeys(shift);
+        
+        // Stop world selection, shotgun firing, and building highlights while the Barn Research UI is open
+        if (barnUI != null && barnUI.IsMenuOpen)
+        {
+            Hover(System.Linq.Enumerable.Empty<Selectable>());
+            HoverTarget(null);
+            return;
+        }
 
         Camera cam = Camera.main;
         if (cam == null) return;
@@ -110,6 +121,16 @@ public class PlayerControls : MonoBehaviour
 
     void LateUpdate()
     {
+        // Let UI Toolkit's USS cursor rules control the cursor while the Barn Research UI is open
+        if (barnUI != null && barnUI.IsMenuOpen)
+            return;
+
+        if (cameraController != null &&
+            (cameraController.IsDragging || cameraController.IsEdgeScrolling))
+        {
+            return;
+        }
+        
         if (cameraController != null &&
             (cameraController.IsDragging || cameraController.IsEdgeScrolling))
         {
@@ -138,6 +159,14 @@ public class PlayerControls : MonoBehaviour
     void ReadKeys(bool shift)
     {
         var player = input.Player;
+
+        // Toggle Barn Research menu with J
+        if (Keyboard.current != null && Keyboard.current.jKey.wasPressedThisFrame && barnUI != null)
+        {
+            if (barnUI.IsMenuOpen) barnUI.CloseMenu();
+            else barnUI.OpenMenu();
+        }
+
         if (player.Cancel.WasPressedThisFrame()) Clear();
         for (int g = 0; g < groups.Length; g++)
         {

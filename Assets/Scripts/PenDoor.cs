@@ -18,7 +18,7 @@ public class PenDoor : MonoBehaviour
     [SerializeField] private float openWhenAnimalWithin = 3f;
 
     [Header("Animal-Only Navigation")]
-    [SerializeField] private string animalGateAreaName = "AnimalGate";
+    // [SerializeField] private string animalGateAreaName = "AnimalGate";
     [SerializeField] private float scanEverySeconds = 0.6f;
 
     private Vector3 leftClosedPosition;
@@ -55,18 +55,7 @@ public class PenDoor : MonoBehaviour
                 : (leftClosedPosition + rightClosedPosition) * 0.5f;
         }
 
-        int areaIndex = NavMesh.GetAreaFromName(animalGateAreaName);
-
-        if (areaIndex < 0)
-        {
-            Debug.LogWarning(
-                $"NavMesh area '{animalGateAreaName}' does not exist.", this);
-            gateAreaBit = 0;
-        }
-        else
-        {
-            gateAreaBit = 1 << areaIndex;
-        }
+        
 
         RefreshAnimalsAndAreaMasks();
     }
