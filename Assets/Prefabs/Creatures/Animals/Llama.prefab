@@ -502,6 +502,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RangedAnimal
   team: 0
+  creatureprefabName: Llama
   baseCapabilities: 0
   maxHealth: 50
   moveSpeed: 5
@@ -553,8 +554,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Gatherer
   reach: 1
   secondsPerHarvest: 1.5
-  repairAmount: 10
   secondsPerRepair: 1.5
+  repairRange: 3
+  repairPanel: {fileID: 0}
+  repairButton: {fileID: 0}
+  repairButtonText: {fileID: 0}
+  statusText: {fileID: 0}
 --- !u!114 &8176977761154468940
 MonoBehaviour:
   m_ObjectHideFlags: 0

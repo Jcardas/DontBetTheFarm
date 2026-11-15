@@ -15,14 +15,14 @@
                 </ui:VisualElement>
             </ui:VisualElement>
         </ui:VisualElement>
-        <ui:VisualElement name="AnimalsView" style="flex-grow: 1; flex-shrink: 1; flex-basis: 0; flex-direction: row; display: none;">
+        <ui:VisualElement name="AnimalsView" style="flex-grow: 1; flex-shrink: 1; flex-basis: 0; flex-direction: row; display: flex;">
             <ui:VisualElement name="LeftPreviewPane" class="translucentPanel" style="flex-grow: 1; max-width: 60%; margin-right: 10px; padding: 16px; justify-content: space-between;">
                 <ui:VisualElement name="AnimalSelectionHeader" style="flex-direction: row; justify-content: space-between; align-items: center; width: 100%; height: 42px; flex-shrink: 0;">
                     <ui:Label text="1/6" name="AnimalCountLabel" class="header"/>
                     <ui:Label text="Cow (Level 1)" name="AnimalNameLabel" class="header"/>
                     <ui:VisualElement style="width: 48px;"/>
                 </ui:VisualElement>
-                <ui:Instance template="CreaturePreview" name="CreaturePreview" style="justify-content: space-between; align-self: center; align-items: center; flex-grow: 0; flex-shrink: 0; width: 100%; height: 340px; flex-direction: row; padding-left: 120px; padding-right: 120px;"/>
+                <ui:Instance template="CreaturePreview" name="CreaturePreview" style="justify-content: space-between; align-self: center; align-items: center; flex-grow: 1; flex-shrink: 1; width: 100%; height: 340px; flex-direction: row; padding-left: 120px; padding-right: 120px; flex-basis: 0; min-height: 180px;"/>
                 <ui:VisualElement name="HealthBarRow" style="flex-direction: row; align-items: center; justify-content: center; margin-top: 0; margin-bottom: 0; flex-shrink: 0;">
                     <ui:Label text="HP: 10/100" name="HPValueLabel" class="header" style="margin-right: 10px; font-size: 24px;"/>
                     <ui:VisualElement name="HPTrack" style="width: 450px; height: 28px; background-color: rgb(215, 222, 218); border-radius: 9px; overflow: hidden; flex-direction: row; align-items: stretch; margin-right: 12px;">
@@ -33,39 +33,25 @@
                         <ui:Label text="10" name="HealCostLabel" class="header" style="color: rgb(235, 195, 75); font-size: 24px;"/>
                     </ui:Button>
                 </ui:VisualElement>
-                <ui:VisualElement name="EquippedAndCostRow" style="flex-direction: row; align-items: center; width: 100%; margin-bottom: 12px; flex-shrink: 0;">
-                    <ui:VisualElement name="EquippedRowLeftSpacer" style="flex-grow: 1; flex-basis: 0;"/>
-                    <ui:VisualElement name="EquippedSlotsContainer" style="flex-direction: row; align-items: center; justify-content: center; flex-shrink: 0; max-height: 150px; background-color: rgba(22, 38, 32, 0.678); border-top-left-radius: 12px; border-top-right-radius: 12px; border-bottom-right-radius: 12px; border-bottom-left-radius: 12px;">
-                        <ui:Instance template="MutationIcon" name="HeadSlotIcon" style="margin-right: 8px;"/>
-                        <ui:Instance template="MutationIcon" name="BackSlotIcon" style="margin-right: 8px;"/>
-                        <ui:Instance template="MutationIcon" name="LimbsSlotIcon" style="margin-right: 8px;"/>
-                        <ui:Instance template="MutationIcon" name="TailSlotIcon"/>
-                    </ui:VisualElement>
-                    <ui:VisualElement name="EquippedRowRightArea" style="flex-grow: 1; flex-basis: 0; padding-left: 16px; justify-content: center;">
-                        <ui:VisualElement name="MutationCostBox" class="solidPanel" style="flex-grow: 1; width: 100%; background-color: rgb(22, 38, 32); border-radius: 12px; padding: 12px; align-items: center; justify-content: center;">
-                            <ui:Label text="Mutation Cost:" style="color: rgb(255, 255, 255); font-size: 16px; -unity-font-style: bold; margin-bottom: 4px;"/>
-                            <ui:VisualElement style="flex-direction: row; align-items: center; justify-content: center; margin-bottom: 8px;">
-                                <ui:Label text="0" name="MutationHayCost" style="color: rgb(235, 195, 75); font-size: 18px; -unity-font-style: bold; margin-right: 12px;"/>
-                                <ui:Label text="0" name="MutationTechCost" style="color: rgb(175, 105, 255); font-size: 18px; -unity-font-style: bold;"/>
-                            </ui:VisualElement>
-                            <ui:VisualElement style="flex-direction: row; align-items: center; justify-content: space-between; width: 100%;">
-                                <ui:Button text="Reset" name="CancelMutateButton" class="button cancelButton" style="flex-grow: 1; margin-right: 6px; font-size: 14px; border-top-width: 0; border-right-width: 0; border-bottom-width: 0; border-left-width: 0;"/>
-                                <ui:Button text="Mutate" name="ConfirmMutateButton" class="button" style="flex-grow: 1; background-color: rgb(156, 39, 176); font-size: 14px; border-top-width: 0; border-right-width: 0; border-bottom-width: 0; border-left-width: 0;"/>
-                            </ui:VisualElement>
-                        </ui:VisualElement>
-                    </ui:VisualElement>
+                <ui:VisualElement name="EquippedSlotsContainer" style="flex-direction: row; align-items: center; justify-content: center; flex-shrink: 1; max-height: 150px; background-color: rgba(22, 38, 32, 0.678); border-top-left-radius: 12px; border-top-right-radius: 12px; border-bottom-right-radius: 12px; border-bottom-left-radius: 12px; width: auto; height: auto; align-self: center;">
+                    <ui:Instance template="MutationIcon" name="HeadSlotIcon" style="margin-right: 8px; border-left-color: rgb(107, 107, 107); border-right-color: rgb(107, 107, 107); border-top-color: rgb(107, 107, 107); border-bottom-color: rgb(107, 107, 107); filter: blur(0);"/>
+                    <ui:Instance template="MutationIcon" name="BackSlotIcon" style="margin-right: 8px;"/>
+                    <ui:Instance template="MutationIcon" name="LimbsSlotIcon" style="margin-right: 8px;"/>
+                    <ui:Instance template="MutationIcon" name="TailSlotIcon"/>
                 </ui:VisualElement>
-                <ui:ScrollView name="UnlockedMutationsScroll" mode="Horizontal" horizontal-scroller-visibility="AlwaysVisible" style="height: 190px; max-height: 210px; min-height: 170px; background-color: rgba(15, 26, 22, 0.75); border-radius: 12px; padding: 8px; flex-shrink: 0;">
-                    <ui:VisualElement name="UnlockedMutationsGrid" style="flex-direction: column; flex-wrap: wrap; height: 100%; align-items: flex-start; justify-content: flex-start;"/>
-                    <ui:Instance template="MutationIcon"/>
-                    <ui:Instance template="MutationIcon"/>
-                    <ui:Instance template="MutationIcon"/>
-                    <ui:Instance template="MutationIcon"/>
-                    <ui:Instance template="MutationIcon"/>
-                    <ui:Instance template="MutationIcon"/>
-                    <ui:Instance template="MutationIcon"/>
-                    <ui:Instance template="MutationIcon"/>
-                </ui:ScrollView>
+                <ui:VisualElement name="MutationsInventory" style="flex-grow: 0; background-color: rgb(22, 38, 32); border-top-left-radius: 12px; border-top-right-radius: 12px; border-bottom-right-radius: 12px; border-bottom-left-radius: 12px; margin-top: 10px;">
+                    <ui:Label text="Unlocked Mutations" name="MutationsInventoryHeader" class="header" style="font-size: 24px; padding-left: 14px;"/>
+                    <ui:ScrollView name="UnlockedMutationsScroll" mode="Horizontal" horizontal-scroller-visibility="AlwaysVisible" class="horizontalScrollbar" style="height: 170px; max-height: 170px; min-height: 170px; border-radius: 12px; padding: 8px; flex-shrink: 0; width: auto; margin-top: 0; padding-top: 0; padding-bottom: 0;">
+                        <ui:Instance template="MutationIcon"/>
+                        <ui:Instance template="MutationIcon"/>
+                        <ui:Instance template="MutationIcon"/>
+                        <ui:Instance template="MutationIcon"/>
+                        <ui:Instance template="MutationIcon"/>
+                        <ui:Instance template="MutationIcon"/>
+                        <ui:Instance template="MutationIcon"/>
+                        <ui:Instance template="MutationIcon"/>
+                    </ui:ScrollView>
+                </ui:VisualElement>
             </ui:VisualElement>
             <ui:VisualElement name="RightDetailsPane" class="translucentPanel" style="flex-grow: 1; min-width: auto; max-width: 40%; margin-left: 10px; padding: 20px; justify-content: space-between;">
                 <ui:ScrollView name="StatsAndEquippedScroll" mode="Vertical" style="flex-grow: 1; flex-shrink: 1; flex-basis: 0; margin-bottom: 14px;">
@@ -123,10 +109,22 @@
                         </ui:VisualElement>
                     </ui:VisualElement>
                 </ui:ScrollView>
-                <ui:Instance template="SelectedMutationContainer" name="SelectedMutationCard" style="flex-shrink: 0;"/>
+                <ui:Instance template="SelectedMutationContainer" name="SelectedMutationCard" style="flex-shrink: 0;">
+                    <ui:VisualElement name="MutationCostBox" class="solidPanel" style="flex-grow: 1; width: 100%; background-color: rgb(22, 38, 32); border-radius: 12px; padding: 12px; align-items: center; justify-content: center;">
+                        <ui:Label text="Mutation Cost:" style="color: rgb(255, 255, 255); font-size: 16px; -unity-font-style: bold; margin-bottom: 4px;"/>
+                        <ui:VisualElement style="flex-direction: row; align-items: center; justify-content: center; margin-bottom: 8px;">
+                            <ui:Label text="0" name="MutationHayCost" style="color: rgb(235, 195, 75); font-size: 18px; -unity-font-style: bold; margin-right: 12px;"/>
+                            <ui:Label text="0" name="MutationTechCost" style="color: rgb(175, 105, 255); font-size: 18px; -unity-font-style: bold;"/>
+                        </ui:VisualElement>
+                        <ui:VisualElement style="flex-direction: row; align-items: center; justify-content: space-between; width: 100%;">
+                            <ui:Button text="Reset" name="CancelMutateButton" class="button cancelButton" style="flex-grow: 1; margin-right: 6px; font-size: 14px; border-top-width: 0; border-right-width: 0; border-bottom-width: 0; border-left-width: 0;"/>
+                            <ui:Button text="Mutate" name="ConfirmMutateButton" class="button" style="flex-grow: 1; background-color: rgb(156, 39, 176); font-size: 14px; border-top-width: 0; border-right-width: 0; border-bottom-width: 0; border-left-width: 0;"/>
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+                </ui:Instance>
             </ui:VisualElement>
         </ui:VisualElement>
-        <ui:VisualElement name="BreedingView" style="flex-grow: 1; flex-shrink: 1; flex-basis: 0; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding-top: 10px;">
+        <ui:VisualElement name="BreedingView" style="flex-grow: 1; flex-shrink: 1; flex-basis: 0; display: none; flex-direction: column; align-items: center; justify-content: space-between; padding-top: 10px;">
             <ui:VisualElement name="BreedingStage" style="flex-direction: row; align-items: center; justify-content: center; flex-grow: 1; width: 100%;">
                 <ui:VisualElement name="ParentSlotA" style="width: 415px; height: 290px; border-width: 2px; border-color: rgba(255, 255, 255, 0.5); border-radius: 12px; background-color: rgba(22, 38, 32, 0.35); align-items: center; justify-content: center; aspect-ratio: 1;">
                     <ui:Instance template="BreedingAnimalCard" name="TemplateContainer" style="flex-grow: 1; justify-content: center; width: 100%; align-self: center; align-items: center;"/>
@@ -139,12 +137,19 @@
                     <ui:Instance template="BreedingAnimalCard"/>
                 </ui:VisualElement>
             </ui:VisualElement>
-            <ui:VisualElement name="AnimalsInPenPanel" class="solidPanel" style="background-color: rgb(22, 38, 32); border-radius: 14px; padding: 16px; width: 640px; flex-shrink: 0; display: flex;">
-                <ui:VisualElement style="flex-direction: row; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                    <ui:Label text="Animals In Pen:" style="color: rgb(255, 255, 255); font-size: 20px; -unity-font-style: bold;"/>
+            <ui:VisualElement name="AnimalsInPenPanel" class="solidPanel" style="background-color: rgb(22, 38, 32); border-radius: 14px; padding: 16px; width: 1200px; flex-shrink: 0; display: flex;">
+                <ui:VisualElement name="AnimalsInPenHeaderContainer" style="flex-direction: row; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                    <ui:Label text="Animals In Pen:" name="AnimalsInPenHeader" style="color: rgb(255, 255, 255); font-size: 20px; -unity-font-style: bold;"/>
                     <ui:Label text="0/6" name="PenRosterCountLabel" style="color: rgb(255, 255, 255); font-size: 20px; -unity-font-style: bold;"/>
                 </ui:VisualElement>
-                <ui:VisualElement name="PenRosterGrid" style="flex-direction: row; flex-wrap: wrap; justify-content: space-between;"/>
+                <ui:ScrollView mode="Horizontal" horizontal-scroller-visibility="AlwaysVisible" name="AnimalsInPenScrollbar" class="horizontalScrollbar">
+                    <ui:Instance template="BreedingAnimalCard"/>
+                    <ui:Instance template="BreedingAnimalCard"/>
+                    <ui:Instance template="BreedingAnimalCard"/>
+                    <ui:Instance template="BreedingAnimalCard"/>
+                    <ui:Instance template="BreedingAnimalCard"/>
+                    <ui:Instance template="BreedingAnimalCard"/>
+                </ui:ScrollView>
             </ui:VisualElement>
         </ui:VisualElement>
     </ui:VisualElement>

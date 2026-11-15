@@ -38,6 +38,9 @@ public abstract class Creature : MonoBehaviour, IDamageable
     [Header("Team & Alignment")]
     [SerializeField] protected GameConstants.Team team;
     
+    [Header("Creature Identity")]
+    [SerializeField] protected string creatureprefabName = "Creature";
+    
     [Header("Capabilities")]
     [SerializeField] protected CreatureCapabilities baseCapabilities = CreatureCapabilities.None;
     
@@ -358,4 +361,10 @@ public abstract class Creature : MonoBehaviour, IDamageable
         }
         Destroy(gameObject);
     }
+
+    public string GetCreatureName()
+    {
+        return creatureprefabName;
+    }
+    
 }

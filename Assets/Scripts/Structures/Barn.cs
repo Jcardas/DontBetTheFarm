@@ -10,6 +10,8 @@ public class Barn : Buildable, IContextInteractable
 {
     Farmer heading; // on his way to the doors
     Farmer inside;
+    
+    [SerializeField] static BarnResearchUIController barnResearchUIController;
 
     public bool HasFarmer => inside != null;
 
@@ -60,8 +62,17 @@ public class Barn : Buildable, IContextInteractable
 
     static void OpenMenu()
     {
-        var menu = FindAnyObjectByType<MutationMenuController>();
-        if (menu != null && !menu.mutationMenuPanel.activeSelf) menu.ToggleMenu();
+        if (barnResearchUIController == null)
+            barnResearchUIController = FindAnyObjectByType<BarnResearchUIController>(FindObjectsInactive.Include);
+
+        if (barnResearchUIController != null)
+        {
+            barnResearchUIController.OpenMenu();
+        }
+        else
+        {
+            Debug.LogWarning("[Barn] BarnResearchUIController not found in scene!");
+        }
     }
 
     #region IContextInteractable Implementation
@@ -70,16 +81,13 @@ public class Barn : Buildable, IContextInteractable
     {
         var actions = new List<ContextActionData>();
 
-        // 1. Open Barn UI
-        // Assuming OpenMenu is your existing method for the UI
-        actions.Add(new ContextActionData("Open Barn UI", OpenMenu));
+        actions.Add(new ContextActionData("Open Barn", OpenMenu));
 
-        // 2. Hide / Take Out Farmer
-        // Toggles the text dynamically based on whether the farmer is already in the barn
-        string farmerLabel = HasFarmer ? "Take Farmer Out" : "Hide Farmer In Barn";
-
-        // Assuming LetOut handles both hiding and releasing, or replace with your specific method
-        actions.Add(new ContextActionData(farmerLabel, LetOut));
+        // Only show the "Take Farmer Out" action if there's a farmer inside the barn
+        if(HasFarmer)
+        {
+            actions.Add(new ContextActionData("Take Farmer Out", LetOut));
+        }
 
         return actions;
     }

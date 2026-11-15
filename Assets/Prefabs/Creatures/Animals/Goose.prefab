@@ -134,6 +134,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FlyingAnimal
   team: 0
+  creatureprefabName: Goose
   baseCapabilities: 0
   maxHealth: 50
   moveSpeed: 5
@@ -144,6 +145,7 @@ MonoBehaviour:
   anchored: 1
   beamEffectPrefab: {fileID: 0}
   sourcePrefab: {fileID: 0}
+  neckSize: 1
   breedingCost: 5
   healCost: 1
   flightHeight: 1.5
@@ -182,8 +184,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Gatherer
   reach: 1
   secondsPerHarvest: 1.5
-  repairAmount: 10
   secondsPerRepair: 1.5
+  repairRange: 3
+  repairPanel: {fileID: 0}
+  repairButton: {fileID: 0}
+  repairButtonText: {fileID: 0}
+  statusText: {fileID: 0}
 --- !u!114 &2380666779268161952
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -29,6 +29,8 @@ public class Animal : Creature
     
     public int BreedingCost => breedingCost;
     public int HealCost => healCost;
+    
+    public AnimalPen AssignedPen { get; set; }
 
     protected override void Reset()
     {

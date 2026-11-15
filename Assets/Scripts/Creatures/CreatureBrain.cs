@@ -48,6 +48,16 @@ public class CreatureBrain : MonoBehaviour
             return;
         }
 
+        if (order.kind == OrderKind.Pen && creature is Animal animal && order.building is AnimalPen pen)
+        {
+            if (pen.AddAnimal(animal))
+            {
+                Guard(order.point);
+            }
+            return;
+        }
+        
+
         if (gatherer != null)
         {
             if (order.kind == OrderKind.Work && gatherer.CanWork(order.node))

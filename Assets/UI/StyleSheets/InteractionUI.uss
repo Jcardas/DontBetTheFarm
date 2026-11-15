@@ -120,34 +120,29 @@
 #BreedingView {
     flex-grow: 1;
     flex-shrink: 1;
-    flex-basis: 0px;
+    flex-basis: 0;
     width: 100%;
 }
 
-/* Horizontal scrollbar container inside #UnlockedMutationsScroll */
-#UnlockedMutationsScroll .unity-scroller--horizontal {
-    height: 10px;
+.horizontalScrollbar {
     margin-top: 4px;
     background-color: transparent;
 }
 
-/* Hide the left/right step buttons */
-#UnlockedMutationsScroll .unity-scroller--horizontal .unity-scroller__low-button,
-#UnlockedMutationsScroll .unity-scroller--horizontal .unity-scroller__high-button {
+.horizontalScrollbar .unity-scroller--horizontal .unity-scroller__low-button,
+.horizontalScrollbar .unity-scroller--horizontal .unity-scroller__high-button {
     display: none;
 }
 
-/* Make the slider and track completely transparent */
-#UnlockedMutationsScroll .unity-scroller--horizontal .unity-base-slider,
-#UnlockedMutationsScroll .unity-scroller--horizontal .unity-base-slider__tracker {
+.horizontalScrollbar .unity-scroller--horizontal .unity-base-slider,
+.horizontalScrollbar .unity-scroller--horizontal .unity-base-slider__tracker {
     background-color: transparent;
     border-width: 0;
     margin: 0;
     padding: 0;
 }
 
-/* Style the draggable thumb as a rounded green pill */
-#UnlockedMutationsScroll .unity-scroller--horizontal .unity-base-slider__dragger {
+.horizontalScrollbar .unity-scroller--horizontal .unity-base-slider__dragger {
     height: 8px;
     top: 1px;
     background-color: rgb(46, 139, 87);
@@ -155,10 +150,20 @@
     border-width: 0;
 }
 
-#UnlockedMutationsScroll .unity-scroller--horizontal .unity-base-slider__dragger:hover {
+.horizontalScrollbar .unity-scroller--horizontal .unity-base-slider__dragger:hover {
     background-color: rgb(60, 175, 110);
 }
 
-#UnlockedMutationsScroll .unity-scroller--horizontal .unity-base-slider__dragger:active {
+.horizontalScrollbar .unity-scroller--horizontal .unity-base-slider__dragger:active {
     background-color: rgb(76, 205, 130);
+}
+
+.slot-active {
+    border-width: 3px;
+    border-color: rgb(191, 89, 255);
+}
+
+.slot-staged {
+    border-width: 2px;
+    border-color: rgb(255, 255, 255);
 }

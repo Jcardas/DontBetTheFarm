@@ -201,6 +201,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Alien
   team: 1
+  creatureprefabName: Alien
   baseCapabilities: 0
   maxHealth: 50
   moveSpeed: 5

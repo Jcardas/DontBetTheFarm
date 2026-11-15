@@ -141,7 +141,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 310123567640478219}
-  - component: {fileID: 8275596028142192643}
   m_Layer: 0
   m_Name: Menu_Visuals
   m_TagString: Untagged
@@ -168,21 +167,6 @@ Transform:
   - {fileID: 2759809506409130317}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &8275596028142192643
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3468876227710701661}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1e10eda7f82b1cc40b19fdc2f23865a1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PenMenuController
-  animalMenuDoc: {fileID: 7031875386502641249}
-  breedingMenuDoc: {fileID: 61599431050494513}
-  toggleKey: 16
 --- !u!1 &3501210955888144531
 GameObject:
   m_ObjectHideFlags: 0

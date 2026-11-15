@@ -22,7 +22,7 @@ public class AnimalPen : Buildable, IContextInteractable
     [SerializeField] private Sprite healIcon;
     [SerializeField] private Color enabledButtonTint = new(0.18f, 0.28f, 0.20f, 1f);
     [SerializeField] private Color disabledButtonTint = new(0.25f, 0.25f, 0.25f, 0.7f);
-    
+
     public int Capacity => MaxAnimals;
 
     public IReadOnlyList<Animal> AnimalsInPen
@@ -34,7 +34,7 @@ public class AnimalPen : Buildable, IContextInteractable
         }
     }
 
-    [SerializeField] private PenMenuController penMenuController;
+    [SerializeField] private PenUIController penMenuController;
 
     public override (ResourceType, int) CostAndResource =>
         (GameConstants.Instance.BaseAnimalPen.ResourceType, GameConstants.Instance.BaseAnimalPen.BuildingCost);
@@ -64,29 +64,36 @@ public class AnimalPen : Buildable, IContextInteractable
         }
     }
 
-    private void AddAnimal(Animal animal)
+    public bool AddAnimal(Animal animal)
     {
-        if (animal == null) return;
+        if (animal == null) return false;
 
         PruneGoneAnimals();
 
-        if (animalsInPen.Count < MaxAnimals)
+        if (animalsInPen.Contains(animal)) return true;
+
+        if (animalsInPen.Count >= MaxAnimals)
         {
-            animalsInPen.Add(animal);
-            return;
+            Debug.LogWarning($"[{name}] No space in the pen to add animal: {animal.name}.");
+            return false;
         }
 
-        Debug.LogWarning($"[{name}] No space in the pen to add animal: {animal.name}.");
+        if (animal.AssignedPen != null && animal.AssignedPen != this)
+        {
+            animal.AssignedPen.RemoveAnimal(animal);
+        }
+
+        animalsInPen.Add(animal);
+        animal.AssignedPen = this;
+        return true;
     }
 
-    private void RemoveAnimal(Animal animal)
+    public void RemoveAnimal(Animal animal)
     {
-        if (animalsInPen.Remove(animal))
+        if (animalsInPen.Remove(animal) && animal != null && animal.AssignedPen == this)
         {
-            return;
+            animal.AssignedPen = null;
         }
-
-        Debug.LogWarning($"[{name}] Animal {animal.name} not found in pen.");
     }
 
     private void SpawnAnimal(Animal animalPrefab)
@@ -130,10 +137,66 @@ public class AnimalPen : Buildable, IContextInteractable
 
         // Instantiate the animals original prefab at the calculated position and rotation, and parent it to the pen
         Animal newAnimal = Instantiate(animalPrefab, spawnPosition, spawnRotation, CreatureManager.AnimalContainer);
-        
-        newAnimal.SourcePrefab = animalPrefab.SourcePrefab; // Ensure the new animal has the correct source prefab reference
-        
+        newAnimal.SourcePrefab = animalPrefab.SourcePrefab;
+
         AddAnimal(newAnimal);
+    }
+
+    public bool CanBreedPair(Animal parentA, Animal parentB, out int hayCost)
+    {
+        hayCost = 0;
+        PruneGoneAnimals();
+
+        if (parentA == null || parentB == null || parentA == parentB) return false;
+        if (parentA.Down || parentB.Down) return false;
+        if (animalsInPen.Count >= MaxAnimals) return false;
+        if (GetSpeciesKey(parentA) != GetSpeciesKey(parentB)) return false;
+
+        hayCost = parentA.BreedingCost;
+        return ResourceManager.Count(ResourceType.Hay) >= hayCost;
+    }
+
+    public Animal BreedPair(Animal parentA, Animal parentB)
+    {
+        if (!CanBreedPair(parentA, parentB, out int hayCost)) return null;
+        if (!TryConsumeHay(hayCost)) return null;
+
+        int beforeCount = animalsInPen.Count;
+        SpawnAnimal(parentA.SourcePrefab);
+
+        if (animalsInPen.Count > beforeCount)
+        {
+            Animal offspring = animalsInPen[^1];
+
+            if (offspring.TryGetComponent<CreatureMutator>(out var childMutator))
+            {
+                parentA.TryGetComponent<CreatureMutator>(out var mutA);
+                parentB.TryGetComponent<CreatureMutator>(out var mutB);
+
+                foreach (SlotType slot in new[] { SlotType.Head, SlotType.Back, SlotType.Limbs, SlotType.Tail })
+                {
+                    MutationData fromA = mutA != null ? mutA.GetEquippedMutation(slot) : null;
+                    MutationData fromB = mutB != null ? mutB.GetEquippedMutation(slot) : null;
+                    MutationData inherited = UnityEngine.Random.value < 0.5f ? (fromA ?? fromB) : (fromB ?? fromA);
+
+                    if (inherited != null)
+                        childMutator.EquipMutation(inherited, slot);
+                }
+            }
+
+            return offspring;
+        }
+
+        return null;
+    }
+
+    public bool TryHealSingleAnimal(Animal animal)
+    {
+        if (animal == null || !IsAnimalInjured(animal)) return false;
+        if (!TryConsumeHay(animal.HealCost)) return false;
+
+        HealAnimal(animal);
+        return true;
     }
 
     private void BreedAnimals()
@@ -151,15 +214,13 @@ public class AnimalPen : Buildable, IContextInteractable
             Debug.LogWarning($"[{name}] Need at least 2 animals of the same species to breed.");
             return;
         }
-        
-        // Since there are at least 2 animals of the same species, check to make sure 2 are also alive
-            var aliveAnimals =
-                animalsInPen.Where(a =>
-                    a != null && !a.Down && GetSpeciesKey(a) == GetSpeciesKey(parentTemplate)).ToList();
-        
+
+        var aliveAnimals =
+            animalsInPen.Where(a =>
+                a != null && !a.Down && GetSpeciesKey(a) == GetSpeciesKey(parentTemplate)).ToList();
+
         if (aliveAnimals.Count < 2) return;
-        
-        
+
         int hayCost = parentTemplate.BreedingCost;
         if (!TryConsumeHay(hayCost))
         {
@@ -260,47 +321,48 @@ public class AnimalPen : Buildable, IContextInteractable
         return ResourceManager.Spend(ResourceType.Hay, hayCost);
     }
 
-    // Drops animals that are no longer here: destroyed, carried off by a saucer (switched off), or sent back by the
-    // aliens as an enemy. Keeps the pen's counts true.
     private void PruneGoneAnimals()
     {
-        animalsInPen.RemoveAll(a => a == null || !a.isActiveAndEnabled || a.Team != GameConstants.Team.Farm);
-    }
+        for (int i = animalsInPen.Count - 1; i >= 0; i--)
+        {
+            Animal a = animalsInPen[i];
+            if (a == null || !a.isActiveAndEnabled || a.Team != GameConstants.Team.Farm)
+            {
+                if (a != null && a.AssignedPen == this)
+                    a.AssignedPen = null;
 
-    private void OpenPenMenu()
+                animalsInPen.RemoveAt(i);
+            }
+        }
+    }
+    public void OpenPenMenu()
     {
+        if (penMenuController == null)
+            penMenuController = FindAnyObjectByType<PenUIController>(FindObjectsInactive.Include);
+
         if (penMenuController != null)
         {
-            // This calls the exact method you just showed me in PenMenuController.cs
-            penMenuController.OpenMenu();
+            penMenuController.OpenMenu(this);
         }
         else
         {
-            Debug.LogWarning("PenMenuController is missing! Please drag it into the AnimalPen script in the Inspector.");
+            Debug.LogWarning("[AnimalPen] PenUIController not found in scene!");
         }
     }
 
     private void AssignSelectedAnimal()
     {
-        // Find all currently selected units in the game
-        var selectedUnits = Selectable.All.Where(s => s.Selected).ToList();
+        var selectedAnimals = Selectable.All
+            .Where(s => s.Selected && s.TryGetComponent<Animal>(out _))
+            .ToList();
 
-        if (selectedUnits.Count == 0)
-        {
-            Debug.Log("No animals currently selected to assign!");
-            return;
-        }
+        if (selectedAnimals.Count == 0) return;
 
-        foreach (Selectable unit in selectedUnits)
+        foreach (Selectable unit in selectedAnimals)
         {
-            // Check if the unit is an animal that can be assigned
-            if (unit.TryGetComponent<Animal>(out Animal animal))
+            if (unit.TryGetComponent<Animal>(out Animal animal) && AddAnimal(animal))
             {
-                // IMPORTANT: Replace this with your actual method for assigning an animal to a pen!
-                // Example: animal.AssignToPen(this); 
-                // Or if using the Order system: animal.Command(Order.ForPen(this));
-
-                Debug.Log($"Assigning {animal.name} to the pen!");
+                unit.Command(Order.ForPen(this));
             }
         }
     }
@@ -311,24 +373,27 @@ public class AnimalPen : Buildable, IContextInteractable
     {
         PruneGoneAnimals();
 
-        var actions = new List<ContextActionData>();
+        var selectedAnimals = Selectable.All
+            .Where(s => s.Selected && s.TryGetComponent<Animal>(out _))
+            .ToList();
 
-        // 1. Open Pen UI
-        // Replace 'OpenPenMenu' with whatever your actual method is called to open the breeding/animal UI
-        actions.Add(new ContextActionData("Open Pen UI", OpenPenMenu));
-
-        // 2. Assign Animal to Pen
-        // To get the name dynamically, we check if there's already an animal in the pen.
-        // If empty, it defaults to "Animal". 
-        string animalName = "Animal";
-        if (animalsInPen.Count > 0 && animalsInPen[0] != null)
+        // No animals selected: open the Pen UI directly without showing a context menu
+        if (selectedAnimals.Count == 0)
         {
-            animalName = GetSpeciesKey(animalsInPen[0]);
+            OpenPenMenu();
+            return Array.Empty<ContextActionData>();
         }
 
-        string assignLabel = $"Assign {animalName} to pen ({animalsInPen.Count}/{MaxAnimals})";
+        var actions = new List<ContextActionData>
+        {
+            new ContextActionData("View Pen", OpenPenMenu)
+        };
 
-        // Replace 'AssignSelectedAnimal' with the method your player controls use to assign the unit
+        string animalName = selectedAnimals.Count == 1
+            ? GetSpeciesKey(selectedAnimals[0].GetComponent<Animal>())
+            : $"{selectedAnimals.Count} Animals";
+
+        string assignLabel = $"Assign {animalName} to pen ({animalsInPen.Count}/{MaxAnimals})";
         actions.Add(new ContextActionData(assignLabel, AssignSelectedAnimal));
 
         return actions;

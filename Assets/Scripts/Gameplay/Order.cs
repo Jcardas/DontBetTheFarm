@@ -32,6 +32,9 @@ public readonly struct Order
     public static Order ForRepair(Buildable target) =>
         new(OrderKind.Repair, target.transform.position, building: target);
     
+    public static Order ForPen(AnimalPen target) =>
+        new(OrderKind.Pen, target.transform.position, building: target);
+    
     // `ray` finds a pen or the barn by its whole outline, so a gap in a pen's fence still counts as the pen.
     public static Order From(Ray ray, RaycastHit hit)
     {
