@@ -282,8 +282,9 @@ public class PenAnimalsTab
 
         // Cost Box & 3D Preview
         var addedMutations = _staged.Values.Where(m => m != null).ToList();
-        int hay = addedMutations.Count * MutateHayPerSlot;
-        int tech = addedMutations.Sum(m => m.mutationCost);
+        
+        // Calculate the total Hay and Technology cost to apply the staged mutations to the given animal.
+        var (hay, tech) = CalculateMutationApplyCost(animal, mutator);
 
         if (_hayCostLbl != null) _hayCostLbl.text = hay.ToString();
         if (_techCostLbl != null) _techCostLbl.text = tech.ToString();
@@ -559,21 +560,69 @@ public class PenAnimalsTab
             Refresh();
         }
     }
+    
+    /// <summary>
+    /// Calculates the total Hay and Technology cost to apply the staged mutations to the given animal.
+    /// Returns a tuple of (hayCost, techCost). If the animal is null or there are no staged mutations, returns (0, 0).
+    /// The cost is calculated based on the number of existing mutations on the animal, the base feed cost, and the instability multiplier for each new mutation being applied.
+    /// </summary>
+    /// <param name="animal"></param>
+    /// <param name="mutator"></param>
+    /// <returns></returns>
+    private (int hayCost, int techCost) CalculateMutationApplyCost(Animal animal, CreatureMutator mutator)
+    {
+        if (animal == null || _staged.Count == 0) return (0, 0);
+
+        // Count how many mutations are already permanently equipped on slots we are NOT removing
+        int existingCount = 0;
+        if (mutator != null)
+        {
+            foreach (var s in Slots)
+            {
+                if (mutator.GetEquippedMutation(s) != null && !_staged.ContainsKey(s))
+                    existingCount++;
+            }
+        }
+
+        int hayTotal = 0;
+        int techTotal = 0;
+        int baseFeed = Mathf.Max(5, Mathf.RoundToInt(animal.BreedingCost * 0.5f));
+
+        foreach (var kv in _staged)
+        {
+            if (kv.Value == null)
+            {
+                // Stripping an existing mutation costs a small metabolic recovery fee
+                hayTotal += 5;
+                continue;
+            }
+
+            // Each new graft increases surgical instability (+50% Tech per existing mutation on the creature)
+            float instabilityMultiplier = 1f + (0.5f * existingCount);
+            int partBaseTech = Mathf.Max(5, Mathf.RoundToInt(kv.Value.mutationCost * 0.5f));
+
+            techTotal += Mathf.RoundToInt(partBaseTech * instabilityMultiplier);
+            hayTotal += baseFeed + 10;
+            existingCount++;
+        }
+
+        return (hayTotal, techTotal);
+    }
 
     private void ApplyMutations()
     {
         if (_ui.Animals.Count == 0 || _staged.Count == 0) return;
 
-        var addedMutations = _staged.Values.Where(m => m != null).ToList();
-        int hay = addedMutations.Count * MutateHayPerSlot;
-        int tech = addedMutations.Sum(m => m.mutationCost);
+        var animal = _ui.Animals[_index];
+        animal.TryGetComponent<CreatureMutator>(out var mut);
+
+        var (hay, tech) = CalculateMutationApplyCost(animal, mut);
         if (ResourceManager.Count(ResourceType.Hay) < hay || ResourceManager.Count(ResourceType.Technology) < tech) return;
 
         ResourceManager.Spend(ResourceType.Hay, hay);
         ResourceManager.Spend(ResourceType.Technology, tech);
 
-        var animal = _ui.Animals[_index];
-        if (animal.TryGetComponent<CreatureMutator>(out var mut))
+        if (mut != null)
         {
             foreach (var kv in _staged)
             {
