@@ -8,29 +8,77 @@ public class CreaturePreviewBooth : MonoBehaviour
     [SerializeField] private Transform spawnPoint;
     [SerializeField] private Camera previewCamera;
     [SerializeField] private RenderTexture liveRenderTexture;
+    [SerializeField] private float dragSpinSpeed = 0.5f;
 
     private readonly SlotType[] _slots = { SlotType.Head, SlotType.Back, SlotType.Limbs, SlotType.Tail };
     private readonly Dictionary<Creature, Texture2D> _portraitCache = new();
     private GameObject _liveInstance;
     private int _previewLayer;
 
+    private bool _isSpinning;
+    private float _lastPointerX;
+
     private void Awake() => _previewLayer = LayerMask.NameToLayer("UI_Preview");
 
     private void Update()
     {
-        if (_liveInstance != null && _liveInstance.activeInHierarchy)
+        if (_liveInstance != null && _liveInstance.activeInHierarchy && !_isSpinning)
             _liveInstance.transform.Rotate(Vector3.up, 15f * Time.deltaTime, Space.World);
     }
 
     public void BindViewport(VisualElement viewport)
     {
-        if (viewport == null || liveRenderTexture == null) return;
-        var bg = new StyleBackground(Background.FromRenderTexture(liveRenderTexture));
-        viewport.style.backgroundImage = bg;
-        var inner = viewport.Q("Creature3DRender");
-        if (inner != null && inner != viewport)
-            inner.style.backgroundImage = bg;
+        if (viewport == null) return;
+
+        if (liveRenderTexture != null)
+        {
+            var bg = new StyleBackground(Background.FromRenderTexture(liveRenderTexture));
+            viewport.style.backgroundImage = bg;
+            var inner = viewport.Q("Creature3DRender");
+            if (inner != null && inner != viewport)
+                inner.style.backgroundImage = bg;
+        }
+
+        var target = viewport.Q("Creature3DRender") ?? viewport;
+        target.pickingMode = PickingMode.Position;
+
+        target.UnregisterCallback<PointerDownEvent>(OnViewportPointerDown);
+        target.UnregisterCallback<PointerMoveEvent>(OnViewportPointerMove);
+        target.UnregisterCallback<PointerUpEvent>(OnViewportPointerUp);
+        target.UnregisterCallback<PointerCaptureOutEvent>(OnViewportCaptureOut);
+
+        target.RegisterCallback<PointerDownEvent>(OnViewportPointerDown);
+        target.RegisterCallback<PointerMoveEvent>(OnViewportPointerMove);
+        target.RegisterCallback<PointerUpEvent>(OnViewportPointerUp);
+        target.RegisterCallback<PointerCaptureOutEvent>(OnViewportCaptureOut);
     }
+
+    private void OnViewportPointerDown(PointerDownEvent evt)
+    {
+        if (evt.button != 0 || _liveInstance == null) return;
+        _isSpinning = true;
+        _lastPointerX = evt.position.x;
+        if (evt.currentTarget is VisualElement ve)
+            ve.CapturePointer(evt.pointerId);
+    }
+
+    private void OnViewportPointerMove(PointerMoveEvent evt)
+    {
+        if (!_isSpinning || _liveInstance == null) return;
+        float deltaX = evt.position.x - _lastPointerX;
+        _lastPointerX = evt.position.x;
+        _liveInstance.transform.Rotate(Vector3.up, -deltaX * dragSpinSpeed, Space.World);
+    }
+
+    private void OnViewportPointerUp(PointerUpEvent evt)
+    {
+        if (!_isSpinning) return;
+        _isSpinning = false;
+        if (evt.currentTarget is VisualElement ve && ve.HasPointerCapture(evt.pointerId))
+            ve.ReleasePointer(evt.pointerId);
+    }
+
+    private void OnViewportCaptureOut(PointerCaptureOutEvent evt) => _isSpinning = false;
 
     public void ShowLive(Creature target, System.Func<SlotType, MutationData> mutationSelector = null)
     {
@@ -43,7 +91,9 @@ public class CreaturePreviewBooth : MonoBehaviour
 
     public void ClearLive()
     {
+        _isSpinning = false;
         if (_liveInstance != null) Destroy(_liveInstance);
+        _liveInstance = null;
         if (previewCamera != null) previewCamera.enabled = false;
     }
 
@@ -99,24 +149,23 @@ public class CreaturePreviewBooth : MonoBehaviour
         bool wasActive = spawnPoint.gameObject.activeSelf;
         spawnPoint.gameObject.SetActive(false);
 
-        // Prefer the clean SourcePrefab when available so runtime components/colliders aren't cloned
         GameObject template = (source is Animal animal && animal.SourcePrefab != null)
             ? animal.SourcePrefab.gameObject
             : source.gameObject;
 
         GameObject clone = Instantiate(template, spawnPoint.position, rot, spawnPoint);
 
-        // Strip gameplay scripts immediately while inactive so their Awake()/OnEnable() never fire on SetActive(true)
-        foreach (var h in clone.GetComponentsInChildren<Highlight>(true)) DestroyImmediate(h);
-        foreach (var b in clone.GetComponentsInChildren<CreatureBrain>(true)) DestroyImmediate(b);
-        foreach (var a in clone.GetComponentsInChildren<NavMeshAgent>(true)) DestroyImmediate(a);
-        foreach (var s in clone.GetComponentsInChildren<Selectable>(true)) DestroyImmediate(s);
-        foreach (var g in clone.GetComponentsInChildren<Gatherer>(true)) DestroyImmediate(g);
-        foreach (var t in clone.GetComponentsInChildren<ToyBob>(true)) DestroyImmediate(t);
-        foreach (var o in clone.GetComponentsInChildren<Outline>(true)) DestroyImmediate(o);
-        foreach (var c in clone.GetComponentsInChildren<Creature>(true)) DestroyImmediate(c);
-        foreach (var col in clone.GetComponentsInChildren<Collider>(true)) DestroyImmediate(col);
-        foreach (var rb in clone.GetComponentsInChildren<Rigidbody>(true)) DestroyImmediate(rb);
+        // Strip dependent gameplay scripts FIRST, then base components (Creature, NavMeshAgent), then physics
+        StripComponents<Highlight>(clone);
+        StripComponents<Outline>(clone);
+        StripComponents<Selectable>(clone);
+        StripComponents<Gatherer>(clone);
+        StripComponents<ToyBob>(clone);
+        StripComponents<CreatureBrain>(clone);
+        StripComponents<NavMeshAgent>(clone);
+        StripComponents<Creature>(clone);
+        StripComponents<Rigidbody>(clone);
+        StripComponents<Collider>(clone);
 
         foreach (var r in clone.GetComponentsInChildren<Renderer>(true))
             r.enabled = true;
@@ -136,6 +185,16 @@ public class CreaturePreviewBooth : MonoBehaviour
 
         SetLayer(clone, _previewLayer);
         return clone;
+    }
+
+    private static void StripComponents<T>(GameObject root) where T : Component
+    {
+        var comps = root.GetComponentsInChildren<T>(true);
+        for (int i = comps.Length - 1; i >= 0; i--)
+        {
+            if (comps[i] != null)
+                DestroyImmediate(comps[i]);
+        }
     }
 
     private static void SetLayer(GameObject obj, int layer)

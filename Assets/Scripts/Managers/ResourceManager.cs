@@ -36,8 +36,12 @@ public class ResourceManager : MonoBehaviour
 
         BindResourceTexts();
         
-        // add 200 technology to the resource manager for testing purposes
+        // add 200 of each resource to the resource manager for testing purposes
+        Deposit(ResourceType.Wood, 200);
+        Deposit(ResourceType.Hay, 200);
         Deposit(ResourceType.Technology, 200);
+        
+        
     }
 
     void Update()
