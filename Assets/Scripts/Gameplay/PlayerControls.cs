@@ -54,12 +54,17 @@ public class PlayerControls : MonoBehaviour
     {
         shotgun = FindAnyObjectByType<Shotgun>();
         cameraController = FindAnyObjectByType<CameraController>();
-        penUI = FindAnyObjectByType<PenUIController>(FindObjectsInactive.Include);
     }
 
     void Update()
     {
-        if (penUI != null && penUI.IsOpen) return;
+        if (UIBlocker.IsModalUIOpen)
+        {
+            Hover(System.Linq.Enumerable.Empty<Selectable>());
+            HoverTarget(null);
+            left = LeftButton.Idle;
+            return;
+        }
 
         var player = input.Player;
         bool shift = player.Add.IsPressed(), ctrl = player.SaveGroup.IsPressed();
@@ -69,38 +74,46 @@ public class PlayerControls : MonoBehaviour
         if (cam == null) return;
 
         Vector2 at = player.Point.ReadValue<Vector2>();
+        bool overUI = UIBlocker.IsPointerOverUI(at);
+
         Ray ray = cam.ScreenPointToRay(at);
-        if (player.Fire.WasPressedThisFrame() && shotgun && shotgun.isActiveAndEnabled && ground.Raycast(ray, out float along))
+        if (!overUI && player.Fire.WasPressedThisFrame() && shotgun && shotgun.isActiveAndEnabled && ground.Raycast(ray, out float along))
             shotgun.Fire(ray.GetPoint(along));
 
-        bool overSomething = MouseTarget.Find(ray, out RaycastHit hit);
+        RaycastHit hit = default;
+        bool overSomething = !overUI && MouseTarget.Find(ray, out hit);
         var unit = overSomething ? hit.collider.GetComponentInParent<Selectable>() : null;
 
-        if (player.Command.WasPressedThisFrame())
+        if (!overUI && player.Command.WasPressedThisFrame())
         {
             if (Order.BrokenAt(ray) == null && overSomething)
                 Command(ray, hit);
         }
 
-        bool overUI = EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
         if (left == LeftButton.Idle && player.Select.WasPressedThisFrame() && !overUI)
         {
             left = LeftButton.Pressed;
             pressedAt = at;
         }
         if (left == LeftButton.Pressed && (at - pressedAt).magnitude > DragPixels) left = LeftButton.Dragging;
-        Hover(left == LeftButton.Dragging ? Selectable.All.Where(s => OnScreen(cam, s, Box(pressedAt, at))) : new[] { unit });
-        HoverTarget(left != LeftButton.Dragging ? Target(ray, overSomething, hit) : null);
+        Hover(left == LeftButton.Dragging
+            ? Selectable.All.Where(s => OnScreen(cam, s, Box(pressedAt, at)))
+            : (overUI ? System.Linq.Enumerable.Empty<Selectable>() : new[] { unit }));
+        HoverTarget(!overUI && left != LeftButton.Dragging ? Target(ray, overSomething, hit) : null);
         if (left == LeftButton.Idle || !player.Select.WasReleasedThisFrame()) return;
 
         if (left == LeftButton.Dragging) Pick(Selectable.All.Where(s => OnScreen(cam, s, Box(pressedAt, at))), shift, ctrl);
-        else Click(cam, unit, shift, ctrl);
+        else if (!overUI) Click(cam, unit, shift, ctrl);
         left = LeftButton.Idle;
     }
 
     void LateUpdate()
     {
-        if (penUI != null && penUI.IsOpen) return;
+        if (UIBlocker.IsModalUIOpen)
+        {
+            ShowCursor(CursorType.Default);
+            return;
+        }
 
         if (cameraController != null &&
             (cameraController.IsDragging || cameraController.IsEdgeScrolling))
@@ -112,6 +125,12 @@ public class PlayerControls : MonoBehaviour
         if (cam == null) return;
 
         Vector2 at = input.Player.Point.ReadValue<Vector2>();
+        if (UIBlocker.IsPointerOverUI(at))
+        {
+            ShowCursor(CursorType.Default);
+            return;
+        }
+
         Ray ray = cam.ScreenPointToRay(at);
         bool overSomething = MouseTarget.Find(ray, out RaycastHit hit);
         var unit = overSomething

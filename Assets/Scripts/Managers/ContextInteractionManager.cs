@@ -112,15 +112,9 @@ public class ContextInteractionManager : MonoBehaviour
 
     private void RecordPointerDown()
     {
-        if (_penUI != null && _penUI.IsOpen)
-        {
-            _isTrackingClick = false;
-            return;
-        }
-
         Vector2 screenPos = GetPointerScreenPosition();
 
-        if (IsPointerOverUIElement(screenPos))
+        if (UIBlocker.IsPointerOverUI(screenPos))
         {
             _isTrackingClick = false;
             return;
@@ -152,9 +146,9 @@ public class ContextInteractionManager : MonoBehaviour
         if (!_isTrackingClick) return;
         _isTrackingClick = false;
 
-        if (_penUI != null && _penUI.IsOpen) return;
-
         Vector2 releasePos = GetPointerScreenPosition();
+        if (UIBlocker.IsPointerOverUI(releasePos)) return;
+
         float holdDuration = Time.unscaledTime - _pressTime;
         float dragDistance = Vector2.Distance(releasePos, _pressScreenPosition);
 
@@ -169,7 +163,7 @@ public class ContextInteractionManager : MonoBehaviour
     private void ExecuteRaycastInteraction(Vector2 screenPos)
     {
         if (isometricCamera == null) return;
-        if (IsPointerOverUIElement(screenPos)) return;
+        if (UIBlocker.IsPointerOverUI(screenPos)) return;
         if (_penUI != null && _penUI.IsOpen) return;
 
         Ray ray = isometricCamera.ScreenPointToRay(screenPos);
