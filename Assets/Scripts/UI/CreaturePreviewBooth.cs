@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.AI;
 using UnityEngine.UIElements;
 
 public class CreaturePreviewBooth : MonoBehaviour
@@ -82,19 +81,47 @@ public class CreaturePreviewBooth : MonoBehaviour
 
     public void ShowLive(Creature target, System.Func<SlotType, MutationData> mutationSelector = null)
     {
+        // Preserve the user's current manual/auto spin angle when refreshing staged mutations on the same creature
+        Quaternion preservedRot = _liveInstance != null ? _liveInstance.transform.rotation : GetForwardFacingRotation();
+
         ClearLive();
         if (spawnPoint == null || target == null) return;
 
-        _liveInstance = SpawnSanitizedClone(target, spawnPoint.rotation, mutationSelector);
+        _liveInstance = BuildCleanPreview(target, preservedRot, mutationSelector);
         if (previewCamera != null) previewCamera.enabled = _liveInstance != null;
+    }
+
+    private Quaternion GetForwardFacingRotation()
+    {
+        if (spawnPoint == null) return Quaternion.identity;
+        if (previewCamera != null)
+        {
+            Vector3 toCamera = previewCamera.transform.position - spawnPoint.position;
+            toCamera.y = 0f;
+            if (toCamera.sqrMagnitude > 0.001f)
+                return Quaternion.LookRotation(toCamera.normalized, Vector3.up);
+        }
+        return spawnPoint.rotation;
     }
 
     public void ClearLive()
     {
         _isSpinning = false;
-        if (_liveInstance != null) Destroy(_liveInstance);
-        _liveInstance = null;
+        if (_liveInstance != null)
+        {
+            // Use DestroyImmediate so swapping mutations doesn't leave two overlapping models for 1 frame
+            DestroyImmediate(_liveInstance);
+            _liveInstance = null;
+        }
         if (previewCamera != null) previewCamera.enabled = false;
+
+        if (liveRenderTexture != null)
+        {
+            var prev = RenderTexture.active;
+            RenderTexture.active = liveRenderTexture;
+            GL.Clear(true, true, Color.clear);
+            RenderTexture.active = prev;
+        }
     }
 
     public Texture2D GetPortrait(Creature target)
@@ -105,7 +132,7 @@ public class CreaturePreviewBooth : MonoBehaviour
         bool hadLive = _liveInstance != null && _liveInstance.activeSelf;
         if (hadLive) _liveInstance.SetActive(false);
 
-        GameObject clone = SpawnSanitizedClone(target, spawnPoint.rotation * Quaternion.Euler(0f, 35f, 0f));
+        GameObject clone = BuildCleanPreview(target, spawnPoint.rotation * Quaternion.Euler(0f, 35f, 0f));
 
         var tempRT = RenderTexture.GetTemporary(256, 256, 16, RenderTextureFormat.ARGB32);
         var prevTarget = previewCamera.targetTexture;
@@ -144,57 +171,102 @@ public class CreaturePreviewBooth : MonoBehaviour
         _portraitCache.Clear();
     }
 
-    private GameObject SpawnSanitizedClone(Creature source, Quaternion rot, System.Func<SlotType, MutationData> selector = null)
+    private GameObject BuildCleanPreview(Creature source, Quaternion rot, System.Func<SlotType, MutationData> selector = null)
     {
         bool wasActive = spawnPoint.gameObject.activeSelf;
         spawnPoint.gameObject.SetActive(false);
 
-        GameObject template = (source is Animal animal && animal.SourcePrefab != null)
+        GameObject template = (source is Animal animal && animal.SourcePrefab != null && animal.SourcePrefab != source)
             ? animal.SourcePrefab.gameObject
             : source.gameObject;
 
-        GameObject clone = Instantiate(template, spawnPoint.position, rot, spawnPoint);
+        // 1. Create a completely clean root GameObject with NO gameplay/AI/physics components
+        var previewRoot = new GameObject($"{source.CreatureName}_Preview");
+        previewRoot.transform.SetParent(spawnPoint, false);
+        previewRoot.transform.SetPositionAndRotation(spawnPoint.position, rot);
+        previewRoot.transform.localScale = template.transform.localScale;
 
-        // Strip dependent gameplay scripts FIRST, then base components (Creature, NavMeshAgent), then physics
-        StripComponents<Highlight>(clone);
-        StripComponents<Outline>(clone);
-        StripComponents<Selectable>(clone);
-        StripComponents<Gatherer>(clone);
-        StripComponents<ToyBob>(clone);
-        StripComponents<CreatureBrain>(clone);
-        StripComponents<NavMeshAgent>(clone);
-        StripComponents<Creature>(clone);
-        StripComponents<Rigidbody>(clone);
-        StripComponents<Collider>(clone);
-
-        foreach (var r in clone.GetComponentsInChildren<Renderer>(true))
-            r.enabled = true;
-
-        spawnPoint.gameObject.SetActive(wasActive);
-
-        if (clone.TryGetComponent<CreatureMutator>(out var cloneMut))
+        // 2. Copy only the visual child hierarchy (meshes, armature, socket transforms)
+        foreach (Transform child in template.transform)
         {
+            if (child.name.IndexOf("Selection", System.StringComparison.OrdinalIgnoreCase) >= 0 ||
+                child.name.IndexOf("Ring", System.StringComparison.OrdinalIgnoreCase) >= 0 ||
+                child.name.IndexOf("Outline", System.StringComparison.OrdinalIgnoreCase) >= 0 ||
+                child.GetComponentInChildren<Canvas>(true) != null)
+            {
+                continue;
+            }
+
+            var childCopy = Instantiate(child.gameObject, previewRoot.transform, false);
+            childCopy.name = child.name;
+
+            if (template == source.gameObject && childCopy.GetComponent<ToyBob>() != null)
+            {
+                Vector3 pos = childCopy.transform.localPosition;
+                childCopy.transform.localPosition = new Vector3(pos.x, 0f, pos.z);
+
+                // Strip small mid-walk ToyBob wobble angles while preserving Blender's 90°/180° axis alignment
+                Vector3 e = childCopy.transform.localEulerAngles;
+                childCopy.transform.localEulerAngles = new Vector3(
+                    Mathf.Round(e.x / 90f) * 90f,
+                    Mathf.Round(e.y / 90f) * 90f,
+                    Mathf.Round(e.z / 90f) * 90f
+                );
+            }
+
+            foreach (var mb in childCopy.GetComponentsInChildren<MonoBehaviour>(true))
+                if (mb != null) DestroyImmediate(mb);
+            foreach (var col in childCopy.GetComponentsInChildren<Collider>(true))
+                if (col != null) DestroyImmediate(col);
+            foreach (var rb in childCopy.GetComponentsInChildren<Rigidbody>(true))
+                if (rb != null) DestroyImmediate(rb);
+        }
+
+        // 3. Reset Animator to neutral bind pose
+        foreach (var anim in previewRoot.GetComponentsInChildren<Animator>(true))
+        {
+            if (anim == null) continue;
+            anim.Rebind();
+            anim.Update(0f);
+            anim.enabled = false;
+        }
+
+        // 4. Strip QuickOutline / Highlight injected materials (they append OutlineMask & OutlineFill after the base material)
+        foreach (var r in previewRoot.GetComponentsInChildren<Renderer>(true))
+        {
+            if (r == null || r.sharedMaterials == null) continue;
+            var mats = new List<Material>(r.sharedMaterials);
+            for (int i = mats.Count - 1; i >= 0; i--)
+            {
+                var m = mats[i];
+                if (m == null) continue;
+                string name = m.name.ToLowerInvariant();
+                if (name.Contains("outline") || name.Contains("highlight"))
+                    mats.RemoveAt(i);
+            }
+            r.sharedMaterials = mats.ToArray();
+        }
+
+        // 5. Attach CreatureMutator, purge any live-cloned socket attachments, and apply current/staged mutations
+        if (template.TryGetComponent<CreatureMutator>(out var templateMut))
+        {
+            var previewMut = previewRoot.AddComponent<CreatureMutator>();
+            previewMut.CopySocketsFrom(templateMut, template.transform, previewRoot.transform);
+            previewMut.ClearAllSocketChildrenImmediate();
+            previewMut.InitializeForPreview();
+
             source.TryGetComponent<CreatureMutator>(out var liveMut);
             foreach (SlotType slot in _slots)
             {
                 MutationData m = selector != null ? selector(slot) : liveMut?.GetEquippedMutation(slot);
-                if (m != null) cloneMut.EquipMutation(m, slot);
-                else cloneMut.UnequipMutation(slot);
+                if (m != null) previewMut.EquipMutation(m, slot);
+                else previewMut.UnequipMutation(slot);
             }
         }
 
-        SetLayer(clone, _previewLayer);
-        return clone;
-    }
-
-    private static void StripComponents<T>(GameObject root) where T : Component
-    {
-        var comps = root.GetComponentsInChildren<T>(true);
-        for (int i = comps.Length - 1; i >= 0; i--)
-        {
-            if (comps[i] != null)
-                DestroyImmediate(comps[i]);
-        }
+        spawnPoint.gameObject.SetActive(wasActive);
+        SetLayer(previewRoot, _previewLayer);
+        return previewRoot;
     }
 
     private static void SetLayer(GameObject obj, int layer)

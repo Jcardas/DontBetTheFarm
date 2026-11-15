@@ -3867,6 +3867,30 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3307208277261019490, guid: eb4911211c89a1148b2887854aacaeda, type: 3}
+      propertyPath: testAlienPrefab
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 3307208277261019490, guid: eb4911211c89a1148b2887854aacaeda, type: 3}
+      propertyPath: capturedAliens.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3307208277261019490, guid: eb4911211c89a1148b2887854aacaeda, type: 3}
+      propertyPath: testFallbackMutations.Array.size
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3307208277261019490, guid: eb4911211c89a1148b2887854aacaeda, type: 3}
+      propertyPath: 'testFallbackMutations.Array.data[0]'
+      value: 
+      objectReference: {fileID: 11400000, guid: f730b7380f49e134c8aa7347bc062467, type: 2}
+    - target: {fileID: 3307208277261019490, guid: eb4911211c89a1148b2887854aacaeda, type: 3}
+      propertyPath: 'testFallbackMutations.Array.data[1]'
+      value: 
+      objectReference: {fileID: 11400000, guid: ed6ed41f8168ec342ae8e012a8262beb, type: 2}
+    - target: {fileID: 3307208277261019490, guid: eb4911211c89a1148b2887854aacaeda, type: 3}
+      propertyPath: 'testFallbackMutations.Array.data[2]'
+      value: 
+      objectReference: {fileID: 11400000, guid: ed6ed41f8168ec342ae8e012a8262beb, type: 2}
     - target: {fileID: 3468876227710701661, guid: eb4911211c89a1148b2887854aacaeda, type: 3}
       propertyPath: m_Name
       value: Menu_Visuals
@@ -4756,6 +4780,7 @@ MonoBehaviour:
   spawnPoint: {fileID: 1910117236}
   previewCamera: {fileID: 488158302}
   liveRenderTexture: {fileID: 8400000, guid: 1c90ca7d13c1e2041bf3d745c995b0a1, type: 2}
+  dragSpinSpeed: 0.5
 --- !u!4 &2014974588 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3940249657317254809, guid: 9d833c5f7f7f75e4aa5141d004a6aa89, type: 3}

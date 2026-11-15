@@ -35,6 +35,10 @@ public class PenAnimalsTab
     private readonly Button _healBtn, _cancelBtn, _mutateBtn;
     private readonly Dictionary<SlotType, (Label name, Label desc)> _slotText = new();
 
+    private readonly VisualElement _rightPaneContent;
+    private readonly VisualElement _animalsView;
+    
+    
     public PenAnimalsTab(PenUIController ui, VisualElement root, CreaturePreviewBooth booth, VisualTreeAsset iconTemplate)
     {
         _ui = ui;
@@ -49,6 +53,12 @@ public class PenAnimalsTab
         var nextBtn = preview.Q<Button>("Forward");
         if (prevBtn != null) prevBtn.clicked += () => Cycle(-1);
         if (nextBtn != null) nextBtn.clicked += () => Cycle(1);
+        
+        var rightPane = root.Q("RightDetailsPane") ?? _lvlLbl?.parent?.parent?.parent;
+        _rightPaneContent = rightPane;
+        
+        var animalsView = root.Q("AnimalsView") ?? _countLbl?.parent?.parent?.parent;
+        _animalsView = animalsView;
 
         _countLbl = root.Q<Label>("AnimalCountLabel");
         _nameLbl = root.Q<Label>("AnimalNameLabel");
@@ -123,21 +133,52 @@ public class PenAnimalsTab
         if (_ui.Animals.Count == 0) return;
         CancelDrag();
         _staged.Clear();
+        _booth?.ClearLive();
         _index = (_index + dir + _ui.Animals.Count) % _ui.Animals.Count;
         Refresh();
     }
 
     public void Refresh()
     {
+        
+        _ui.SyncAnimals();
+        bool hasAnimals = _ui.Animals.Count > 0;
+
+        if (_animalsView != null)
+        {
+            foreach (var pane in _animalsView.Children())
+            foreach (var child in pane.Children())
+                child.style.display = hasAnimals ? DisplayStyle.Flex : DisplayStyle.None;
+        }
+
+        if (!hasAnimals)
+        {
+            _booth?.ClearLive();
+            return;
+        }
+        
         _ui.SyncAnimals();
         if (_ui.Animals.Count == 0)
         {
             if (_countLbl != null) _countLbl.text = $"0/{_ui.Capacity}";
             if (_nameLbl != null) _nameLbl.text = "No Animals in Pen";
+            if (_hpFill != null) _hpFill.style.width = Length.Percent(0f);
+            if (_hpLbl != null) _hpLbl.text = "HP: 0/0";
+            _healBtn?.SetEnabled(false);
+
+            // Hide all right-pane children (Stats, Mutations list, SelectedMutationCard, Cost/Buttons)
+            if (_rightPaneContent != null)
+                foreach (var child in _rightPaneContent.Children())
+                    child.style.display = DisplayStyle.None;
+
             _booth?.ClearLive();
-            ShowDetails(null);
             return;
         }
+
+        // Restore right-pane children when an animal is present
+        if (_rightPaneContent != null)
+            foreach (var child in _rightPaneContent.Children())
+                child.style.display = DisplayStyle.Flex;
 
         _index = Mathf.Clamp(_index, 0, _ui.Animals.Count - 1);
         Animal animal = _ui.Animals[_index];
