@@ -5,13 +5,18 @@ public class WheatField : Buildable
     [Header("Wheat Growth")]
     [SerializeField] private Transform wheatVisual;
     [SerializeField] private float growTime = 15f;
-    [SerializeField] private float startingYScale = 0.005f;
+    [SerializeField] private float startingYScale = 0.15f;
     [SerializeField] private float fullyGrownYScale = 1f;
     [SerializeField] private int wheatPerHarvest = 1;
+
+    [Header("Wheat Materials")]
+    [SerializeField] private Material growingMaterial;
+    [SerializeField] private Material matureMaterial;
 
     public bool mature = false;
 
     private float growthTimer;
+    private Renderer[] wheatRenderers;
 
     public override (ResourceType, int) CostAndResource =>
         (GameConstants.Instance.BaseWheatField.ResourceType,
@@ -51,6 +56,7 @@ public class WheatField : Buildable
             return;
         }
 
+        wheatRenderers = wheatVisual.GetComponentsInChildren<Renderer>(true);
         StartNewCrop();
     }
 
@@ -64,14 +70,32 @@ public class WheatField : Buildable
         SetWheatHeight(Mathf.Lerp(startingYScale, fullyGrownYScale, progress));
 
         if (progress >= 1f)
+        {
             mature = true;
+            SetWheatMaterial(matureMaterial);
+        }
     }
 
     private void SetWheatHeight(float yScale)
     {
         Vector3 scale = wheatVisual.localScale;
-        scale.y = yScale; // Change WheatPlane Y
+        scale.y = yScale;
         wheatVisual.localScale = scale;
+    }
+
+    private void SetWheatMaterial(Material material)
+    {
+        if (material == null || wheatRenderers == null) return;
+
+        foreach (Renderer renderer in wheatRenderers)
+        {
+            if (renderer == null) continue;
+
+            Material[] slots = renderer.sharedMaterials;
+            for (int i = 0; i < slots.Length; i++)
+                slots[i] = material;
+            renderer.sharedMaterials = slots;
+        }
     }
 
     private void StartNewCrop()
@@ -80,6 +104,7 @@ public class WheatField : Buildable
         mature = false;
         if (wheatVisual != null)
             SetWheatHeight(startingYScale);
+        SetWheatMaterial(growingMaterial);
     }
 
     protected override void OnBroken()

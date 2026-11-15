@@ -63,7 +63,7 @@ public readonly struct Order
 
         var building = MouseTarget.Building(ray, hit);
         if (building is AnimalPen pen && !pen.IsBroken)
-            return new Order(OrderKind.Pen, pen.transform.position, building: pen);
+            return new Order(OrderKind.Pen, hit.point, building: pen);
         if (building is Barn barn && !barn.Down && !barn.IsBroken)
             return new Order(OrderKind.Barn, barn.Door, building: barn);
 
