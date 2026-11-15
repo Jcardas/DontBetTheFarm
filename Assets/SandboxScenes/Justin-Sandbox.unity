@@ -938,6 +938,61 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: caa00833de06b4f4bac853340fcf66a4, type: 3}
+--- !u!1 &620512473
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 620512474}
+  - component: {fileID: 620512475}
+  m_Layer: 5
+  m_Name: PenMenu
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &620512474
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 620512473}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1453329308}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &620512475
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 620512473}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 19102, guid: 0000000000000000e000000000000000, type: 0}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.dll::UnityEngine.UIElements.UIDocument
+  m_PanelSettings: {fileID: 11400000, guid: fcd01a43dba02dd46a752c3917eb88d1, type: 2}
+  m_ParentUI: {fileID: 0}
+  sourceAsset: {fileID: 9197481963319205126, guid: f639ed8dcfda5e64e9ee2ff273ffb6af, type: 3}
+  m_SortingOrder: 0
+  m_Position: 0
+  m_WorldSpaceSizeMode: 1
+  m_WorldSpaceWidth: 1920
+  m_WorldSpaceHeight: 1080
+  m_PivotReferenceSize: 0
+  m_Pivot: 0
+  m_WorldSpaceCollider: {fileID: 0}
 --- !u!114 &628988159 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 1467218761359130414, guid: 59ba79a8fc03547d5999c44065bd285a, type: 3}
@@ -3425,19 +3480,25 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 3307208277261019490, guid: eb4911211c89a1148b2887854aacaeda, type: 3}
-      propertyPath: capturedAliens.Array.size
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 3468876227710701661, guid: eb4911211c89a1148b2887854aacaeda, type: 3}
       propertyPath: m_Name
       value: Menu_Visuals
       objectReference: {fileID: 0}
     m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
+    m_RemovedGameObjects:
+    - {fileID: 2216256947071123454, guid: eb4911211c89a1148b2887854aacaeda, type: 3}
+    - {fileID: 3501210955888144531, guid: eb4911211c89a1148b2887854aacaeda, type: 3}
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: 310123567640478219, guid: eb4911211c89a1148b2887854aacaeda, type: 3}
+      insertIndex: 1
+      addedObject: {fileID: 620512474}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: eb4911211c89a1148b2887854aacaeda, type: 3}
+--- !u!4 &1453329308 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 310123567640478219, guid: eb4911211c89a1148b2887854aacaeda, type: 3}
+  m_PrefabInstance: {fileID: 1453329307}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1472323068
 PrefabInstance:
   m_ObjectHideFlags: 0

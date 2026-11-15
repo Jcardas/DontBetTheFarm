@@ -22,6 +22,17 @@ public class AnimalPen : Buildable, IContextInteractable
     [SerializeField] private Sprite healIcon;
     [SerializeField] private Color enabledButtonTint = new(0.18f, 0.28f, 0.20f, 1f);
     [SerializeField] private Color disabledButtonTint = new(0.25f, 0.25f, 0.25f, 0.7f);
+    
+    public int Capacity => MaxAnimals;
+
+    public IReadOnlyList<Animal> AnimalsInPen
+    {
+        get
+        {
+            PruneGoneAnimals();
+            return animalsInPen;
+        }
+    }
 
     public override (ResourceType, int) CostAndResource =>
         (GameConstants.Instance.BaseAnimalPen.ResourceType, GameConstants.Instance.BaseAnimalPen.BuildingCost);

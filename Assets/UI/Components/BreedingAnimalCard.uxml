@@ -1,0 +1,16 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <ui:VisualElement name="AnimalCardRoot" style="width: 192px; height: 210px; background-color: rgba(15, 26, 22, 0.85); border-radius: 10px; padding: 10px; margin-bottom: 10px; align-items: center; justify-content: space-between; border-width: 2px; border-color: rgba(255, 255, 255, 0.15);">
+        <ui:Label name="AnimalNameLabel" text="Cow (Level 1)" style="color: rgb(255, 255, 255); font-size: 16px; -unity-font-style: bold; unity-text-align: middle-center;"/>
+
+        <!-- 3D Snapshot Portrait -->
+        <ui:VisualElement name="AnimalPortrait" style="width: 112px; height: 112px; flex-shrink: 0; -unity-background-scale-mode: scale-to-fit;"/>
+
+        <!-- 4 Mini Mutation Squares -->
+        <ui:VisualElement name="MiniMutationsRow" style="flex-direction: row; align-items: center; justify-content: center; width: 100%;">
+            <ui:VisualElement name="MiniMutationSlot" style="width: 34px; height: 34px; margin-right: 4px; border-radius: 6px; border-width: 1px; border-color: rgba(255, 255, 255, 0.35); background-color: rgba(255, 255, 255, 0.06); -unity-background-scale-mode: scale-to-fit;"/>
+            <ui:VisualElement name="MiniMutationSlot" style="width: 34px; height: 34px; margin-right: 4px; border-radius: 6px; border-width: 1px; border-color: rgba(255, 255, 255, 0.35); background-color: rgba(255, 255, 255, 0.06); -unity-background-scale-mode: scale-to-fit;"/>
+            <ui:VisualElement name="MiniMutationSlot" style="width: 34px; height: 34px; margin-right: 4px; border-radius: 6px; border-width: 1px; border-color: rgba(255, 255, 255, 0.35); background-color: rgba(255, 255, 255, 0.06); -unity-background-scale-mode: scale-to-fit;"/>
+            <ui:VisualElement name="MiniMutationSlot" style="width: 34px; height: 34px; border-radius: 6px; border-width: 1px; border-color: rgba(255, 255, 255, 0.35); background-color: rgba(255, 255, 255, 0.06); -unity-background-scale-mode: scale-to-fit;"/>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>
