@@ -61,6 +61,8 @@ MonoBehaviour:
   startingYScale: 0.1
   fullyGrownYScale: 1
   wheatPerHarvest: 1
+  growingMaterial: {fileID: 2100000, guid: 8d023ebd08bc64d67a3878a78d8071b6, type: 2}
+  matureMaterial: {fileID: 2100000, guid: cf1cd39e0390f493b8564f1b92b30ebb, type: 2}
   mature: 0
 --- !u!208 &2275919335033056446
 NavMeshObstacle:
