@@ -1,7 +1,7 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.UI;
 #if ENABLE_INPUT_SYSTEM
 using UnityEngine.InputSystem;
 #endif
@@ -28,7 +28,7 @@ public class ContextInteractionManager : MonoBehaviour
 
     private static readonly List<RaycastResult> s_UiRaycastResults = new(16);
 
-    // Tracking state
+    private PenUIController _penUI;
     private float _pressTime;
     private Vector2 _pressScreenPosition;
     private bool _isTrackingClick;
@@ -38,6 +38,7 @@ public class ContextInteractionManager : MonoBehaviour
     private void Awake()
     {
         if (isometricCamera == null) ResolveCamera();
+        _penUI = FindAnyObjectByType<PenUIController>(FindObjectsInactive.Include);
     }
 
     private void ResolveCamera()
@@ -111,13 +112,34 @@ public class ContextInteractionManager : MonoBehaviour
 
     private void RecordPointerDown()
     {
+        if (_penUI != null && _penUI.IsOpen)
+        {
+            _isTrackingClick = false;
+            return;
+        }
+
         Vector2 screenPos = GetPointerScreenPosition();
 
-        // If the initial press landed on UI, do not start tracking a world interaction
         if (IsPointerOverUIElement(screenPos))
         {
             _isTrackingClick = false;
             return;
+        }
+
+        // If a Farmer is currently selected and the right-click started on a Barn,
+        // PlayerControls is sending the Farmer inside on pointer-down—do not open the Barn menu on pointer-up.
+        if (isometricCamera != null)
+        {
+            Ray ray = isometricCamera.ScreenPointToRay(screenPos);
+            if (MouseTarget.Find(ray, out RaycastHit hit, maxRayDistance, interactableLayers))
+            {
+                var order = Order.From(ray, hit);
+                if (order.kind == OrderKind.Barn && Selectable.All.Any(s => s.Selected && s.CanObey(order)))
+                {
+                    _isTrackingClick = false;
+                    return;
+                }
+            }
         }
 
         _pressTime = Time.unscaledTime;
@@ -130,91 +152,84 @@ public class ContextInteractionManager : MonoBehaviour
         if (!_isTrackingClick) return;
         _isTrackingClick = false;
 
+        if (_penUI != null && _penUI.IsOpen) return;
+
         Vector2 releasePos = GetPointerScreenPosition();
         float holdDuration = Time.unscaledTime - _pressTime;
         float dragDistance = Vector2.Distance(releasePos, _pressScreenPosition);
 
-        // Discard if held too long or dragged past threshold (box selection, camera pan, etc.)
         if (holdDuration > maxHoldDuration || dragDistance > maxDragDistance)
         {
             return;
         }
 
-        // Execute the interaction using the release position
         ExecuteRaycastInteraction(releasePos);
     }
-
-    //private void ExecuteRaycastInteraction(Vector2 screenPos)
-    //{
-    //    if (isometricCamera == null) return;
-
-    //    // Verify the pointer didn't end over a UI element
-    //    if (IsPointerOverUIElement(screenPos))
-    //    {
-    //        return;
-    //    }
-
-    //    Ray ray = isometricCamera.ScreenPointToRay(screenPos);
-
-    //    if (MouseTarget.Find(ray, out RaycastHit hit, maxRayDistance, interactableLayers))
-    //    {
-    //        // A right-click anywhere inside a building's outline, like a gap in a pen's fence, counts as that building
-    //        if (MouseTarget.Menu(ray, hit) is IContextInteractable interactable)
-    //        {
-    //            IReadOnlyList<ContextActionData> actions = interactable.GetContextActions();
-    //            // One choice needs no popup: it just happens
-    //            if (actions != null && actions.Count == 1)
-    //            {
-    //                actions[0].onExecute?.Invoke();
-    //                ContextMenuEventBus.RequestClose();
-    //                return;
-    //            }
-
-    //            if (actions != null && actions.Count > 0)
-    //            {
-    //                ContextMenuEventBus.RequestOpen(actions, screenPos);
-    //                return;
-    //            }
-    //        }
-    //    }
-
-    //    ContextMenuEventBus.RequestClose();
-    //}
 
     private void ExecuteRaycastInteraction(Vector2 screenPos)
     {
         if (isometricCamera == null) return;
         if (IsPointerOverUIElement(screenPos)) return;
+        if (_penUI != null && _penUI.IsOpen) return;
 
         Ray ray = isometricCamera.ScreenPointToRay(screenPos);
-        Debug.Log($"[ContextManager] Raycast fired at screen pos: {screenPos}");
 
-        if (MouseTarget.Find(ray, out RaycastHit hit, maxRayDistance, interactableLayers))
+        Component menuTarget = null;
+        Transform anchorTransform = null;
+
+        // 1. Check renderer bounds first for broken buildings whose colliders are disabled
+        Buildable brokenTarget = Order.BrokenAt(ray);
+        if (brokenTarget != null)
         {
-            var menuTarget = MouseTarget.Menu(ray, hit);
-            Debug.Log($"[ContextManager] Raycast hit target: {(menuTarget != null ? menuTarget.name : "None")}");
+            menuTarget = brokenTarget;
+            anchorTransform = brokenTarget.transform;
+        }
+        else if (MouseTarget.Find(ray, out RaycastHit hit, maxRayDistance, interactableLayers))
+        {
+            // Fall back to MouseTarget.Building so clicking the open ground inside a pen still targets the pen
+            menuTarget = MouseTarget.Menu(ray, hit) ?? MouseTarget.Building(ray, hit);
+            anchorTransform = menuTarget != null ? menuTarget.transform : hit.transform;
+        }
+
+        if (menuTarget != null)
+        {
+            string menuTitle = menuTarget.name.ToUpper();
+
+            // Broken buildings only show the Repair menu if a repair-capable unit is currently selected
+            if (menuTarget is Buildable buildable && buildable.IsBroken)
+            {
+                var repairer = Selectable.All.FirstOrDefault(s => s.Selected && s.CanObey(Order.ForRepair(buildable)));
+                if (repairer == null)
+                {
+                    ContextMenuEventBus.RequestClose();
+                    return;
+                }
+
+                int woodCost = buildable.RepairWoodCost;
+                bool hasWood = ResourceManager.Count(ResourceType.Wood) >= woodCost;
+
+                var repairActions = new List<ContextActionData>
+                {
+                    new ContextActionData(
+                        label: $"Repair ({woodCost} <sprite name=\"Wood\">)",
+                        onExecute: () =>
+                        {
+                            if (hasWood)
+                                repairer.Command(Order.ForRepair(buildable));
+                            ContextMenuEventBus.RequestClose();
+                        },
+                        textColor: hasWood ? Color.white : new Color(0.75f, 0.75f, 0.75f, 1f),
+                        buttonTint: hasWood ? new Color(0.18f, 0.28f, 0.20f, 1f) : new Color(0.25f, 0.25f, 0.25f, 0.7f)
+                    )
+                };
+
+                ContextMenuEventBus.RequestOpen(repairActions, anchorTransform, menuTitle, "Requires Repairs");
+                return;
+            }
 
             if (menuTarget is IContextInteractable interactable)
             {
-                IReadOnlyList<ContextActionData> actions;
-
-                // 1. Grab the name of the GameObject
-                string menuTitle = menuTarget.name.ToUpper();
-                string menuSubtitle = "";
-
-                if (menuTarget is Buildable buildable && buildable.IsBroken)
-                {
-                    menuSubtitle = "Requires Repairs";
-                    actions = new List<ContextActionData>
-                    {
-                        new ContextActionData("Repair (10 <sprite name=\"Wood\">)", () => { ContextMenuEventBus.RequestClose(); })
-                    };
-                }
-                else
-                {
-                    menuSubtitle = "Operational";
-                    actions = interactable.GetContextActions();
-                }
+                IReadOnlyList<ContextActionData> actions = interactable.GetContextActions();
 
                 if (actions != null && actions.Count == 1)
                 {
@@ -225,22 +240,12 @@ public class ContextInteractionManager : MonoBehaviour
 
                 if (actions != null && actions.Count > 0)
                 {
-                    // 2. Send the actions, mouse position, and text to the EventBus
-                    ContextMenuEventBus.RequestOpen(actions, hit.transform, menuTitle, menuSubtitle);
-                    return; // Menu stays open
+                    ContextMenuEventBus.RequestOpen(actions, anchorTransform, menuTitle, "Operational");
+                    return;
                 }
             }
-            else
-            {
-                Debug.Log("[ContextManager] Target does NOT implement IContextInteractable.");
-            }
-        }
-        else
-        {
-            Debug.Log("[ContextManager] Raycast hit nothing on interactable layers.");
         }
 
-        // If nothing was hit, or it had no actions, close the menu
         ContextMenuEventBus.RequestClose();
     }
 

@@ -159,4 +159,6 @@ public abstract class Buildable : MonoBehaviour, IDamageable
                 surface.BuildNavMesh();
         }
     }
+    
+
 }

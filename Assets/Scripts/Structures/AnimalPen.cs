@@ -351,6 +351,8 @@ public class AnimalPen : Buildable, IContextInteractable
     }
     public void OpenPenMenu()
     {
+        ContextMenuEventBus.RequestClose();
+
         if (penMenuController == null)
             penMenuController = FindAnyObjectByType<PenUIController>(FindObjectsInactive.Include);
 
@@ -366,13 +368,19 @@ public class AnimalPen : Buildable, IContextInteractable
 
     private void AssignSelectedAnimal()
     {
-        var selectedAnimals = Selectable.All
+        PruneGoneAnimals();
+
+        var selectedUnits = Selectable.All
             .Where(s => s.Selected && s.TryGetComponent<Animal>(out _))
             .ToList();
 
-        if (selectedAnimals.Count == 0) return;
+        if (selectedUnits.Count == 0) return;
 
-        foreach (Selectable unit in selectedAnimals)
+        int remainingSpace = Mathf.Max(0, MaxAnimals - animalsInPen.Count);
+        int newAnimalsCount = selectedUnits.Count(u => !animalsInPen.Contains(u.GetComponent<Animal>()));
+        if (newAnimalsCount > remainingSpace) return;
+
+        foreach (Selectable unit in selectedUnits)
         {
             if (unit.TryGetComponent<Animal>(out Animal animal) && AddAnimal(animal))
             {
@@ -389,6 +397,7 @@ public class AnimalPen : Buildable, IContextInteractable
 
         var selectedAnimals = Selectable.All
             .Where(s => s.Selected && s.TryGetComponent<Animal>(out _))
+            .Select(s => s.GetComponent<Animal>())
             .ToList();
 
         // No animals selected: open the Pen UI directly without showing a context menu
@@ -400,15 +409,38 @@ public class AnimalPen : Buildable, IContextInteractable
 
         var actions = new List<ContextActionData>
         {
-            new ContextActionData("View Pen", OpenPenMenu)
+            new ContextActionData("View Pen", OpenPenMenu, buttonTint: enabledButtonTint)
         };
 
-        string animalName = selectedAnimals.Count == 1
-            ? GetSpeciesKey(selectedAnimals[0].GetComponent<Animal>())
-            : $"{selectedAnimals.Count} Animals";
+        int remainingSpace = Mathf.Max(0, MaxAnimals - animalsInPen.Count);
+        int newAnimalsCount = selectedAnimals.Count(a => !animalsInPen.Contains(a));
 
-        string assignLabel = $"Assign {animalName} to pen ({animalsInPen.Count}/{MaxAnimals})";
-        actions.Add(new ContextActionData(assignLabel, AssignSelectedAnimal));
+        if (newAnimalsCount > remainingSpace)
+        {
+            string overflowLabel = remainingSpace == 0
+                ? $"Pen is full ({animalsInPen.Count}/{MaxAnimals})"
+                : $"Too many animals selected ({newAnimalsCount} > {remainingSpace} free)";
+
+            actions.Add(new ContextActionData(
+                label: overflowLabel,
+                onExecute: null,
+                textColor: new Color(0.75f, 0.75f, 0.75f, 1f),
+                buttonTint: disabledButtonTint
+            ));
+        }
+        else
+        {
+            string animalName = selectedAnimals.Count == 1
+                ? GetSpeciesKey(selectedAnimals[0])
+                : $"{selectedAnimals.Count} Animals";
+
+            string assignLabel = $"Assign {animalName} to pen ({animalsInPen.Count}/{MaxAnimals})";
+            actions.Add(new ContextActionData(
+                label: assignLabel,
+                onExecute: AssignSelectedAnimal,
+                buttonTint: enabledButtonTint
+            ));
+        }
 
         return actions;
     }
