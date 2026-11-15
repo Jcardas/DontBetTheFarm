@@ -13,9 +13,11 @@ MonoBehaviour:
   m_Name: Wings
   m_EditorClassIdentifier: Assembly-CSharp::MutationData
   mutationName: Wings
+  mutationCost: 50
   allowedSlots: 2
   pairedPrefab: 1
   prefab: {fileID: 7851528953947801171, guid: f3931ae5f3e2530499e8067d629ad512, type: 3}
+  prefabSprite: {fileID: 461598017774872151, guid: 3b7b9bfbd32a5a94a9bdccaeb9acbed4, type: 3}
   localScale: 2
   grantedCapabilities: 8
   bonusMaxHealth: 0
@@ -26,3 +28,4 @@ MonoBehaviour:
   bonusAttackSpeed: 0
   bonusViewRadius: 0
   overridesAttack: 0
+  extraDescription: 

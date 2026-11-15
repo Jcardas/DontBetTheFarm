@@ -17,6 +17,7 @@ public class MutationData : ScriptableObject
 {
     [Header("Identity & Compatibility")]
     public string mutationName;
+    public int mutationCost = 0;
     [Tooltip("Bitmask of slots where this part can legally attach (e.g. Limbs + Tail for Scythe)")]
     public SlotType allowedSlots; // Uses Flags enum
 
@@ -45,4 +46,7 @@ public class MutationData : ScriptableObject
     [Header("Attack Replacement (Optional)")]
     public bool overridesAttack;              // True for Laser Eye or Fire Breath
     // public AttackType replacementAttackType;  // Melee, RangedLaser, RangedAoEFire
+    
+    [Header("Extra Description (Optional)")]
+    [TextArea(3, 10)] public string extraDescription; // e.g., "This mutation allows the creature to breathe fire, dealing AoE damage to enemies in front of it
 }
