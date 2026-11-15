@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.AI;
 
 // What the mouse is over, the same answer for every script that asks. A creature wins, even one behind a building
 // or a fence, so a unit is never hidden from the mouse; then a building by its whole outline; otherwise it is
@@ -14,10 +15,26 @@ public static class MouseTarget
     public static bool Find(Ray ray, out RaycastHit hit, float maxDistance = Mathf.Infinity, int layers = Physics.DefaultRaycastLayers)
     {
         bool any = Physics.Raycast(ray, out hit, maxDistance, layers, QueryTriggerInteraction.Ignore);
-        if (any && hit.collider.GetComponentInParent<Barn>() != null) return true;
         if (!Physics.Raycast(ray, out RaycastHit creature, maxDistance, Creatures & layers, QueryTriggerInteraction.Ignore)) return any;
+        if (BuildingManager.Instance != null && BuildingManager.Instance.Buildings.OfType<Barn>().Any(b => InFront(b, ray, creature.distance))
+            && Physics.Raycast(ray, out RaycastHit behind, maxDistance, layers & ~Creatures, QueryTriggerInteraction.Ignore))
+        {
+            hit = behind;
+            return true;
+        }
         hit = creature;
         return true;
+    }
+
+    // The barn has no colliders, so the box of its NavMeshObstacle stands in for its body (none while it's knocked down).
+    static bool InFront(Barn barn, Ray ray, float distance)
+    {
+        var body = barn.GetComponentInChildren<NavMeshObstacle>();
+        if (barn.Down || body == null) return false;
+        var t = body.transform;
+        var local = new Ray(t.InverseTransformPoint(ray.origin), t.InverseTransformVector(ray.direction));
+        return new Bounds(body.center, body.size).IntersectRay(local, out float at)
+            && Vector3.Distance(ray.origin, t.TransformPoint(local.GetPoint(at))) < distance;
     }
 
     // The building the ray reaches before `hit`, judged by one box around all its parts, so the gaps in a pen's
