@@ -92,6 +92,15 @@ public class AnimalPen : Buildable, IContextInteractable
             return;
         }
 
+        // Use the pen collider to choose positions across its interior, away from the fence.
+        BoxCollider penArea = GetComponent<BoxCollider>();
+        if (!penArea) return;
+
+        float halfX = penArea.size.x / 2f - 1f;
+        float halfZ = penArea.size.z / 2f - 1f;
+        if (halfX <= 0f || halfZ <= 0f) return;
+
+        Animal[] nearbyAnimals = FindObjectsByType<Animal>(FindObjectsSortMode.None);
         Vector3 spawnPosition = transform.position;
         Quaternion spawnRotation = Quaternion.Euler(0f, UnityEngine.Random.Range(0f, 360f), 0f);
         bool positionFound;
@@ -99,21 +108,26 @@ public class AnimalPen : Buildable, IContextInteractable
 
         do
         {
-            Vector3 randomOffset = new(UnityEngine.Random.Range(-1f, 1f), 0f, UnityEngine.Random.Range(-1f, 1f));
-            spawnPosition = transform.position + randomOffset;
+            Vector3 randomOffset = new(UnityEngine.Random.Range(-halfX, halfX), 0f,
+                                        UnityEngine.Random.Range(-halfZ, halfZ));
+            spawnPosition = penArea.transform.TransformPoint(penArea.center + randomOffset);
             spawnRotation = Quaternion.Euler(0f, UnityEngine.Random.Range(0f, 360f), 0f);
 
             positionFound = true;
-            foreach (var existingAnimal in animalsInPen)
+            foreach (var existingAnimal in nearbyAnimals)
             {
-                if (existingAnimal != null && Vector3.Distance(spawnPosition, existingAnimal.transform.position) < 1f)
+                if (existingAnimal != null && existingAnimal.gameObject.activeInHierarchy &&
+                    Vector2.Distance(new Vector2(spawnPosition.x, spawnPosition.z),
+                                     new Vector2(existingAnimal.transform.position.x, existingAnimal.transform.position.z)) < 1.5f)
                 {
                     positionFound = false;
                     break;
                 }
             }
             attempts++;
-        } while (!positionFound && attempts < 10);
+        } while (!positionFound && attempts < 25);
+
+        if (!positionFound) return;
 
         // Instantiate the animals original prefab at the calculated position and rotation, and parent it to the pen
         Animal newAnimal = Instantiate(animalPrefab, spawnPosition, spawnRotation, CreatureManager.AnimalContainer);
