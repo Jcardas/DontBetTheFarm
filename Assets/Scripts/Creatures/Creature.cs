@@ -51,7 +51,6 @@ public abstract class Creature : MonoBehaviour, IDamageable
     [SerializeField] protected float attackSpeed = 1f; // Seconds between attacks
     [SerializeField] protected float attackRange = 1f;
     [SerializeField] protected float viewRadius = 8f;
-    [SerializeField] protected bool anchored = true;
     
     private int currentHealth;
     private NavMeshAgent navMeshAgent;
@@ -85,7 +84,6 @@ public abstract class Creature : MonoBehaviour, IDamageable
     public int AttackDamage => attackDamage;
     public float AttackSpeed => attackSpeed;
     public float AttackRange => attackRange;
-    public bool Anchored => anchored;
     public bool Down => currentHealth <= 0;
     public Gatherer Gatherer => gatherer;
 
