@@ -14,7 +14,7 @@
                 </ui:VisualElement>
                 <ui:VisualElement name="EffectSection" style="flex-grow: 1; flex-direction: row; align-items: center;">
                     <ui:Label text="Effect:" name="PartEffect" class="descriptionHeader" style="-unity-text-align: middle-left;"/>
-                    <ui:Label text="Insert Effect description here" name="PartDescription" class="description-text" style="-unity-text-align: middle-left;"/>
+                    <ui:Label text="Insert Effect description here" name="PartDescription" class="description-text" style="-unity-text-align: middle-left; max-width: 95%; white-space: normal; text-overflow: ellipsis;"/>
                 </ui:VisualElement>
             </ui:VisualElement>
             <ui:VisualElement name="Cost" style="flex-grow: 1; width: auto; flex-direction: row; align-self: center; align-items: center; justify-content: center; aspect-ratio: 1;">

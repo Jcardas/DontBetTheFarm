@@ -12,6 +12,8 @@ public class CreatureManager : MonoBehaviour
     // unassigned and must be reassigned to a new Pem before they can be healed, etc.
     // private readonly Dictionary<FarmAnimal, Pen> animalsInPens = new();
     
+    private List<Creature> capturedAliens = new();
+    
     public static Transform AnimalContainer { get; private set; }
 
     private void Awake()
@@ -98,5 +100,21 @@ public class CreatureManager : MonoBehaviour
         }
 
         return best;
+    }
+    
+    public void RegisterCapturedAlien(Creature alien)
+    {
+        if (!capturedAliens.Contains(alien))
+            capturedAliens.Add(alien);
+    }
+    
+    public void UnregisterCapturedAlien(Creature alien)
+    {
+        capturedAliens.Remove(alien);
+    }
+    
+    public List<Creature> GetCapturedAliens()
+    {
+        return new List<Creature>(capturedAliens);
     }
 }

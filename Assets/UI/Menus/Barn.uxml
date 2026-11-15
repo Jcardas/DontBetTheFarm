@@ -15,7 +15,7 @@
                     </ui:VisualElement>
                 </ui:VisualElement>
                 <ui:VisualElement name="LowerContent" style="flex-grow: 1; flex-direction: row; max-height: 100%;">
-                    <ui:VisualElement name="PreviewPane" class="translucentPanel" style="flex-grow: 1; justify-content: flex-start; align-items: center; align-self: auto; padding-top: 16px; padding-right: 16px; padding-bottom: 16px; padding-left: 16px; max-width: 960px; border-top-left-radius: 12px; border-top-right-radius: 12px; border-bottom-right-radius: 12px; border-bottom-left-radius: 12px; margin-right: 24px;">
+                    <ui:VisualElement name="PreviewPane" class="translucentPanel" style="flex-grow: 1; justify-content: flex-start; align-items: center; align-self: auto; padding-top: 16px; padding-right: 16px; padding-bottom: 16px; padding-left: 16px; max-width: 960px; border-top-left-radius: 12px; border-top-right-radius: 12px; border-bottom-right-radius: 12px; border-bottom-left-radius: 12px; margin-right: 24px; min-width: 960px;">
                         <ui:VisualElement name="AlienSelectionHeader" style="flex-grow: 1; flex-direction: row; justify-content: space-between; align-items: auto; max-width: 960%; width: 100%; max-height: 75px;">
                             <ui:Label text="Alien Name" name="AlienHeader" class="header" style="align-self: center;"/>
                             <ui:Label text="1/10" name="AliensInBarnCount" class="header" style="align-self: center;"/>
@@ -35,7 +35,7 @@
                             </ui:VisualElement>
                         </ui:VisualElement>
                     </ui:VisualElement>
-                    <ui:VisualElement name="ContentPane" style="flex-grow: 1;">
+                    <ui:VisualElement name="ContentPane" style="flex-grow: 0; max-width: 830px; min-width: 830px; width: 131px;">
                         <ui:ScrollView name="CheckoutScrollView" vertical-scroller-visibility="Hidden" focusable="false" class="translucentPanel" style="visibility: visible; display: flex; overflow: visible; flex-grow: 1; margin-bottom: 20px; -unity-text-align: upper-left; justify-content: flex-start; align-items: flex-start; flex-direction: column; align-self: auto; padding-bottom: 10px; flex-wrap: nowrap; opacity: 1;">
                             <ui:Instance template="SelectedMutationContainer" class="cursor-clickable"/>
                             <ui:Instance template="SelectedMutationContainer" class="cursor-clickable"/>

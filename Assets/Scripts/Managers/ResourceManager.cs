@@ -27,6 +27,9 @@ public class ResourceManager : MonoBehaviour
             return;
         }
         Instance = this;
+        
+        // add 200 technology to the resource manager for testing purposes
+        Deposit(ResourceType.Technology, 200);
     }
 
     void Update()
@@ -74,5 +77,10 @@ public class ResourceManager : MonoBehaviour
         woodValue.text = Count(ResourceType.Wood).ToString();
         hayValue.text = Count(ResourceType.Hay).ToString();
         technologyValue.text = Count(ResourceType.Technology).ToString();
+    }
+
+    public static int GetResourceAmount(ResourceType type)
+    {
+        return Count(type);
     }
 }
