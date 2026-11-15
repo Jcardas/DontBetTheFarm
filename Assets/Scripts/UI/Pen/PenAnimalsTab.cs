@@ -140,45 +140,28 @@ public class PenAnimalsTab
 
     public void Refresh()
     {
-        
         _ui.SyncAnimals();
         bool hasAnimals = _ui.Animals.Count > 0;
 
         if (_animalsView != null)
         {
             foreach (var pane in _animalsView.Children())
-            foreach (var child in pane.Children())
-                child.style.display = hasAnimals ? DisplayStyle.Flex : DisplayStyle.None;
+            {
+                foreach (var child in pane.Children())
+                {
+                    bool keepVisible = hasAnimals || child.name == "AnimalSelectionHeader";
+                    child.style.display = keepVisible ? DisplayStyle.Flex : DisplayStyle.None;
+                }
+            }
         }
 
         if (!hasAnimals)
         {
-            _booth?.ClearLive();
-            return;
-        }
-        
-        _ui.SyncAnimals();
-        if (_ui.Animals.Count == 0)
-        {
             if (_countLbl != null) _countLbl.text = $"0/{_ui.Capacity}";
             if (_nameLbl != null) _nameLbl.text = "No Animals in Pen";
-            if (_hpFill != null) _hpFill.style.width = Length.Percent(0f);
-            if (_hpLbl != null) _hpLbl.text = "HP: 0/0";
-            _healBtn?.SetEnabled(false);
-
-            // Hide all right-pane children (Stats, Mutations list, SelectedMutationCard, Cost/Buttons)
-            if (_rightPaneContent != null)
-                foreach (var child in _rightPaneContent.Children())
-                    child.style.display = DisplayStyle.None;
-
             _booth?.ClearLive();
             return;
         }
-
-        // Restore right-pane children when an animal is present
-        if (_rightPaneContent != null)
-            foreach (var child in _rightPaneContent.Children())
-                child.style.display = DisplayStyle.Flex;
 
         _index = Mathf.Clamp(_index, 0, _ui.Animals.Count - 1);
         Animal animal = _ui.Animals[_index];
@@ -266,7 +249,6 @@ public class PenAnimalsTab
         _cancelBtn?.SetEnabled(_staged.Count > 0);
         _mutateBtn?.SetEnabled(_staged.Count > 0 && ResourceManager.Count(ResourceType.Hay) >= hay && ResourceManager.Count(ResourceType.Technology) >= tech);
 
-        // Show first equipped/staged mutation or default prompt
         var defaultPreview = Slots.Select(s => Effective(mutator, s)).FirstOrDefault(m => m != null);
         ShowDetails(defaultPreview);
         _booth?.ShowLive(animal, s => Effective(mutator, s));
