@@ -14,6 +14,8 @@ public class CreaturePreviewBooth : MonoBehaviour
     private GameObject _liveInstance;
     private int _previewLayer;
 
+    private Creature _currentTarget;
+    private bool _wasTargetDown;
     private bool _isSpinning;
     private float _lastPointerX;
 
@@ -81,35 +83,46 @@ public class CreaturePreviewBooth : MonoBehaviour
 
     public void ShowLive(Creature target, System.Func<SlotType, MutationData> mutationSelector = null)
     {
-        // Preserve the user's current manual/auto spin angle when refreshing staged mutations on the same creature
-        Quaternion preservedRot = _liveInstance != null ? _liveInstance.transform.rotation : GetForwardFacingRotation();
+        if (spawnPoint == null || target == null)
+        {
+            ClearLive();
+            return;
+        }
+
+        bool stateChanged = _currentTarget != target || _wasTargetDown != target.Down;
+        Quaternion rot = (!stateChanged && _liveInstance != null)
+            ? _liveInstance.transform.rotation
+            : GetTargetRotation(target);
 
         ClearLive();
-        if (spawnPoint == null || target == null) return;
+        _currentTarget = target;
+        _wasTargetDown = target.Down;
 
-        _liveInstance = BuildCleanPreview(target, preservedRot, mutationSelector);
+        _liveInstance = BuildCleanPreview(target, rot, mutationSelector);
         if (previewCamera != null) previewCamera.enabled = _liveInstance != null;
     }
 
-    private Quaternion GetForwardFacingRotation()
+    private Quaternion GetTargetRotation(Creature target)
     {
-        if (spawnPoint == null) return Quaternion.identity;
+        Quaternion yawRot = spawnPoint.rotation;
         if (previewCamera != null)
         {
             Vector3 toCamera = previewCamera.transform.position - spawnPoint.position;
             toCamera.y = 0f;
             if (toCamera.sqrMagnitude > 0.001f)
-                return Quaternion.LookRotation(toCamera.normalized, Vector3.up);
+                yawRot = Quaternion.LookRotation(toCamera.normalized, Vector3.up);
         }
-        return spawnPoint.rotation;
+
+        // Upright when alive; rolled 90 degrees onto its side when knocked out / dead
+        return target.Down ? yawRot * Quaternion.Euler(0f, 0f, 90f) : yawRot;
     }
 
     public void ClearLive()
     {
         _isSpinning = false;
+        _currentTarget = null;
         if (_liveInstance != null)
         {
-            // Use DestroyImmediate so swapping mutations doesn't leave two overlapping models for 1 frame
             DestroyImmediate(_liveInstance);
             _liveInstance = null;
         }
@@ -200,18 +213,11 @@ public class CreaturePreviewBooth : MonoBehaviour
             var childCopy = Instantiate(child.gameObject, previewRoot.transform, false);
             childCopy.name = child.name;
 
-            if (template == source.gameObject && childCopy.GetComponent<ToyBob>() != null)
+            // Restore exact prefab rest transform from the live ToyBob without any Euler angle math
+            if (child.TryGetComponent<ToyBob>(out var sourceBob))
             {
-                Vector3 pos = childCopy.transform.localPosition;
-                childCopy.transform.localPosition = new Vector3(pos.x, 0f, pos.z);
-
-                // Strip small mid-walk ToyBob wobble angles while preserving Blender's 90°/180° axis alignment
-                Vector3 e = childCopy.transform.localEulerAngles;
-                childCopy.transform.localEulerAngles = new Vector3(
-                    Mathf.Round(e.x / 90f) * 90f,
-                    Mathf.Round(e.y / 90f) * 90f,
-                    Mathf.Round(e.z / 90f) * 90f
-                );
+                childCopy.transform.localPosition = sourceBob.RestPosition;
+                childCopy.transform.localRotation = sourceBob.RestRotation;
             }
 
             foreach (var mb in childCopy.GetComponentsInChildren<MonoBehaviour>(true))
@@ -231,20 +237,26 @@ public class CreaturePreviewBooth : MonoBehaviour
             anim.enabled = false;
         }
 
-        // 4. Strip QuickOutline / Highlight injected materials (they append OutlineMask & OutlineFill after the base material)
+        // 4. Strip QuickOutline / Highlight injected materials & rendering layer masks
         foreach (var r in previewRoot.GetComponentsInChildren<Renderer>(true))
         {
-            if (r == null || r.sharedMaterials == null) continue;
-            var mats = new List<Material>(r.sharedMaterials);
-            for (int i = mats.Count - 1; i >= 0; i--)
+            if (r == null) continue;
+            if (r.gameObject.activeInHierarchy) r.enabled = true;
+            r.renderingLayerMask = 1;
+
+            if (r.sharedMaterials != null && r.sharedMaterials.Length > 1)
             {
-                var m = mats[i];
-                if (m == null) continue;
-                string name = m.name.ToLowerInvariant();
-                if (name.Contains("outline") || name.Contains("highlight"))
-                    mats.RemoveAt(i);
+                var mats = new List<Material>(r.sharedMaterials);
+                for (int i = mats.Count - 1; i >= 0; i--)
+                {
+                    var m = mats[i];
+                    if (m == null) continue;
+                    string matName = m.name.ToLowerInvariant();
+                    if (matName.Contains("outline") || matName.Contains("highlight"))
+                        mats.RemoveAt(i);
+                }
+                r.sharedMaterials = mats.Count > 0 ? mats.ToArray() : new[] { r.sharedMaterials[0] };
             }
-            r.sharedMaterials = mats.ToArray();
         }
 
         // 5. Attach CreatureMutator, purge any live-cloned socket attachments, and apply current/staged mutations

@@ -119,6 +119,41 @@ public class PenAnimalsTab
         if (_healBtn != null) _healBtn.clicked += Heal;
         if (_cancelBtn != null) _cancelBtn.clicked += () => { _staged.Clear(); Refresh(); };
         if (_mutateBtn != null) _mutateBtn.clicked += ApplyMutations;
+        
+        _root.schedule.Execute(UpdateLiveHealth).Every(100);
+    }
+
+    private bool _lastKnownDown;
+    
+    private void UpdateLiveHealth()
+    {
+        if (_animalsView == null || _animalsView.resolvedStyle.display == DisplayStyle.None) return;
+        if (_ui.Animals.Count == 0 || _index < 0 || _index >= _ui.Animals.Count) return;
+
+        var animal = _ui.Animals[_index];
+        if (animal.Down != _lastKnownDown)
+        {
+            _lastKnownDown = animal.Down;
+            Refresh();
+            return;
+        }
+
+        UpdateHealthUI(animal);
+    }
+    private void UpdateHealthUI(Animal animal)
+    {
+        if (animal == null) return;
+
+        int maxHp = Mathf.Max(1, animal.CalculatedMaxHealth);
+        int curHp = Mathf.Clamp(animal.CurrentHealth, 0, maxHp);
+        float ratio = Mathf.Clamp01((float)curHp / maxHp);
+
+        if (_hpFill != null) _hpFill.style.width = Length.Percent(ratio * 100f);
+        if (_hpLbl != null) _hpLbl.text = $"HP: {curHp}/{maxHp}";
+
+        int healCost = animal.HealCost > 0 ? animal.HealCost : HealFallbackCost;
+        if (_healCostLbl != null) _healCostLbl.text = healCost.ToString();
+        _healBtn?.SetEnabled(curHp < maxHp && ResourceManager.Count(ResourceType.Hay) >= healCost);
     }
 
     public void ResetState()
@@ -171,12 +206,7 @@ public class PenAnimalsTab
         if (_nameLbl != null) _nameLbl.text = animal.GetCreatureName();
 
         // Health
-        float ratio = animal.MaxHealth > 0 ? Mathf.Clamp01(animal.CurrentHealth / animal.MaxHealth) : 1f;
-        if (_hpFill != null) _hpFill.style.width = Length.Percent(ratio * 100f);
-        if (_hpLbl != null) _hpLbl.text = $"HP: {Mathf.CeilToInt(animal.CurrentHealth)}/{Mathf.CeilToInt(animal.MaxHealth)}";
-        int healCost = animal.HealCost > 0 ? animal.HealCost : HealFallbackCost;
-        if (_healCostLbl != null) _healCostLbl.text = healCost.ToString();
-        _healBtn?.SetEnabled(animal.CurrentHealth < animal.MaxHealth && ResourceManager.Count(ResourceType.Hay) >= healCost);
+        UpdateHealthUI(animal);
 
         // 4 Equipped Slots
         foreach (var slot in Slots)
@@ -498,10 +528,25 @@ public class PenAnimalsTab
     {
         if (_ui.Animals.Count == 0) return;
         var a = _ui.Animals[_index];
-        bool healed = _ui.ActivePen != null
-            ? _ui.ActivePen.TryHealSingleAnimal(a)
-            : (a.CurrentHealth < a.MaxHealth && ResourceManager.Spend(ResourceType.Hay, a.HealCost > 0 ? a.HealCost : HealFallbackCost));
-        if (healed) { if (_ui.ActivePen == null) a.HealToFull(); Refresh(); }
+        int cost = a.HealCost > 0 ? a.HealCost : HealFallbackCost;
+
+        bool healed = false;
+        if (_ui.ActivePen != null)
+        {
+            healed = _ui.ActivePen.TryHealSingleAnimal(a);
+        }
+        else if (a.CurrentHealth < a.CalculatedMaxHealth && ResourceManager.Spend(ResourceType.Hay, cost))
+        {
+            a.HealToFull();
+            healed = true;
+        }
+
+        if (healed)
+        {
+            _lastKnownDown = a.Down;
+            _booth?.InvalidatePortrait(a);
+            Refresh();
+        }
     }
 
     private void ApplyMutations()
