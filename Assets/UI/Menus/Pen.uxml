@@ -3,7 +3,7 @@
     <ui:Template name="CreaturePreview" src="project://database/Assets/UI/Components/CreaturePreview.uxml?fileID=9197481963319205126&amp;guid=57901363b21e3664cb2253c932256d34&amp;type=3#CreaturePreview"/>
     <ui:Template name="MutationIcon" src="project://database/Assets/UI/Components/MutationIcon.uxml?fileID=9197481963319205126&amp;guid=fb4438fa962014e43be13f25767f04a4&amp;type=3#MutationIcon"/>
     <ui:Template name="SelectedMutationContainer" src="project://database/Assets/UI/Components/SelectedMutationContainer.uxml?fileID=9197481963319205126&amp;guid=92365090be28b5641a121009c7cf89c4&amp;type=3#SelectedMutationContainer"/>
-    <Style src="project://database/Assets/UI/StyleSheets/InteractionUI.uss?fileID=7433441132597879392&amp;guid=3c26107ceb91787478132dd32f00eb5c&amp;type=3#InteractionUI"/>
+    <Style src="project://database/Assets/UI/StyleSheets/InteractionUI.uss?fileID=7433441132597879392&amp;guid=3c26107ceb91787478132dd32f00eb5c&amp;type=3"/>
     <ui:VisualElement name="UI_PANE" style="flex-grow: 1; padding-left: 50px; padding-right: 50px; padding-top: 50px; padding-bottom: 50px;">
         <ui:VisualElement name="Background" style="flex-grow: 1; position: absolute; left: 0; top: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.549); margin-top: 30px; margin-right: 30px; margin-bottom: 30px; margin-left: 30px; border-top-left-radius: 12px; border-top-right-radius: 12px; border-bottom-right-radius: 12px; border-bottom-left-radius: 12px; filter: blur(2);"/>
         <ui:VisualElement name="TopBar" style="flex-grow: 0; flex-shrink: 0; height: auto; justify-content: center; align-items: flex-start; max-height: 75px; margin-bottom: 20px;">
@@ -34,10 +34,38 @@
                     </ui:Button>
                 </ui:VisualElement>
                 <ui:VisualElement name="EquippedSlotsContainer" style="flex-direction: row; align-items: center; justify-content: center; flex-shrink: 1; max-height: 150px; background-color: rgba(22, 38, 32, 0.678); border-top-left-radius: 12px; border-top-right-radius: 12px; border-bottom-right-radius: 12px; border-bottom-left-radius: 12px; width: auto; height: auto; align-self: center;">
-                    <ui:Instance template="MutationIcon" name="HeadSlotIcon" style="margin-right: 8px; border-left-color: rgb(107, 107, 107); border-right-color: rgb(107, 107, 107); border-top-color: rgb(107, 107, 107); border-bottom-color: rgb(107, 107, 107); filter: blur(0);"/>
-                    <ui:Instance template="MutationIcon" name="BackSlotIcon" style="margin-right: 8px;"/>
-                    <ui:Instance template="MutationIcon" name="LimbsSlotIcon" style="margin-right: 8px;"/>
-                    <ui:Instance template="MutationIcon" name="TailSlotIcon"/>
+                    <ui:VisualElement name="HeadSlotIcon" template="MutationIcon" style="margin-right: 8px;">
+                        <Style src="project://database/Assets/UI/StyleSheets/InteractionUI.uss?fileID=7433441132597879392&amp;guid=3c26107ceb91787478132dd32f00eb5c&amp;type=3"/>
+                        <ui:VisualElement name="MutationIconContainer" class="mutationContainer cursor-clickable" style="flex-grow: 1; aspect-ratio: 1; width: 100%; height: 100%; max-width: 100%; margin-left: 10px; margin-top: 10px; margin-right: 10px; margin-bottom: 10px; cursor: url(&quot;project://database/Assets/UI/Cursors/hand_small_point.png?fileID=2800000&amp;guid=fedc076baeb05804cab1ff17dd39e132&amp;type=3#hand_small_point&quot;);">
+                            <ui:VisualElement name="Mutation3DItem" style="flex-grow: 1; width: 100%; height: 100%; max-width: 100%; max-height: 100%; aspect-ratio: 1;">
+                                <ui:Image source="project://database/Assets/UI/Icons/HeadIcon.png?fileID=-6940944650096720487&amp;guid=a63ff144064ddaf4d948979ac848bffd&amp;type=3#HeadIcon_0" style="flex-grow: 1;"/>
+                            </ui:VisualElement>
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+                    <ui:VisualElement name="BackSlotIcon" template="MutationIcon" style="margin-right: 8px;">
+                        <Style src="project://database/Assets/UI/StyleSheets/InteractionUI.uss?fileID=7433441132597879392&amp;guid=3c26107ceb91787478132dd32f00eb5c&amp;type=3"/>
+                        <ui:VisualElement name="MutationIconContainer" class="mutationContainer cursor-clickable" style="flex-grow: 1; aspect-ratio: 1; width: 100%; height: 100%; max-width: 100%; margin-left: 10px; margin-top: 10px; margin-right: 10px; margin-bottom: 10px; cursor: url(&quot;project://database/Assets/UI/Cursors/hand_small_point.png?fileID=2800000&amp;guid=fedc076baeb05804cab1ff17dd39e132&amp;type=3#hand_small_point&quot;);">
+                            <ui:VisualElement name="Mutation3DItem" style="flex-grow: 1; width: 100%; height: 100%; max-width: 100%; max-height: 100%; aspect-ratio: 1;">
+                                <ui:Image source="project://database/Assets/UI/Icons/BackIcon.png?fileID=-2389278446680308781&amp;guid=0ae226dc60339c848bc174a7d93a2e26&amp;type=3#BackIcon_0" style="flex-grow: 1;"/>
+                            </ui:VisualElement>
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+                    <ui:VisualElement name="LimbsSlotIcon" template="MutationIcon" style="margin-right: 8px;">
+                        <Style src="project://database/Assets/UI/StyleSheets/InteractionUI.uss?fileID=7433441132597879392&amp;guid=3c26107ceb91787478132dd32f00eb5c&amp;type=3"/>
+                        <ui:VisualElement name="MutationIconContainer" class="mutationContainer cursor-clickable" style="flex-grow: 1; aspect-ratio: 1; width: 100%; height: 100%; max-width: 100%; margin-left: 10px; margin-top: 10px; margin-right: 10px; margin-bottom: 10px; cursor: url(&quot;project://database/Assets/UI/Cursors/hand_small_point.png?fileID=2800000&amp;guid=fedc076baeb05804cab1ff17dd39e132&amp;type=3#hand_small_point&quot;);">
+                            <ui:VisualElement name="Mutation3DItem" style="flex-grow: 1; width: 100%; height: 100%; max-width: 100%; max-height: 100%; aspect-ratio: 1;">
+                                <ui:Image source="project://database/Assets/UI/Icons/LimbIcon.png?fileID=6308549905938073964&amp;guid=116a58c16902c424e8a6d3bba5006c16&amp;type=3#LimbIcon_0" style="flex-grow: 1;"/>
+                            </ui:VisualElement>
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+                    <ui:VisualElement name="TailSlotIcon" template="MutationIcon">
+                        <Style src="project://database/Assets/UI/StyleSheets/InteractionUI.uss?fileID=7433441132597879392&amp;guid=3c26107ceb91787478132dd32f00eb5c&amp;type=3"/>
+                        <ui:VisualElement name="MutationIconContainer" class="mutationContainer cursor-clickable" style="flex-grow: 1; aspect-ratio: 1; width: 100%; height: 100%; max-width: 100%; margin-left: 10px; margin-top: 10px; margin-right: 10px; margin-bottom: 10px; cursor: url(&quot;project://database/Assets/UI/Cursors/hand_small_point.png?fileID=2800000&amp;guid=fedc076baeb05804cab1ff17dd39e132&amp;type=3#hand_small_point&quot;);">
+                            <ui:VisualElement name="Mutation3DItem" style="flex-grow: 1; width: 100%; height: 100%; max-width: 100%; max-height: 100%; aspect-ratio: 1;">
+                                <ui:Image source="project://database/Assets/UI/Icons/TailIcon.png?fileID=-6254662425824378823&amp;guid=9f6cc3eb301afaa4189e075b3f16de1b&amp;type=3#tail_0" style="flex-grow: 1;"/>
+                            </ui:VisualElement>
+                        </ui:VisualElement>
+                    </ui:VisualElement>
                 </ui:VisualElement>
                 <ui:VisualElement name="MutationsInventory" style="flex-grow: 0; background-color: rgb(22, 38, 32); border-top-left-radius: 12px; border-top-right-radius: 12px; border-bottom-right-radius: 12px; border-bottom-left-radius: 12px; margin-top: 10px;">
                     <ui:Label text="Unlocked Mutations" name="MutationsInventoryHeader" class="header" style="font-size: 24px; padding-left: 14px;"/>

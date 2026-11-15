@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: f928c17cea3427f44abdbcd0b1b1217a
+guid: 9f6cc3eb301afaa4189e075b3f16de1b
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -5965195624950805028
-    second: LegIcon_0
+      213: -6254662425824378823
+    second: tail_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -100,13 +100,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: LegIcon_0
+      name: tail_0
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 512
-        height: 512
+        width: 800
+        height: 800
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -115,8 +115,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: cddc71f1f2e573da0800000000000000
-      internalID: -5965195624950805028
+      spriteID: 93041ce89a9f239a0800000000000000
+      internalID: -6254662425824378823
       vertices: []
       indices: 
       edges: []
@@ -135,7 +135,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      LegIcon_0: -5965195624950805028
+      tail_0: -6254662425824378823
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

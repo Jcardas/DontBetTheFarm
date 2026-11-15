@@ -158,12 +158,19 @@
     background-color: rgb(76, 205, 130);
 }
 
-.slot-active {
+
+.slot-drop-valid {
+    border-color: rgb(110, 220, 130);
     border-width: 3px;
-    border-color: rgb(191, 89, 255);
 }
 
-.slot-staged {
+.slot-drop-invalid {
+    border-color: rgb(210, 80, 80);
     border-width: 2px;
-    border-color: rgb(255, 255, 255);
+    opacity: 0.5;
+}
+
+.slot-drop-hover {
+    scale: 1.08 1.08;
+    background-color: rgba(110, 220, 130, 0.25);
 }
