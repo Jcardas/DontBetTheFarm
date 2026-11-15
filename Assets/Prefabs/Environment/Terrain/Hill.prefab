@@ -570,7 +570,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8956253182839414322}
   m_Layer: 0
-  m_Name: Mountain
+  m_Name: Hill
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

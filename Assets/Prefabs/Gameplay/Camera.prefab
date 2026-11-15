@@ -119,6 +119,10 @@ MonoBehaviour:
   minOrthoSize: 2
   maxOrthoSize: 20
   zoomDamping: 15
+  minX: 50
+  maxX: 150
+  minY: 50
+  maxY: 150
   cameraTransform: {fileID: 868849087030850523}
 --- !u!1 &8279292866599291307
 GameObject:
