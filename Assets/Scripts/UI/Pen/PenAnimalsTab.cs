@@ -253,21 +253,24 @@ public class PenAnimalsTab
             }
         }
 
-        // Projected Stats & Equipped List
         int bonusHp = 0, bonusDmg = 0;
         float bonusSpd = 0f;
         foreach (var s in Slots)
         {
             var m = Effective(mutator, s);
-            if (_slotText[s].name != null) _slotText[s].name.text = m != null ? m.mutationName : "None";
-            if (_slotText[s].desc != null) _slotText[s].desc.text = m != null ? $"→ {Describe(m)}" : "→ Empty slot";
-            if (m != null) { bonusHp += m.bonusMaxHealth; bonusDmg += m.bonusAttackDamage; bonusSpd += m.bonusMoveSpeed; }
+            var slotRow = _slotText[s].name?.parent?.parent;
+            if (slotRow != null)
+                slotRow.style.display = m != null ? DisplayStyle.Flex : DisplayStyle.None;
+
+            if (m != null)
+            {
+                if (_slotText[s].name != null) _slotText[s].name.text = m.mutationName;
+                if (_slotText[s].desc != null) _slotText[s].desc.text = $"→ {m.GetEffectSummary()}";
+                bonusHp += m.bonusMaxHealth;
+                bonusDmg += m.bonusAttackDamage;
+                bonusSpd += m.bonusMoveSpeed;
+            }
         }
-        if (_lvlLbl != null) _lvlLbl.text = "1";
-        if (_hpStatLbl != null) _hpStatLbl.text = Mathf.RoundToInt(animal.MaxHealth + bonusHp).ToString();
-        if (_spdLbl != null) _spdLbl.text = (animal.CalculatedMoveSpeed + bonusSpd).ToString("0.#");
-        if (_meleeLbl != null) _meleeLbl.text = Mathf.RoundToInt(animal.CalculatedAttackDamage + bonusDmg).ToString();
-        if (_rangedLbl != null) _rangedLbl.text = "0";
 
         // Cost Box & 3D Preview
         var addedMutations = _staged.Values.Where(m => m != null).ToList();
@@ -598,8 +601,7 @@ public class PenAnimalsTab
         labels[0].style.whiteSpace = WhiteSpace.Normal;
         labels[0].text = m != null ? m.mutationName : "Select a Mutation";
         labels[2].text = m != null ? string.Join(", ", Slots.Where(s => (m.allowedSlots & s) != 0)) : "None";
-        labels[4].text = m != null ? Describe(m) : "Hover or drag a mutation";
-    }
+        labels[4].text = m != null ? m.GetEffectSummary() : "Hover or drag a mutation";    }
 
     private static string Describe(MutationData m)
     {

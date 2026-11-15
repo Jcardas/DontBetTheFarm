@@ -478,7 +478,7 @@ public class BarnResearchUIController : MonoBehaviour
             // 2. Labels
             var labels = card.Query<Label>().ToList();
             string formattedSlots = FormatAllowedSlots(mutation.allowedSlots);
-            string effectSummary = BuildEffectSummary(mutation);
+            string effectSummary = mutation.GetEffectSummary();
 
             if (labels.Count >= 5)
             {
@@ -668,52 +668,6 @@ public class BarnResearchUIController : MonoBehaviour
                 names.Add(slot.ToString());
         }
         return names.Count > 0 ? string.Join(", ", names) : flags.ToString();
-    }
-
-    private string BuildEffectSummary(MutationData m)
-    {
-        List<string> effects = new();
-
-        // 1. Stat Modifiers
-        if (m.bonusMaxHealth != 0)
-            effects.Add($"{(m.bonusMaxHealth > 0 ? "+" : "")}{m.bonusMaxHealth} Max Health");
-
-        if (m.damageResistance != 0f)
-            effects.Add($"{(m.damageResistance > 0 ? "+" : "")}{m.damageResistance:0}% Damage Resistance");
-
-        if (m.bonusMoveSpeed != 0f)
-            effects.Add($"{(m.bonusMoveSpeed > 0 ? "+" : "")}{m.bonusMoveSpeed:0.##}x Move Speed");
-
-        if (m.bonusAttackDamage != 0)
-            effects.Add($"{(m.bonusAttackDamage > 0 ? "+" : "")}{m.bonusAttackDamage} Attack Damage");
-
-        if (m.bonusAttackRange != 0f)
-            effects.Add($"{(m.bonusAttackRange > 0 ? "+" : "")}{m.bonusAttackRange * 100f:0}% Attack Range");
-
-        if (m.bonusAttackSpeed != 0f)
-            effects.Add($"{(m.bonusAttackSpeed > 0 ? "+" : "")}{m.bonusAttackSpeed:0.##} Attack Speed");
-
-        if (m.bonusViewRadius != 0f)
-            effects.Add($"{(m.bonusViewRadius > 0 ? "+" : "")}{m.bonusViewRadius:0.#} Vision Radius");
-
-        // 2. Granted Capabilities (Flags enum)
-        if (m.grantedCapabilities != 0)
-        {
-            foreach (CreatureCapabilities cap in System.Enum.GetValues(typeof(CreatureCapabilities)))
-            {
-                if (cap == 0) continue;
-                if ((m.grantedCapabilities & cap) != 0)
-                {
-                    effects.Add($"Grants {FormatEnumName(cap.ToString())}");
-                }
-            }
-        }
-
-        // 3. Attack Replacement
-        if (m.overridesAttack)
-            effects.Add("Replaces Basic Attack");
-
-        return effects.Count > 0 ? string.Join(", ", effects) : "No stat modifiers";
     }
 
     private static string FormatEnumName(string rawName)
