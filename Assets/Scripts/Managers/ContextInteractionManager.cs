@@ -144,25 +144,78 @@ public class ContextInteractionManager : MonoBehaviour
         ExecuteRaycastInteraction(releasePos);
     }
 
+    //private void ExecuteRaycastInteraction(Vector2 screenPos)
+    //{
+    //    if (isometricCamera == null) return;
+
+    //    // Verify the pointer didn't end over a UI element
+    //    if (IsPointerOverUIElement(screenPos))
+    //    {
+    //        return;
+    //    }
+
+    //    Ray ray = isometricCamera.ScreenPointToRay(screenPos);
+
+    //    if (MouseTarget.Find(ray, out RaycastHit hit, maxRayDistance, interactableLayers))
+    //    {
+    //        // A right-click anywhere inside a building's outline, like a gap in a pen's fence, counts as that building
+    //        if (MouseTarget.Menu(ray, hit) is IContextInteractable interactable)
+    //        {
+    //            IReadOnlyList<ContextActionData> actions = interactable.GetContextActions();
+    //            // One choice needs no popup: it just happens
+    //            if (actions != null && actions.Count == 1)
+    //            {
+    //                actions[0].onExecute?.Invoke();
+    //                ContextMenuEventBus.RequestClose();
+    //                return;
+    //            }
+
+    //            if (actions != null && actions.Count > 0)
+    //            {
+    //                ContextMenuEventBus.RequestOpen(actions, screenPos);
+    //                return;
+    //            }
+    //        }
+    //    }
+
+    //    ContextMenuEventBus.RequestClose();
+    //}
+
     private void ExecuteRaycastInteraction(Vector2 screenPos)
     {
         if (isometricCamera == null) return;
-
-        // Verify the pointer didn't end over a UI element
-        if (IsPointerOverUIElement(screenPos))
-        {
-            return;
-        }
+        if (IsPointerOverUIElement(screenPos)) return;
 
         Ray ray = isometricCamera.ScreenPointToRay(screenPos);
+        Debug.Log($"[ContextManager] Raycast fired at screen pos: {screenPos}");
 
         if (MouseTarget.Find(ray, out RaycastHit hit, maxRayDistance, interactableLayers))
         {
-            // A right-click anywhere inside a building's outline, like a gap in a pen's fence, counts as that building
-            if (MouseTarget.Menu(ray, hit) is IContextInteractable interactable)
+            var menuTarget = MouseTarget.Menu(ray, hit);
+            Debug.Log($"[ContextManager] Raycast hit target: {(menuTarget != null ? menuTarget.name : "None")}");
+
+            if (menuTarget is IContextInteractable interactable)
             {
-                IReadOnlyList<ContextActionData> actions = interactable.GetContextActions();
-                // One choice needs no popup: it just happens
+                IReadOnlyList<ContextActionData> actions;
+
+                // 1. Grab the name of the GameObject
+                string menuTitle = menuTarget.name.ToUpper();
+                string menuSubtitle = "";
+
+                if (menuTarget is Buildable buildable && buildable.IsBroken)
+                {
+                    menuSubtitle = "Requires Repairs";
+                    actions = new List<ContextActionData>
+                    {
+                        new ContextActionData("Repair (10 <sprite name=\"Wood\">)", () => { ContextMenuEventBus.RequestClose(); })
+                    };
+                }
+                else
+                {
+                    menuSubtitle = "Operational";
+                    actions = interactable.GetContextActions();
+                }
+
                 if (actions != null && actions.Count == 1)
                 {
                     actions[0].onExecute?.Invoke();
@@ -172,12 +225,22 @@ public class ContextInteractionManager : MonoBehaviour
 
                 if (actions != null && actions.Count > 0)
                 {
-                    ContextMenuEventBus.RequestOpen(actions, screenPos);
-                    return;
+                    // 2. Send the actions, mouse position, and text to the EventBus
+                    ContextMenuEventBus.RequestOpen(actions, hit.transform, menuTitle, menuSubtitle);
+                    return; // Menu stays open
                 }
             }
+            else
+            {
+                Debug.Log("[ContextManager] Target does NOT implement IContextInteractable.");
+            }
+        }
+        else
+        {
+            Debug.Log("[ContextManager] Raycast hit nothing on interactable layers.");
         }
 
+        // If nothing was hit, or it had no actions, close the menu
         ContextMenuEventBus.RequestClose();
     }
 

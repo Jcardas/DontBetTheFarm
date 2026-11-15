@@ -64,11 +64,25 @@ public class Barn : Buildable, IContextInteractable
         if (menu != null && !menu.mutationMenuPanel.activeSelf) menu.ToggleMenu();
     }
 
-    // A lone action runs straight away (ContextInteractionManager), so with nobody inside the menu opens on the click.
+    #region IContextInteractable Implementation
+
     public IReadOnlyList<ContextActionData> GetContextActions()
     {
-        var actions = new List<ContextActionData> { new("Open Barn Menu", OpenMenu) };
-        if (HasFarmer) actions.Add(new ContextActionData("Take Farmer Out", LetOut));
+        var actions = new List<ContextActionData>();
+
+        // 1. Open Barn UI
+        // Assuming OpenMenu is your existing method for the UI
+        actions.Add(new ContextActionData("Open Barn UI", OpenMenu));
+
+        // 2. Hide / Take Out Farmer
+        // Toggles the text dynamically based on whether the farmer is already in the barn
+        string farmerLabel = HasFarmer ? "Take Farmer Out" : "Hide Farmer In Barn";
+
+        // Assuming LetOut handles both hiding and releasing, or replace with your specific method
+        actions.Add(new ContextActionData(farmerLabel, LetOut));
+
         return actions;
     }
+
+    #endregion
 }
