@@ -52,12 +52,6 @@ public class TimeManager : MonoBehaviour
         {
             PassTime();
 
-            if (celestialRig != null)
-            {
-                float rotationX = getClockDegrees() - (CIRCLE_DEGREES / 2);
-                celestialRig.rotation = Quaternion.Euler(rotationX, -30f, 0f);
-            }
-
             int currentHour = (int)getHour();
 
             if (currentHour >= DAY_START_TIME && currentHour < NIGHT_START_TIME && !isDayTimeFlag)
@@ -79,10 +73,21 @@ public class TimeManager : MonoBehaviour
      */
     void PassTime()
     {
+        if (celestialRig != null)
+        {
+            RotateCelestialBodies();
+        }
+
         currentTime += Time.deltaTime / lengthOfHour;
         currentTime %= DAY_LENGTH; // Wrap around to 0 after 24 hours
 
         timePassed += Time.deltaTime;
+    }
+
+    void RotateCelestialBodies()
+    {
+        float rotationX = getClockDegrees() - (CIRCLE_DEGREES / 2);
+        celestialRig.rotation = Quaternion.Euler(rotationX, -45f, 0f);
     }
 
     void setDayTime()
