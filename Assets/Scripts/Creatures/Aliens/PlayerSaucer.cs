@@ -1,11 +1,11 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
 
 // The player's saucer. It waits inside the barn until dawn, opens the doors and flies out the front, rises to
-// cruising altitude, beams up every knocked-out alien, immediately deposits each one into research (Technology),
-// climbs back to cruising altitude, flies to the waypoint above the barn entrance, descends, and enters the barn.
-// In a scene with no clock it goes out a few seconds after the last alien goes down instead.
-// Its lights and beam are blue so it never reads as an enemy.
+// cruising altitude, flies quickly between knocked-out aliens at hover height, slows down while its tractor beam
+// pulls multiple aliens aboard simultaneously, stores aliens with unresearched mutations in the barn (and converts
+// duplicates directly into Technology), climbs back to cruising altitude, and enters the barn.
 public class PlayerSaucer : UFO
 {
     enum Phase
@@ -24,19 +24,33 @@ public class PlayerSaucer : UFO
     [SerializeField] BarnHangar hangar;
     [Tooltip("With no clock in the scene: seconds with no enemy left standing before it goes out to collect.")]
     [SerializeField] float calmDelay = 3f;
-    [Tooltip("Research each knocked-out alien is worth.")]
+    [Tooltip("Research each knocked-out alien is worth when it has no new mutations to store in the barn.")]
     [SerializeField] int researchPerAlien = 1; // TODO: Calculate based on difficulty of alien
-    
+
+    [Header("Continuous Tractor Sweep")]
+    [Tooltip("Horizontal radius around the saucer's ground projection within which downed aliens start getting pulled up.")]
+    [SerializeField] float sweepPullRadius = 5f;
+    [Tooltip("Speed at which the saucer drifts toward the next alien while actively abducting one or more aliens.")]
+    [SerializeField] float abductingMoveSpeed = 2f;
+    [Tooltip("Speed at which downed aliens are pulled upward toward the saucer.")]
+    [SerializeField] float multiPullSpeed = 6f;
+    [Tooltip("Distance to the saucer at which a pulled alien is collected aboard.")]
+    [SerializeField] float collectDistance = 1.5f;
+
+    [Header("Broken State")]
     [Tooltip("If true, the player's saucer is broken and cannot fly out to collect aliens.")]
-    [SerializeField] bool broken = false; 
+    [SerializeField] bool broken = false;
     [Tooltip("Material to use when the saucer is broken.")]
     [SerializeField] Material brokenMat;
 
     readonly Dictionary<Renderer, Material[]> originalMaterials = new();
+    readonly List<Creature> activePickups = new();
     Phase phase = Phase.Parked;
     Vector3 climbTarget;
     int lastDay;
     float calmSince = -1f;
+
+    static readonly SlotType[] AllSlots = { SlotType.Head, SlotType.Back, SlotType.Limbs, SlotType.Tail };
 
     public bool IsBroken => broken;
 
@@ -92,14 +106,40 @@ public class PlayerSaucer : UFO
                 break;
 
             case Phase.Sweeping:
-                Creature next = broken ? null : NearestDownedAlien();
+                if (broken)
+                {
+                    AbortActivePickups();
+                    climbTarget = new Vector3(transform.position.x, hangar.CruisePosition.y, transform.position.z);
+                    phase = Phase.ClimbingAfterSweep;
+                    break;
+                }
+
+                // 1. Grab any downed aliens within sweepPullRadius underneath the saucer simultaneously
+                AcquireNearbyDownedAliens();
+
+                // 2. Continuously pull all currently beamed aliens toward the saucer
+                UpdateActivePickups();
+
+                // 3. Move quickly between targets, drift slowly if another target remains, or stop completely on the final pickup
+                Creature next = NearestDownedAlien();
                 if (next != null)
                 {
-                    Claim(next);
+                    float currentSpeed = activePickups.Count > 0 ? abductingMoveSpeed : flySpeed;
+                    Vector3 sweepPassTarget = new Vector3(
+                        next.Position.x,
+                        next.Position.y + hoverHeight,
+                        next.Position.z
+                    );
+                    transform.position = Vector3.MoveTowards(transform.position, sweepPassTarget, currentSpeed * Time.deltaTime);
+                }
+                else if (activePickups.Count > 0)
+                {
+                    // Last alien(s) in the sweep: stay completely still until they are fully inside the saucer
                 }
                 else
                 {
-                    // Climb vertically to the cruise waypoint's Y before flying horizontally toward the barn.
+                    // All downed aliens are aboard; now ascend to cruise height and return home
+                    if (beam) beam.SetActive(false);
                     climbTarget = new Vector3(transform.position.x, hangar.CruisePosition.y, transform.position.z);
                     phase = Phase.ClimbingAfterSweep;
                 }
@@ -131,6 +171,130 @@ public class PlayerSaucer : UFO
         }
     }
 
+    void AcquireNearbyDownedAliens()
+    {
+        if (CreatureManager.Instance == null) return;
+
+        foreach (Creature c in CreatureManager.Instance.GetEnemies(GameConstants.Team.Farm))
+        {
+            if (c == null || !(c is Alien) || !c.Down) continue;
+            if (activePickups.Contains(c) || IsClaimed(c)) continue;
+
+            // Check horizontal XZ distance so hover/cruise height doesn't block pickup
+            Vector2 saucerXZ = new Vector2(transform.position.x, transform.position.z);
+            Vector2 alienXZ = new Vector2(c.Position.x, c.Position.z);
+
+            if (Vector2.Distance(saucerXZ, alienXZ) <= sweepPullRadius)
+            {
+                Claim(c);
+                // Keep UFO in State.Idle so OnIdle() keeps flying continuously instead of stopping in State.Approach/Beam
+                state = State.Idle;
+                victim = null;
+
+                if (c.TryGetComponent<NavMeshAgent>(out var agent)) agent.enabled = false;
+                if (c.TryGetComponent<Rigidbody>(out var rb)) rb.isKinematic = true;
+
+                activePickups.Add(c);
+            }
+        }
+    }
+
+    void UpdateActivePickups()
+    {
+        if (beam) beam.SetActive(activePickups.Count > 0);
+
+        for (int i = activePickups.Count - 1; i >= 0; i--)
+        {
+            Creature alien = activePickups[i];
+            if (alien == null)
+            {
+                activePickups.RemoveAt(i);
+                continue;
+            }
+
+            // Pull the alien smoothly toward the moving saucer
+            alien.transform.position = Vector3.MoveTowards(
+                alien.transform.position,
+                transform.position,
+                multiPullSpeed * Time.deltaTime
+            );
+
+            if ((alien.transform.position - transform.position).sqrMagnitude <= collectDistance * collectDistance)
+            {
+                activePickups.RemoveAt(i);
+                Release(alien);
+                ProcessCollectedAlien(alien);
+            }
+        }
+    }
+
+    void ProcessCollectedAlien(Creature alien)
+    {
+        if (HasNewMutationForPlayer(alien))
+        {
+            StoreAlienInBarn(alien);
+        }
+        else
+        {
+            if (ResourceManager.Instance != null)
+                ResourceManager.Instance.Deposit(ResourceType.Technology, researchPerAlien);
+
+            if (CreatureManager.Instance != null)
+                CreatureManager.Instance.Unregister(alien);
+
+            Destroy(alien.gameObject);
+        }
+    }
+
+    bool HasNewMutationForPlayer(Creature alien)
+    {
+        if (MutationUnlockManager.Instance == null) return false;
+        if (!alien.TryGetComponent<CreatureMutator>(out var mutator)) return false;
+
+        foreach (SlotType slot in AllSlots)
+        {
+            MutationData mutation = mutator.GetEquippedMutation(slot);
+            if (mutation != null && !MutationUnlockManager.Instance.IsUnlocked(mutation))
+                return true;
+        }
+        return false;
+    }
+
+    void StoreAlienInBarn(Creature alien)
+    {
+        // Park the captured alien inside the barn bay and disable world AI/colliders/renderers while stored
+        if (hangar != null)
+            alien.transform.position = hangar.BayPosition;
+
+        if (alien.TryGetComponent<CreatureBrain>(out var brain)) brain.enabled = false;
+        if (alien.TryGetComponent<NavMeshAgent>(out var agent)) agent.enabled = false;
+        if (alien.TryGetComponent<Selectable>(out var selectable)) selectable.enabled = false;
+        if (alien.TryGetComponent<ToyBob>(out var bob)) bob.enabled = false;
+
+        foreach (var col in alien.GetComponentsInChildren<Collider>(true))
+            col.enabled = false;
+
+        foreach (var r in alien.GetComponentsInChildren<Renderer>(true))
+            r.enabled = false;
+
+        if (CreatureManager.Instance != null)
+        {
+            CreatureManager.Instance.Unregister(alien);
+            CreatureManager.Instance.RegisterCapturedAlien(alien);
+        }
+    }
+
+    void AbortActivePickups()
+    {
+        if (beam) beam.SetActive(false);
+        for (int i = activePickups.Count - 1; i >= 0; i--)
+        {
+            Creature c = activePickups[i];
+            if (c != null) Release(c);
+        }
+        activePickups.Clear();
+    }
+
     // Moves directly to a 3D waypoint without adding hoverHeight, keeping the saucer on an exact flight path.
     bool FlyDirectTo(Vector3 target)
     {
@@ -138,17 +302,15 @@ public class PlayerSaucer : UFO
         return (transform.position - target).sqrMagnitude < 0.01f;
     }
 
-    // Immediately deposits the beamed-up alien into research storage and destroys its model.
+    // Fallback if base UFO OnAboard is ever triggered directly
     protected override void OnAboard()
     {
         if (victim != null)
         {
-            if (ResourceManager.Instance != null)
-                ResourceManager.Instance.Deposit(ResourceType.Technology, researchPerAlien);
-
-            Release(victim);
-            Destroy(victim.gameObject);
+            Creature collected = victim;
+            Release(collected);
             victim = null;
+            ProcessCollectedAlien(collected);
         }
         state = State.Idle;
     }
@@ -190,7 +352,7 @@ public class PlayerSaucer : UFO
         if (CreatureManager.Instance == null) return null;
         Creature best = null;
         foreach (Creature c in CreatureManager.Instance.GetEnemies(GameConstants.Team.Farm))
-            if (c is Alien && c.Down && !IsClaimed(c) &&
+            if (c is Alien && c.Down && !IsClaimed(c) && !activePickups.Contains(c) &&
                 (best == null || Vector3.Distance(transform.position, c.Position) < Vector3.Distance(transform.position, best.Position)))
                 best = c;
         return best;
@@ -201,8 +363,8 @@ public class PlayerSaucer : UFO
     {
         broken = true;
         ApplyBrokenVisuals(true);
+        AbortActivePickups();
 
-        // If mid-approach or mid-beam when broken, abort the pickup and return home.
         if (state is State.Approach or State.Beam)
         {
             if (beam) beam.SetActive(false);

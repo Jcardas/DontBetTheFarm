@@ -6,6 +6,8 @@ using UnityEngine.InputSystem;
 
 public class BarnResearchUIController : MonoBehaviour
 {
+    public bool IsMenuOpen => gameObject.activeSelf;
+    
     [Header("UI & Sub-Templates")]
     [SerializeField] private UIDocument barnUIDocument;
     [SerializeField] private VisualTreeAsset mutationIconTemplate;          // MutationIcon.uxml
@@ -742,6 +744,9 @@ public class BarnResearchUIController : MonoBehaviour
 
         foreach (var outline in clone.GetComponentsInChildren<Outline>(true))
             outline.enabled = false;
+        
+        foreach (var r in clone.GetComponentsInChildren<Renderer>(true))
+            r.enabled = true;
     }
 
     private static void SetLayerRecursively(GameObject obj, int layer)

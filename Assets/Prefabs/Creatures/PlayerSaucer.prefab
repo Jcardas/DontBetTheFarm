@@ -5010,7 +5010,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerSaucer
   flySpeed: 7
-  hoverHeight: 3.5
+  hoverHeight: 2.5
   beam: {fileID: 8076097286781388867}
   liftTime: 2.5
   storedOffset: {x: 0, y: -1.2141303, z: 0}
@@ -5018,6 +5018,10 @@ MonoBehaviour:
   hangar: {fileID: 0}
   calmDelay: 3
   researchPerAlien: 1
+  sweepPullRadius: 2
+  abductingMoveSpeed: 2
+  multiPullSpeed: 6
+  collectDistance: 1
   broken: 0
   brokenMat: {fileID: 0}
 --- !u!1 &8076097286781388867
