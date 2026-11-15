@@ -205,7 +205,7 @@ public class BuildingManager: MonoBehaviour {
 
     if (hitGround) {
       preview.transform.position = hit.point;
-      canBuild = CanPlace(hit.point);
+      canBuild = CanPlace(hit.point, hit.normal);
     }
 
     previewMaterial.color = canBuild ? validColor: invalidColor;
@@ -277,50 +277,63 @@ public class BuildingManager: MonoBehaviour {
       return false;
   }
 
-  private bool CanPlace(Vector3 position) {
+private bool CanPlace(Vector3 position, Vector3 surfaceNormal) 
+{     
+    // CHECKS SLOPES, rejects being placed on ramps.
+    if(Vector3.Angle(surfaceNormal, Vector3.up) > 2f)
+    {
+        return false;
+    }
+
     Bounds bounds = groundRenderer.bounds;
 
     if (IsTooCloseToBuilding(bounds))
-      return false;
+        return false;
 
     float halfX = Mathf.Max(0f, bounds.extents.x - 0.1f);
     float halfZ = Mathf.Max(0f, bounds.extents.z - 0.1f);
 
     Vector3[] corners = {
       new Vector3( - halfX, 0, -halfZ),
-      new Vector3(halfX, 0, -halfZ),
+      new Vector3(halfX,    0, -halfZ),
       new Vector3( - halfX, 0, halfZ),
-      new Vector3(halfX, 0, halfZ)
+      new Vector3(halfX,    0, halfZ)
     };
 
-    foreach(Vector3 corner in corners) {
-      Vector3 start = bounds.center + corner + Vector3.up * 10f;
+    // CHECKS CLIFFS, and makes sure no corners are hanging off.
+    foreach(Vector3 cornerOffset in corners)
+    {
+        Vector3 cornerBase = position + cornerOffset;
+        Vector3 start = cornerBase + Vector3.up * 10f;
 
-      if (!Physics.Raycast(start, Vector3.down, out RaycastHit groundHit, 20f, groundLayer)) {
-        return false;
-      }
+        if(!Physics.Raycast(start, Vector3.down, out RaycastHit groundHit, 20f, groundLayer))
+        {
+            return false; // hanging over the void!
+        }
 
-      if (Mathf.Abs(groundHit.point.y - position.y) > 0.2f) return false;
+        // Check if corner ground height is apx. same as center
+        if (Mathf.Abs(groundHit.point.y - position.y) > 0.2f)
+            return false;
     }
 
-    Vector3 center = new Vector3(
-    bounds.center.x, position.y + 1f, bounds.center.z);
+        // CHECKS OVERLAP
+        Vector3 center = new Vector3(position.x, position.y + bounds.extents.y + position.z);
+        Vector3 halfSize = new Vector3(position.x, position.y - 0.1f, halfZ);
 
-    Vector3 halfSize = new Vector3(
-    bounds.extents.x, 0.95f, bounds.extents.z);
+        // Shrinks overlap box to avoid clipping into ground.
+        Collider[] overlaps = Physics.OverlapBox(
+            center, halfSize, Quaternion.identity, ~0, QueryTriggerInteraction.Ignore);
 
-    Collider[] overlaps = Physics.OverlapBox(
-    center, halfSize, Quaternion.identity, ~0, QueryTriggerInteraction.Ignore);
+        foreach(Collider col in overlaps)
+        {
+            if (col.transform.IsChildOf(preview.transform)) continue;
+            if (((1 << col.gameObject.layer) & groundLayer.value) != 0) continue;
 
-    foreach(Collider col in overlaps) {
-      if (col.transform.IsChildOf(preview.transform)) continue;
+            return false;
+        }
 
-      if (((1 << col.gameObject.layer) & groundLayer.value) != 0) continue;
+        return true;
 
-      return false;
-    }
-
-    return true;
   }
 
  
