@@ -1,7 +1,9 @@
 :root {
 }
 
-
+* {
+    cursor: url("project://database/Assets/UI/Cursors/pointer_b_shaded.png?fileID=2800000&guid=5453a4e6fbd0e4b4d92a242ac56e4b44&type=3#pointer_b_shaded");
+}
 
 .header {
     font-size: 32px;
@@ -86,11 +88,9 @@
     background-color: rgb(22, 38, 32);
 }
 
-.cursor-clickable {
+.cursor-clickable * {
     cursor: url("project://database/Assets/UI/Cursors/hand_small_point.png?fileID=2800000&guid=fedc076baeb05804cab1ff17dd39e132&type=3#hand_small_point");
 }
-
-
 
 .button * {
     cursor: url("project://database/Assets/UI/Cursors/hand_small_point.png?fileID=2800000&guid=fedc076baeb05804cab1ff17dd39e132&type=3#hand_small_point");
