@@ -62,6 +62,7 @@ public abstract class Creature : MonoBehaviour, IDamageable
     private Collider bodyCollider;
     private ToyBob toyBob;
     private Gatherer gatherer;
+    private CreatureFlight flight;
 
     private CreatureMutator creatureMutator;
     private Highlight highlight;
@@ -87,6 +88,8 @@ public abstract class Creature : MonoBehaviour, IDamageable
     public float AttackRange => attackRange;
     public bool Down => currentHealth <= 0;
     public Gatherer Gatherer => gatherer;
+    public CreatureFlight Flight => flight;
+    public bool IsAirborne => flight != null && flight.IsAirborne;
 
     public Collider Body => bodyCollider;
     public NavMeshAgent NavMeshAgent => navMeshAgent;
@@ -109,6 +112,7 @@ public abstract class Creature : MonoBehaviour, IDamageable
         bodyCollider = GetComponentInChildren<Collider>();
         toyBob = GetComponentInChildren<ToyBob>();
         gatherer = GetComponentInChildren<Gatherer>();
+        flight = GetComponent<CreatureFlight>();
         creatureMutator = GetComponent<CreatureMutator>();
         highlight = gameObject.AddComponent<Highlight>();
 
@@ -168,6 +172,17 @@ public abstract class Creature : MonoBehaviour, IDamageable
 
             if (creatureBrain != null)
                 creatureBrain.RefreshGatherer(gatherer);
+        }
+
+        // Ensure CreatureFlight is attached whenever CanFly is granted
+        if (HasCapability(CreatureCapabilities.CanFly))
+        {
+            if (flight == null)
+                flight = GetComponent<CreatureFlight>() ?? gameObject.AddComponent<CreatureFlight>();
+        }
+        else if (flight != null && flight.IsAirborne)
+        {
+            flight.StopAndLand();
         }
 
         if (navMeshAgent != null)
@@ -270,6 +285,9 @@ public abstract class Creature : MonoBehaviour, IDamageable
 
     protected virtual void HandleZeroHealth()
     {
+        if (flight != null)
+            flight.ForceGroundImmediate();
+
         if (navMeshAgent != null && navMeshAgent.isOnNavMesh)
         {
             navMeshAgent.ResetPath();
@@ -286,9 +304,15 @@ public abstract class Creature : MonoBehaviour, IDamageable
 
     public virtual float KeepAwayRange => 0f;
 
+    protected bool CanTargetAirborne =>
+        this is Farmer ||
+        this is RangedAnimal ||
+        HasCapability(CreatureCapabilities.IsRangedAttacker) ||
+        HasCapability(CreatureCapabilities.CanFly);
+
     public virtual IDamageable FindTarget(Vector3 guardPost) =>
         CreatureManager.Instance != null
-            ? CreatureManager.Instance.GetNearestEnemy(team, transform.position, guardPost, CalculatedViewRadius)
+            ? CreatureManager.Instance.GetNearestEnemy(team, transform.position, guardPost, CalculatedViewRadius, CanTargetAirborne)
             : null;
 
     public virtual void PerformAttack(IDamageable target)
@@ -328,17 +352,57 @@ public abstract class Creature : MonoBehaviour, IDamageable
             CreatureBrain.enabled = false;
         }
 
+        // Flying creatures can fly straight to the despawn point without needing NavMesh
+        if (flight != null && flight.CanFly)
+        {
+            flight.FlyToHover(despawnPoint);
+            StartCoroutine(FlightRetreatRoutine());
+            return;
+        }
+
+        if (flight != null)
+            flight.ForceGroundImmediate();
+
         if (NavMeshAgent != null && NavMeshAgent.enabled)
         {
-            NavMeshAgent.SetDestination(despawnPoint);
-            StartCoroutine(RetreatRoutine());
+            if (!NavMeshAgent.isOnNavMesh && NavMesh.SamplePosition(transform.position, out NavMeshHit hit, 5f, NavMesh.AllAreas))
+            {
+                NavMeshAgent.Warp(hit.position);
+            }
+
+            if (NavMeshAgent.isOnNavMesh)
+            {
+                NavMeshAgent.SetDestination(despawnPoint);
+                StartCoroutine(RetreatRoutine());
+            }
+            else
+            {
+                BeamUp();
+            }
+        }
+    }
+    
+    private IEnumerator FlightRetreatRoutine()
+    {
+        while (flight != null && !Down)
+        {
+            float flatDist = Vector2.Distance(
+                new Vector2(transform.position.x, transform.position.z),
+                new Vector2(despawnPoint.x, despawnPoint.z)
+            );
+            if (flatDist <= 1.5f)
+            {
+                BeamUp();
+                yield break;
+            }
+            yield return null;
         }
     }
 
     private IEnumerator RetreatRoutine()
     {
         float retreatTolerance = Mathf.Max(NavMeshAgent.stoppingDistance, 1.5f);
-        while (NavMeshAgent != null && NavMeshAgent.enabled)
+        while (NavMeshAgent != null && NavMeshAgent.enabled && NavMeshAgent.isOnNavMesh)
         {
             if (!NavMeshAgent.pathPending && NavMeshAgent.remainingDistance <= retreatTolerance)
             {

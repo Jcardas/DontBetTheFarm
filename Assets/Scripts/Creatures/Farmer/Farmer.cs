@@ -27,11 +27,13 @@ public class Farmer : Creature
         shotgun = GetComponent<Shotgun>();
     }
 
-    // The farmer never melees: his automatic attack is a shotgun blast at any alien inside his attack range.
+// The farmer never melees: his automatic attack is a shotgun blast at any alien inside his attack range.
     // Space (PlayerControls) fires the same gun by hand, out to the gun's full range.
     public override void PerformAttack(IDamageable target)
     {
-        if (shotgun != null) shotgun.Fire(target.Position);
+        if (shotgun == null || target == null) return;
+        Vector3 aimPoint = target.Body != null ? target.Body.bounds.center : target.Position;
+        shotgun.Fire(aimPoint);
     }
 
     protected override void HandleZeroHealth()

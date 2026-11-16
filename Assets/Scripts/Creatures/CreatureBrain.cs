@@ -21,8 +21,11 @@ public class CreatureBrain : MonoBehaviour
     public bool IsPassive { get; set; }
     public bool Engaged => currentTarget != null && !currentTarget.Down;
 
-    private bool CanTargetUFOs =>
-        creature is Farmer || creature is RangedAnimal || creature.HasCapability(CreatureCapabilities.IsRangedAttacker);
+    private bool CanTargetAirborne =>
+        creature is Farmer ||
+        creature is RangedAnimal ||
+        creature.HasCapability(CreatureCapabilities.IsRangedAttacker) ||
+        creature.HasCapability(CreatureCapabilities.CanFly);
 
     private void Awake()
     {
@@ -110,12 +113,15 @@ public class CreatureBrain : MonoBehaviour
         Guard(order.point);
     }
 
-    // Melee ground units cannot hit airborne UFOs; Farmer (shotgun) and ranged animals can.
+    // Ground melee units cannot hit airborne UFOs or airborne flying creatures;
+    // Farmer (shotgun), ranged animals, and other flying creatures can.
     private bool CanAttackTarget(IDamageable target)
     {
         if (target == null || target.Down) return false;
         if (target is UFO ufo)
-            return ufo.CanBeShotDown && CanTargetUFOs;
+            return ufo.CanBeShotDown && CanTargetAirborne && GameConstants.IsHostile(creature.Team, GameConstants.Team.Alien);
+        if (target is Creature targetCreature && targetCreature.IsAirborne)
+            return CanTargetAirborne;
         return true;
     }
 
@@ -150,6 +156,10 @@ public class CreatureBrain : MonoBehaviour
         obeyGraceEnds = Time.time + 0.5f;
 
         guardPost = NavMesh.SamplePosition(point, out NavMeshHit hit, 3f, NavMesh.AllAreas) ? hit.position : point;
+
+        if (creature.Flight != null && creature.Flight.FlyToAndLand(guardPost))
+            return;
+
         if (agent.isOnNavMesh)
         {
             agent.updateRotation = true;
@@ -178,7 +188,7 @@ public class CreatureBrain : MonoBehaviour
     private float DistanceToTarget(IDamageable target)
     {
         if (target == null) return float.MaxValue;
-        if (target is UFO)
+        if (target is UFO || (target is Creature c && c.IsAirborne))
         {
             Vector3 a = transform.position;
             Vector3 b = target.Position;
@@ -189,7 +199,16 @@ public class CreatureBrain : MonoBehaviour
 
     private void MoveTowardTarget(IDamageable target)
     {
-        if (target == null || !agent.isOnNavMesh) return;
+        if (target == null) return;
+
+        if (creature.Flight != null && creature.Flight.CanFly)
+        {
+            float cooldownRemaining = Mathf.Max(0f, nextAttackTime - Time.time);
+            creature.Flight.EngageTarget(target, creature.CalculatedAttackRange, cooldownRemaining);
+            return;
+        }
+
+        if (!agent.isOnNavMesh) return;
 
         agent.updateRotation = true;
         if (target is UFO)
@@ -209,7 +228,9 @@ public class CreatureBrain : MonoBehaviour
     private IDamageable FindTargetWithUFOs()
     {
         IDamageable best = creature.FindTarget(guardPost);
-        if (!CanTargetUFOs || UFO.Active.Count == 0) return best;
+
+        if (!CanTargetAirborne || UFO.Active.Count == 0 || !GameConstants.IsHostile(creature.Team, GameConstants.Team.Alien))
+            return best;
 
         float maxRange = Mathf.Max(creature.CalculatedViewRadius, creature.CalculatedAttackRange);
         float bestDist = best != null ? DistanceToTarget(best) : maxRange;
@@ -232,6 +253,13 @@ public class CreatureBrain : MonoBehaviour
 
         if (isObeying)
         {
+            if (creature.Flight != null && creature.Flight.IsAirborne)
+            {
+                if (Time.time >= obeyGraceEnds && !creature.Flight.HasDestination && creature.Flight.State == CreatureFlight.FlightState.Grounded)
+                    isObeying = false;
+                return;
+            }
+
             bool near = !agent.pathPending && (!agent.hasPath || agent.remainingDistance <= agent.stoppingDistance + 1f);
             bool stalled = !agent.pathPending && agent.hasPath && agent.remainingDistance <= 3f && agent.velocity.sqrMagnitude < 0.04f;
             if (Time.time < obeyGraceEnds || !(near || stalled)) return;
@@ -243,7 +271,7 @@ public class CreatureBrain : MonoBehaviour
         {
             nextThinkTime = Time.time + 0.25f;
 
-            if (playerOrderedTarget != null && (playerOrderedTarget.Down || playerOrderedTarget.Body == null))
+            if (playerOrderedTarget != null && (playerOrderedTarget.Down || playerOrderedTarget.Body == null || !CanAttackTarget(playerOrderedTarget)))
                 playerOrderedTarget = null;
 
             if (!Engaged)
@@ -254,7 +282,13 @@ public class CreatureBrain : MonoBehaviour
 
             if (currentTarget == null)
             {
-                if (wasFighting && agent.isOnNavMesh && agent.hasPath) agent.ResetPath();
+                if (wasFighting)
+                {
+                    if (creature.Flight != null && creature.Flight.IsAirborne)
+                        creature.Flight.StopAndLand();
+                    else if (agent.isOnNavMesh && agent.hasPath)
+                        agent.ResetPath();
+                }
                 return;
             }
 
@@ -270,20 +304,32 @@ public class CreatureBrain : MonoBehaviour
             }
         }
 
-        if (currentTarget == null || currentTarget.Down || currentTarget.Body == null) return;
+        if (currentTarget == null || currentTarget.Down || currentTarget.Body == null || !CanAttackTarget(currentTarget)) return;
         if (DistanceToTarget(currentTarget) > creature.CalculatedAttackRange) return;
 
-        if (agent.hasPath && !retreating) agent.ResetPath();
-        agent.updateRotation = false;
+        // Ensure melee fliers finish swooping down to ground level before striking a ground target
+        if (creature.Flight != null && creature.Flight.CanFly)
+        {
+            float cooldownRemaining = Mathf.Max(0f, nextAttackTime - Time.time);
+            creature.Flight.EngageTarget(currentTarget, creature.CalculatedAttackRange, cooldownRemaining);
+
+            bool targetIsAirborne = CreatureFlight.IsTargetAirborne(currentTarget);
+            if (!targetIsAirborne && !creature.HasCapability(CreatureCapabilities.IsRangedAttacker) && creature.Flight.CurrentAltitude > 0.6f)
+                return;
+        }
+
+        if (agent.enabled && agent.hasPath && !retreating) agent.ResetPath();
+        if (agent.enabled) agent.updateRotation = false;
 
         Vector3 toTarget = currentTarget.Position - transform.position;
         toTarget.y = 0;
         if (toTarget.sqrMagnitude > 0.001f)
         {
+            float turnSpeed = agent.enabled ? agent.angularSpeed : 360f;
             transform.rotation = Quaternion.RotateTowards(
                 transform.rotation,
                 Quaternion.LookRotation(toTarget),
-                agent.angularSpeed * Time.deltaTime
+                turnSpeed * Time.deltaTime
             );
         }
 
@@ -299,6 +345,14 @@ public class CreatureBrain : MonoBehaviour
         if (away.sqrMagnitude < 0.001f) away = -transform.forward;
 
         Vector3 to = transform.position + away.normalized * (creature.KeepAwayRange - gap + 1f);
+
+        if (creature.Flight != null && creature.Flight.IsAirborne)
+        {
+            creature.Flight.FlyToHover(to);
+            retreating = true;
+            return;
+        }
+
         if (!agent.isOnNavMesh || !NavMesh.SamplePosition(to, out NavMeshHit hit, 2f, NavMesh.AllAreas)) return;
 
         agent.SetDestination(hit.position);

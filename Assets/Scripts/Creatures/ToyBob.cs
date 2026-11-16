@@ -86,6 +86,22 @@ public class ToyBob : MonoBehaviour
         // Reset if revived
         wasDown = false;
 
+        // While airborne, suppress ground walking hops (CreatureFlight handles hover bobbing)
+        if (creature != null && creature.IsAirborne)
+        {
+            lastPosition = trackingParent.position;
+            phase = 0f;
+
+            float airborneBump = 0f;
+            float sinceAirBump = Time.time - bumpStart;
+            if (sinceAirBump < BumpSeconds)
+                airborneBump = Mathf.Sin((sinceAirBump / BumpSeconds) * Mathf.PI) * hopHeight;
+
+            transform.localPosition = Vector3.Lerp(transform.localPosition, restPosition + Vector3.up * airborneBump, 12f * Time.deltaTime);
+            transform.localRotation = Quaternion.Slerp(transform.localRotation, restRotation, 12f * Time.deltaTime);
+            return;
+        }
+
         Vector3 moved = trackingParent.position - lastPosition;
         moved.y = 0f;
         lastPosition = trackingParent.position;

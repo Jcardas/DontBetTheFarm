@@ -79,15 +79,15 @@ public class Shotgun : MonoBehaviour
             ? flatToAim.normalized
             : transform.forward;
 
-        // If aiming up at an airborne target (e.g., retreating UFO), pitch the raised fan directly to its elevation
+        // If aiming at an airborne target (flying creature or UFO), pitch the main fan directly at its elevation
         float targetPitch = 0f;
-        if (toAim.y > 0.3f && flatToAim.sqrMagnitude > 0.01f)
+        if (toAim.y > 0.4f && flatToAim.sqrMagnitude > 0.01f)
         {
-            targetPitch = Mathf.Clamp(Mathf.Atan2(toAim.y, flatToAim.magnitude) * Mathf.Rad2Deg, 0f, 65f);
+            targetPitch = Mathf.Clamp(Mathf.Atan2(toAim.y, flatToAim.magnitude) * Mathf.Rad2Deg, 0f, 70f);
         }
 
-        Spray(from, forward, pellets, 0f);
-        Spray(from, forward, raisedPellets, Mathf.Max(raisedDegrees, targetPitch));
+        Spray(from, forward, pellets, targetPitch);
+        Spray(from, forward, raisedPellets, Mathf.Clamp(targetPitch + raisedDegrees, raisedDegrees, 75f));
 
         if (toy) toy.Bump();
         if (shot) audioSource.PlayOneShot(shot);

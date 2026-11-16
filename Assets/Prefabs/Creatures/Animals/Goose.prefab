@@ -142,7 +142,6 @@ MonoBehaviour:
   attackSpeed: 1
   attackRange: 1
   viewRadius: 8
-  anchored: 1
   beamEffectPrefab: {fileID: 0}
   sourcePrefab: {fileID: 2854385660736801272}
   neckSize: 1
@@ -305,6 +304,10 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 6
       objectReference: {fileID: 0}
+    - target: {fileID: 454752247219553034, guid: 3e74716dada74f241869f9dd75e36d2d, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 498298594721972670, guid: 3e74716dada74f241869f9dd75e36d2d, type: 3}
       propertyPath: m_Name
       value: Rings
@@ -321,9 +324,17 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 6
       objectReference: {fileID: 0}
+    - target: {fileID: 991266254667708858, guid: 3e74716dada74f241869f9dd75e36d2d, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 3313410516953446276, guid: 3e74716dada74f241869f9dd75e36d2d, type: 3}
       propertyPath: m_Layer
       value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 3313410516953446276, guid: 3e74716dada74f241869f9dd75e36d2d, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3679798406557774165, guid: 3e74716dada74f241869f9dd75e36d2d, type: 3}
       propertyPath: m_Layer

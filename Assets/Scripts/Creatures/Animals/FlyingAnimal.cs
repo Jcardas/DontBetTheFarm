@@ -1,35 +1,31 @@
 using UnityEngine;
 
-// A farm animal that flies (the goose): it follows the NavMesh like everyone else, but its body is lifted into the air.
-// It drops to the ground when knocked out and takes off again when revived.
+// Bridges legacy FlyingAnimal to the modular CreatureFlight system.
+[RequireComponent(typeof(CreatureFlight))]
 public class FlyingAnimal : Animal
 {
     [Header("Flight")]
-    [Tooltip("How high it flies above the ground, in metres.")]
+    [Tooltip("Target cruise altitude when flying, in metres.")]
     [SerializeField] protected float flightHeight = 1.5f;
-
-    public float FlightHeight => flightHeight;
 
     protected override void Awake()
     {
         base.Awake();
-        SetHeight(flightHeight);
+        // Ensure NavMeshAgent baseOffset stays 0 so grounded movement is flush with the ground
+        if (NavMeshAgent != null)
+            NavMeshAgent.baseOffset = 0f;
     }
 
     protected override void AnimalKnockedOut()
     {
         base.AnimalKnockedOut();
-        SetHeight(0f);
+        if (Flight != null)
+            Flight.ForceGroundImmediate();
     }
 
     protected override void HandleRevive()
     {
         base.HandleRevive();
-        SetHeight(flightHeight);
-    }
-
-    private void SetHeight(float height)
-    {
-        if (NavMeshAgent != null) NavMeshAgent.baseOffset = height;
+        // Goose revives on the ground; CreatureFlight will take off automatically when it moves or engages targets.
     }
 }
