@@ -56,7 +56,19 @@ public class AnimalPen : Buildable, IContextInteractable
     protected override void Awake()
     {
         base.Awake();
+        if (MaxAnimals <= 0 && GameConstants.Instance != null)
+        {
+            MaxAnimals = GameConstants.Instance.MaxAnimalsInPen;
+        }
         animalsInPen ??= new List<Animal>(MaxAnimals);
+    }
+
+    private void Start()
+    {
+        if (MaxAnimals <= 0 && GameConstants.Instance != null)
+        {
+            MaxAnimals = GameConstants.Instance.MaxAnimalsInPen;
+        }
 
         if (!isStartingPen || startingAnimals == null) return;
 
@@ -114,24 +126,27 @@ public class AnimalPen : Buildable, IContextInteractable
             return;
         }
 
-        BoxCollider penArea = GetComponent<BoxCollider>();
+        Collider penArea = GetComponent<Collider>() ?? GetComponentInChildren<Collider>();
         if (!penArea) return;
 
-        float halfX = penArea.size.x / 2f - 1f;
-        float halfZ = penArea.size.z / 2f - 1f;
+        Bounds localBounds = penArea.bounds;
+        float halfX = localBounds.extents.x - 1f;
+        float halfZ = localBounds.extents.z - 1f;
         if (halfX <= 0f || halfZ <= 0f) return;
 
         Animal[] nearbyAnimals = FindObjectsByType<Animal>(FindObjectsSortMode.None);
-        Vector3 spawnPosition = transform.position;
+        Vector3 spawnPosition = localBounds.center;
         Quaternion spawnRotation = Quaternion.Euler(0f, UnityEngine.Random.Range(0f, 360f), 0f);
         bool positionFound;
         int attempts = 0;
 
         do
         {
-            Vector3 randomOffset = new(UnityEngine.Random.Range(-halfX, halfX), 0f,
-                                        UnityEngine.Random.Range(-halfZ, halfZ));
-            spawnPosition = penArea.transform.TransformPoint(penArea.center + randomOffset);
+            spawnPosition = new Vector3(
+                localBounds.center.x + UnityEngine.Random.Range(-halfX, halfX),
+                transform.position.y,
+                localBounds.center.z + UnityEngine.Random.Range(-halfZ, halfZ)
+            );
             spawnRotation = Quaternion.Euler(0f, UnityEngine.Random.Range(0f, 360f), 0f);
 
             positionFound = true;

@@ -111,6 +111,13 @@ public class CreatureMutator : MonoBehaviour
             return;
         }
 
+        // Prevent Start() from overwriting mutations applied immediately after Instantiate() (e.g., bred babies)
+        if (!isInitialized)
+        {
+            isInitialized = true;
+            RestoreAllDefaults();
+        }
+
         // Clear existing visuals/mutations in this slot without restoring defaults yet
         ClearSlotVisuals(targetSlot);
 
@@ -274,6 +281,8 @@ public class CreatureMutator : MonoBehaviour
     /// </summary>
     private void RestoreSlotDefaults(SlotType targetSlot)
     {
+        if (equippedMutations.ContainsKey(targetSlot)) return;
+
         int bindingIndex = socketBindings.FindIndex(b => b.slotType == targetSlot);
         if (bindingIndex == -1) return;
 
