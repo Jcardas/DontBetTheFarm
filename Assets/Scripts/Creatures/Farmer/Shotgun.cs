@@ -3,8 +3,8 @@ using UnityEngine;
 using UnityEngine.AI;
 
 // The farmer's only weapon: a double-barrel that sprays pellets toward a point, in a level fan plus a raised row that can
-// reach fliers. He fires it on his own at aliens inside his attack range (Farmer.PerformAttack), and Space (PlayerControls)
-// fires it toward the cursor out to the full range. Two shells, then a reload, shared by both.
+// reach fliers and hovering UFOs. He fires it on his own at enemies inside his attack range (Farmer.PerformAttack),
+// and Space (PlayerControls) fires it toward the cursor out to the full range. Two shells, then a reload, shared by both.
 // It works whether or not he is selected, but a knocked-out farmer can't fire.
 [RequireComponent(typeof(Creature), typeof(AudioSource))]
 public class Shotgun : MonoBehaviour
@@ -18,7 +18,7 @@ public class Shotgun : MonoBehaviour
     public int pellets = 7;
     [Tooltip("Width of the pellet fan, in degrees.")]
     public float coneDegrees = 30f;
-    [Tooltip("Extra pellets angled upward, spread across the same cone, so a shot can hit flying enemies.")]
+    [Tooltip("Extra pellets angled upward, spread across the same cone, so a shot can hit flying enemies and UFOs.")]
     public int raisedPellets = 3;
     [Tooltip("How far the raised pellets angle up, in degrees.")]
     public float raisedDegrees = 15f;
@@ -72,12 +72,22 @@ public class Shotgun : MonoBehaviour
         aim.y = 0f;
         if (aim.sqrMagnitude > 0.001f) transform.rotation = Quaternion.LookRotation(aim);
         Vector3 from = muzzle ? muzzle.position : transform.position + Vector3.up * ChestHeight;
-        // Aim from the barrel, not his middle, so the fan centres on the aim point instead of beside it.
+
         Vector3 toAim = aimPoint - from;
-        toAim.y = 0f;
-        Vector3 forward = toAim.sqrMagnitude > 0.25f && Vector3.Dot(toAim, transform.forward) > 0f ? toAim.normalized : transform.forward;
+        Vector3 flatToAim = new Vector3(toAim.x, 0f, toAim.z);
+        Vector3 forward = flatToAim.sqrMagnitude > 0.25f && Vector3.Dot(flatToAim, transform.forward) > 0f
+            ? flatToAim.normalized
+            : transform.forward;
+
+        // If aiming up at an airborne target (e.g., retreating UFO), pitch the raised fan directly to its elevation
+        float targetPitch = 0f;
+        if (toAim.y > 0.3f && flatToAim.sqrMagnitude > 0.01f)
+        {
+            targetPitch = Mathf.Clamp(Mathf.Atan2(toAim.y, flatToAim.magnitude) * Mathf.Rad2Deg, 0f, 65f);
+        }
+
         Spray(from, forward, pellets, 0f);
-        Spray(from, forward, raisedPellets, raisedDegrees);
+        Spray(from, forward, raisedPellets, Mathf.Max(raisedDegrees, targetPitch));
 
         if (toy) toy.Bump();
         if (shot) audioSource.PlayOneShot(shot);
@@ -99,9 +109,8 @@ public class Shotgun : MonoBehaviour
         }
     }
 
-    // Flies through the farmer, his own animals and anyone already down; the first standing enemy takes the hit,
-    // and anything else solid (tree, barn, any building) stops the pellet. Returns where it ended.
-    // It only hurts the enemy, never moves it: a shove would knock aliens off their path.
+    // Flies through the farmer, his own animals and anyone already down; the first standing enemy (or enemy UFO)
+    // takes the hit, and anything else solid (tree, barn, any building) stops the pellet. Returns where it ended.
     Vector3 Pellet(Vector3 from, Vector3 direction)
     {
         var hits = Physics.RaycastAll(from, direction, range, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore);
@@ -109,6 +118,14 @@ public class Shotgun : MonoBehaviour
         foreach (var hit in hits)
         {
             if (hit.collider.transform.IsChildOf(transform)) continue;
+
+            var ufo = hit.collider.GetComponentInParent<UFO>();
+            if (ufo != null && ufo.CanBeShotDown && !ufo.Down)
+            {
+                ufo.TakeDamage(pelletDamage);
+                return hit.point;
+            }
+
             var target = hit.collider.GetComponentInParent<Creature>();
             if (target == null) return hit.point;
             if (target.Team == self.Team || target.Down)

@@ -51,6 +51,8 @@ public class PlayerSaucer : UFO
     float calmSince = -1f;
 
     static readonly SlotType[] AllSlots = { SlotType.Head, SlotType.Back, SlotType.Limbs, SlotType.Tail };
+    
+    public override bool CanBeShotDown => false;
 
     public bool IsBroken => broken;
 

@@ -14,12 +14,15 @@ public class AbductionManager : MonoBehaviour
     [SerializeField] GameObject collarPrefab;
     [Tooltip("Seconds a farm creature lies knocked out before a saucer comes for it.")]
     [SerializeField] float delay = 4f;
+    [Tooltip("Cooldown seconds after a UFO is shot down before another saucer can be dispatched.")]
+    [SerializeField] float shotDownRespawnCooldown = 12f;
     [SerializeField] int maxSaucers = 1;
 
     readonly Dictionary<Creature, float> downSince = new();
     readonly List<UFO> saucers = new();
     readonly List<Animal> returned = new();
     readonly Dictionary<Animal, GameObject> collars = new();
+    float nextDispatchAllowedAt;
 
     void Awake()
     {
@@ -31,11 +34,25 @@ public class AbductionManager : MonoBehaviour
         Instance = this;
     }
 
+    void OnEnable() => UFO.OnUFODestroyed += HandleUFODestroyed;
+    void OnDisable() => UFO.OnUFODestroyed -= HandleUFODestroyed;
+
+    void HandleUFODestroyed(UFO destroyedUfo, Creature releasedVictim)
+    {
+        saucers.Remove(destroyedUfo);
+        nextDispatchAllowedAt = Time.time + shotDownRespawnCooldown;
+        if (releasedVictim != null)
+        {
+            // Reset the creature's downed timer so it gets a fresh delay window after the cooldown
+            downSince[releasedVictim] = nextDispatchAllowedAt;
+        }
+    }
+
     void Update()
     {
         MarchReturned();
         saucers.RemoveAll(s => s == null);
-        
+
         if (CreatureManager.Instance == null || TimeManager.Instance == null || WaveManager.Instance == null || saucerPrefab == null) return;
 
         foreach (Creature c in CreatureManager.Instance.GetEnemies(GameConstants.Team.Alien))
@@ -47,9 +64,10 @@ public class AbductionManager : MonoBehaviour
                 continue;
             }
             if (!downSince.TryGetValue(c, out float since)) downSince[c] = since = Time.time;
-            if (Time.time - since >= delay && saucers.Count < maxSaucers && !TimeManager.Instance.IsDayTime()) Send(c);
+            if (Time.time >= nextDispatchAllowedAt && Time.time - since >= delay && saucers.Count < maxSaucers && !TimeManager.Instance.IsDayTime())
+                Send(c);
         }
-        
+
         if (saucers.Count > 0 && TimeManager.Instance.IsDayTime())
         {
             foreach (UFO saucer in saucers)
@@ -119,12 +137,7 @@ public class AbductionManager : MonoBehaviour
             if (collars.Remove(a, out GameObject collar) && collar != null) Destroy(collar);
             if (WaveManager.Instance != null) WaveManager.Instance.UnregisterEnemy(a);
             a.SetTeam(GameConstants.Team.Farm);
-            
-            // TODO: Instead of healing to full, leave the animal downed, the farmer (or a healing capable creature) can heal it back up.
-            // a.HealToFull(); 
-            // For now this is just commented out, but eventually we will remove
-            // all this because the player will have to heal the animal back up to get it back on their side.
-            
+
             a.CreatureBrain.Guard(a.Position); // forget the farm creature it was attacking
             if (a.TryGetComponent(out Selectable selectable)) selectable.enabled = true;
         }

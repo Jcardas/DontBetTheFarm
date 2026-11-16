@@ -9,7 +9,7 @@ public class CreatureBrain : MonoBehaviour
     private Gatherer gatherer;
 
     private IDamageable currentTarget;
-    private Creature playerOrderedTarget;
+    private IDamageable playerOrderedTarget;
 
     private Vector3 guardPost;
     private float nextThinkTime;
@@ -20,6 +20,9 @@ public class CreatureBrain : MonoBehaviour
 
     public bool IsPassive { get; set; }
     public bool Engaged => currentTarget != null && !currentTarget.Down;
+
+    private bool CanTargetUFOs =>
+        creature is Farmer || creature is RangedAnimal || creature.HasCapability(CreatureCapabilities.IsRangedAttacker);
 
     private void Awake()
     {
@@ -48,7 +51,7 @@ public class CreatureBrain : MonoBehaviour
 
         var activeGatherer = EnsureGatherer();
 
-        if (order.kind == OrderKind.Attack && creature.CalculatedAttackDamage > 0)
+        if (order.kind == OrderKind.Attack && creature.CalculatedAttackDamage > 0 && CanAttackTarget(order.enemy))
         {
             if (activeGatherer != null) activeGatherer.AbortWork();
             Attack(order.enemy);
@@ -107,13 +110,22 @@ public class CreatureBrain : MonoBehaviour
         Guard(order.point);
     }
 
+    // Melee ground units cannot hit airborne UFOs; Farmer (shotgun) and ranged animals can.
+    private bool CanAttackTarget(IDamageable target)
+    {
+        if (target == null || target.Down) return false;
+        if (target is UFO ufo)
+            return ufo.CanBeShotDown && CanTargetUFOs;
+        return true;
+    }
+
     // Whether ExecuteCommand would carry this order out rather than just walk to its point (the same checks).
     public bool CanObey(Order order)
     {
         var activeGatherer = EnsureGatherer();
         return order.kind switch
         {
-            OrderKind.Attack => creature.CalculatedAttackDamage > 0,
+            OrderKind.Attack => creature.CalculatedAttackDamage > 0 && CanAttackTarget(order.enemy),
             OrderKind.Work => activeGatherer != null && activeGatherer.CanWork(order.node),
             OrderKind.Harvest => activeGatherer != null && creature.HasCapability(CreatureCapabilities.CanHarvestCrops),
             OrderKind.Repair => activeGatherer != null && activeGatherer.CanRepair,
@@ -153,7 +165,7 @@ public class CreatureBrain : MonoBehaviour
         obeyGraceEnds = Time.time + 0.5f;
     }
 
-    public void Attack(Creature enemy)
+    public void Attack(IDamageable enemy)
     {
         if (gatherer != null) gatherer.AbortWork();
         isObeying = false;
@@ -162,6 +174,57 @@ public class CreatureBrain : MonoBehaviour
     }
 
     public void SetGuardPost(Vector3 point) => guardPost = point;
+
+    private float DistanceToTarget(IDamageable target)
+    {
+        if (target == null) return float.MaxValue;
+        if (target is UFO)
+        {
+            Vector3 a = transform.position;
+            Vector3 b = target.Position;
+            return Vector2.Distance(new Vector2(a.x, a.z), new Vector2(b.x, b.z));
+        }
+        return target.Body != null ? Reach.Gap(transform.position, target.Body) : Vector3.Distance(transform.position, target.Position);
+    }
+
+    private void MoveTowardTarget(IDamageable target)
+    {
+        if (target == null || !agent.isOnNavMesh) return;
+
+        agent.updateRotation = true;
+        if (target is UFO)
+        {
+            Vector3 groundUnderUfo = new Vector3(target.Position.x, transform.position.y, target.Position.z);
+            if (NavMesh.SamplePosition(groundUnderUfo, out NavMeshHit navHit, 8f, NavMesh.AllAreas))
+                agent.SetDestination(navHit.position);
+            else
+                agent.SetDestination(groundUnderUfo);
+            return;
+        }
+
+        if (target.Body != null)
+            Reach.WalkTo(agent, target.Body);
+    }
+
+    private IDamageable FindTargetWithUFOs()
+    {
+        IDamageable best = creature.FindTarget(guardPost);
+        if (!CanTargetUFOs || UFO.Active.Count == 0) return best;
+
+        float maxRange = Mathf.Max(creature.CalculatedViewRadius, creature.CalculatedAttackRange);
+        float bestDist = best != null ? DistanceToTarget(best) : maxRange;
+
+        foreach (UFO ufo in UFO.Active)
+        {
+            if (ufo == null || !ufo.CanBeShotDown || ufo.Down) continue;
+            float dist = DistanceToTarget(ufo);
+            if (dist > maxRange || dist >= bestDist) continue;
+            bestDist = dist;
+            best = ufo;
+        }
+
+        return best;
+    }
 
     private void Update()
     {
@@ -180,14 +243,14 @@ public class CreatureBrain : MonoBehaviour
         {
             nextThinkTime = Time.time + 0.25f;
 
-            if (playerOrderedTarget != null && playerOrderedTarget.Down)
+            if (playerOrderedTarget != null && (playerOrderedTarget.Down || playerOrderedTarget.Body == null))
                 playerOrderedTarget = null;
 
             if (!Engaged)
                 guardPost = transform.position;
 
             bool wasFighting = currentTarget != null;
-            currentTarget = playerOrderedTarget != null ? playerOrderedTarget : creature.FindTarget(guardPost);
+            currentTarget = playerOrderedTarget != null ? playerOrderedTarget : FindTargetWithUFOs();
 
             if (currentTarget == null)
             {
@@ -196,23 +259,19 @@ public class CreatureBrain : MonoBehaviour
             }
 
             retreating = false;
-            if (currentTarget.Body != null)
+            float gap = DistanceToTarget(currentTarget);
+            if (gap > creature.CalculatedAttackRange)
             {
-                float gap = Reach.Gap(transform.position, currentTarget.Body);
-                if (gap > creature.CalculatedAttackRange)
-                {
-                    agent.updateRotation = true;
-                    Reach.WalkTo(agent, currentTarget.Body);
-                }
-                else if (gap < creature.KeepAwayRange)
-                {
-                    BackAwayFrom(currentTarget, gap);
-                }
+                MoveTowardTarget(currentTarget);
+            }
+            else if (gap < creature.KeepAwayRange && currentTarget is not UFO)
+            {
+                BackAwayFrom(currentTarget, gap);
             }
         }
 
         if (currentTarget == null || currentTarget.Down || currentTarget.Body == null) return;
-        if (Reach.Gap(transform.position, currentTarget.Body) > creature.CalculatedAttackRange) return;
+        if (DistanceToTarget(currentTarget) > creature.CalculatedAttackRange) return;
 
         if (agent.hasPath && !retreating) agent.ResetPath();
         agent.updateRotation = false;

@@ -1,12 +1,18 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 // The abduction saucer. It flies to a knocked-out farm creature, beams it up and carries it off the map edge.
-// It flies in a straight line above everything by moving its transform, so it needs no NavMesh. It is not a
-// Creature, so nothing targets or fights it.
-public class UFO : MonoBehaviour
+// It flies in a straight line above everything by moving its transform, so it needs no NavMesh.
+// Implements IDamageable so the farmer's shotgun and ranged defenders can shoot it down before it escapes.
+public class UFO : MonoBehaviour, IDamageable
 {
     protected enum State { Idle, Approach, Beam, Carry, Leave }
+
+    [Header("Health & Combat")]
+    [SerializeField] protected int maxHealth = 40;
+    [Tooltip("Optional explosion prefab. If left empty, a built-in particle burst spawns automatically.")]
+    [SerializeField] protected GameObject destroyedEffectPrefab;
 
     [Header("Flight")]
     [SerializeField] protected float flySpeed = 2f;
@@ -24,6 +30,12 @@ public class UFO : MonoBehaviour
     // Creatures enemy saucers took off the map, oldest first.
     public static readonly List<Creature> Abducted = new();
 
+    // All currently active saucers in the scene so ranged defenders can auto-target them.
+    public static readonly HashSet<UFO> Active = new();
+
+    // Fired when an enemy UFO is shot down (passes the released victim, or null if none).
+    public static event Action<UFO, Creature> OnUFODestroyed;
+
     // Bodies a saucer is already going for, so two saucers never chase the same one.
     static readonly HashSet<Creature> claimed = new();
     public static bool IsClaimed(Creature c) => claimed.Contains(c);
@@ -35,6 +47,7 @@ public class UFO : MonoBehaviour
     {
         Abducted.Clear();
         claimed.Clear();
+        Active.Clear();
     }
 
     protected State state;
@@ -42,10 +55,111 @@ public class UFO : MonoBehaviour
     protected Vector3 exitPoint;
     Vector3 victimScale, liftFrom;
     float lift;
+    int currentHealth;
+    Collider bodyCollider;
+
+    public int CurrentHealth => currentHealth;
+    public int MaxHealth => maxHealth;
+    public bool Down => currentHealth <= 0;
+    public Vector3 Position => transform.position;
+    public Collider Body => bodyCollider;
+    public virtual bool CanBeShotDown => true;
 
     protected virtual void Awake()
     {
+        currentHealth = maxHealth;
+        bodyCollider = GetComponentInChildren<Collider>();
         if (beam) beam.SetActive(false);
+    }
+
+    protected virtual void OnEnable() => Active.Add(this);
+    protected virtual void OnDisable() => Active.Remove(this);
+
+    public void TakeDamage(int amount)
+    {
+        if (!CanBeShotDown || Down || amount <= 0) return;
+
+        currentHealth = Mathf.Max(0, currentHealth - amount);
+        if (currentHealth == 0)
+        {
+            HandleShotDown();
+        }
+    }
+
+    protected virtual void HandleShotDown()
+    {
+        Creature releasedVictim = victim;
+
+        if (victim != null)
+        {
+            claimed.Remove(victim);
+
+            // Only drop the creature from the UFO's position if it was actually being beamed or carried.
+            // If the UFO was still in State.Approach, leave the creature untouched on the ground where it fell.
+            if (state is State.Beam or State.Carry)
+            {
+                victim.transform.SetParent(null, true);
+                victim.transform.localScale = victimScale != Vector3.zero ? victimScale : Vector3.one;
+
+                Vector3 dropPos = new Vector3(transform.position.x, liftFrom.y, transform.position.z);
+                if (Physics.Raycast(transform.position, Vector3.down, out RaycastHit groundHit, hoverHeight + 10f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
+                {
+                    dropPos.y = groundHit.point.y;
+                }
+                victim.transform.position = dropPos;
+                victim.gameObject.SetActive(true);
+            }
+
+            victim = null;
+        }
+
+        if (beam) beam.SetActive(false);
+
+        SpawnDestroyedEffect();
+        OnUFODestroyed?.Invoke(this, releasedVictim);
+        Destroy(gameObject);
+    }
+
+    private void SpawnDestroyedEffect()
+    {
+        if (destroyedEffectPrefab != null)
+        {
+            Instantiate(destroyedEffectPrefab, transform.position, Quaternion.identity);
+            return;
+        }
+
+        // Built-in explosion burst when no prefab is assigned in the Inspector
+        var fxObj = new GameObject("UFO_ExplosionFX");
+        fxObj.transform.position = transform.position;
+
+        var ps = fxObj.AddComponent<ParticleSystem>();
+        ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+
+        var main = ps.main;
+        main.playOnAwake = false;
+        main.duration = 0.6f;
+        main.loop = false;
+        main.startLifetime = new ParticleSystem.MinMaxCurve(0.45f, 0.9f);
+        main.startSpeed = new ParticleSystem.MinMaxCurve(4f, 11f);
+        main.startSize = new ParticleSystem.MinMaxCurve(0.25f, 0.65f);
+        main.startColor = new ParticleSystem.MinMaxGradient(new Color(1f, 0.55f, 0.1f, 1f), new Color(0.4f, 0.95f, 1f, 1f));
+        main.gravityModifier = 0.6f;
+        main.stopAction = ParticleSystemStopAction.Destroy;
+
+        var emission = ps.emission;
+        emission.enabled = true;
+        emission.SetBursts(new[] { new ParticleSystem.Burst(0f, 35) });
+
+        var shape = ps.shape;
+        shape.shapeType = ParticleSystemShapeType.Sphere;
+        shape.radius = 0.6f;
+
+        var renderer = fxObj.GetComponent<ParticleSystemRenderer>();
+        Shader shader = Shader.Find("Universal Render Pipeline/Particles/Unlit") ?? Shader.Find("Particles/Standard Unlit");
+        if (shader != null)
+            renderer.material = new Material(shader);
+
+        ps.Play();
     }
 
     // Called by the AbductionManager: go take this creature, then leave through `exit`.
@@ -64,6 +178,8 @@ public class UFO : MonoBehaviour
 
     void Update()
     {
+        if (Down) return;
+
         // The body got back up (healed) or is gone before it was aboard: put it down and give up on it.
         if (state is State.Approach or State.Beam && (victim == null || !victim.Down)) Drop();
 
@@ -134,8 +250,9 @@ public class UFO : MonoBehaviour
         if (victim != null)
         {
             claimed.Remove(victim);
-            if (state == State.Beam)
+            if (state is State.Beam or State.Carry)
             {
+                victim.transform.SetParent(null, true);
                 victim.transform.position = liftFrom;
                 victim.transform.localScale = victimScale;
                 if (victim.NavMeshAgent && !victim.Down) victim.NavMeshAgent.enabled = true; // a body stays out of walkers' way
@@ -151,15 +268,14 @@ public class UFO : MonoBehaviour
         if (beam) beam.SetActive(false);
         if (victim != null) Drop();
         victim = null;
-        
+
         state = State.Leave;
     }
-    
+
     // Returns true if the saucer has the creature it was sent to abduct inside it.
     // False if it is still on the ground or has been dropped.
     public bool IsVictimInUFO()
     {
         return state is State.Carry or State.Leave && victim != null;
     }
-
 }

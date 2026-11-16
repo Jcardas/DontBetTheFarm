@@ -11,7 +11,7 @@ public readonly struct Order
     public readonly ResourceNode node;
     public readonly WheatField field;
     public readonly Buildable building;
-    public readonly Creature enemy;
+    public readonly IDamageable enemy;
     public readonly Animal animalToRevive;
 
     private Order(
@@ -20,7 +20,7 @@ public readonly struct Order
         ResourceNode node = null,
         WheatField field = null,
         Buildable building = null,
-        Creature enemy = null,
+        IDamageable enemy = null,
         Animal animalToRevive = null)
     {
         this.kind = kind;
@@ -44,6 +44,15 @@ public readonly struct Order
     // `ray` finds a pen or the barn by its whole outline, so a gap in a pen's fence still counts as the pen.
     public static Order From(Ray ray, RaycastHit hit)
     {
+        var ufo = hit.collider.GetComponentInParent<UFO>();
+        if (ufo != null && ufo.CanBeShotDown && !ufo.Down)
+        {
+            return new Order(
+                OrderKind.Attack,
+                ufo.Position,
+                enemy: ufo);
+        }
+
         var creature = hit.collider.GetComponentInParent<Creature>();
         if (creature != null)
         {

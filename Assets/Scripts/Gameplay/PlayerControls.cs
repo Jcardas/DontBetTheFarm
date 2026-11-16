@@ -226,7 +226,7 @@ public class PlayerControls : MonoBehaviour
         var order = Order.From(ray, hit);
         if (AnyPickedCan(order))
         {
-            if (order.enemy) return order.enemy;
+            if (order.enemy is Component enemyComp && enemyComp) return enemyComp;
             if (order.node) return order.node;
             if (order.field) return order.field;
             if (order.building) return order.building;

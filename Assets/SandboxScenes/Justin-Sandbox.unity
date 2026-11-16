@@ -2890,7 +2890,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1467218761359130414, guid: 59ba79a8fc03547d5999c44065bd285a, type: 3}
       propertyPath: waves.Array.data[0].batchSize
-      value: 5
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1467218761359130414, guid: 59ba79a8fc03547d5999c44065bd285a, type: 3}
+      propertyPath: waves.Array.data[0].maxOnScreenEnemies
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 1467218761359130414, guid: 59ba79a8fc03547d5999c44065bd285a, type: 3}
       propertyPath: waves.Array.data[0].enemyPool.Array.size
