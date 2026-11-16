@@ -25,18 +25,32 @@ public class CreatureBrain : MonoBehaviour
     {
         creature = GetComponent<Creature>();
         agent = GetComponent<NavMeshAgent>();
-        gatherer = GetComponent<Gatherer>();
+        gatherer = GetComponentInChildren<Gatherer>();
     }
 
     private void Start() => guardPost = transform.position;
+
+    public void RefreshGatherer(Gatherer updated = null)
+    {
+        gatherer = updated != null ? updated : GetComponentInChildren<Gatherer>();
+    }
+
+    private Gatherer EnsureGatherer()
+    {
+        if (gatherer == null)
+            gatherer = GetComponentInChildren<Gatherer>();
+        return gatherer;
+    }
 
     public void ExecuteCommand(Order order)
     {
         if (creature == null || creature.Down) return;
 
+        var activeGatherer = EnsureGatherer();
+
         if (order.kind == OrderKind.Attack && creature.CalculatedAttackDamage > 0)
         {
-            if (gatherer != null) gatherer.AbortWork();
+            if (activeGatherer != null) activeGatherer.AbortWork();
             Attack(order.enemy);
             return;
         }
@@ -56,48 +70,51 @@ public class CreatureBrain : MonoBehaviour
             }
             return;
         }
-        
 
-        if (gatherer != null)
+        if (activeGatherer != null)
         {
-            if (order.kind == OrderKind.Work && gatherer.CanWork(order.node))
+            if (order.kind == OrderKind.Work && activeGatherer.CanWork(order.node))
             {
                 ClearCombatAndObey();
-                gatherer.Work(order.node);
+                activeGatherer.Work(order.node);
                 return;
             }
 
             if (order.kind == OrderKind.Harvest && creature.HasCapability(CreatureCapabilities.CanHarvestCrops))
             {
                 ClearCombatAndObey();
-                gatherer.Harvest(order.field);
+                activeGatherer.Harvest(order.field);
                 return;
             }
 
-            if (order.kind == OrderKind.Repair && creature.HasCapability(CreatureCapabilities.CanRepair))
+            if (order.kind == OrderKind.Repair && activeGatherer.CanRepair)
             {
                 ClearCombatAndObey();
-                gatherer.Repair(order.building);
+                activeGatherer.Repair(order.building);
                 return;
             }
 
-            gatherer.AbortWork();
+            activeGatherer.AbortWork();
         }
 
         Guard(order.point);
     }
 
     // Whether ExecuteCommand would carry this order out rather than just walk to its point (the same checks).
-    public bool CanObey(Order order) => order.kind switch
+    public bool CanObey(Order order)
     {
-        OrderKind.Attack => creature.CalculatedAttackDamage > 0,
-        OrderKind.Work => gatherer != null && gatherer.CanWork(order.node),
-        OrderKind.Harvest => gatherer != null && creature.HasCapability(CreatureCapabilities.CanHarvestCrops),
-        OrderKind.Repair => gatherer != null && creature.HasCapability(CreatureCapabilities.CanRepair),
-        OrderKind.Pen => creature is Animal,
-        OrderKind.Barn => creature is Farmer,
-        _ => true,
-    };
+        var activeGatherer = EnsureGatherer();
+        return order.kind switch
+        {
+            OrderKind.Attack => creature.CalculatedAttackDamage > 0,
+            OrderKind.Work => activeGatherer != null && activeGatherer.CanWork(order.node),
+            OrderKind.Harvest => activeGatherer != null && creature.HasCapability(CreatureCapabilities.CanHarvestCrops),
+            OrderKind.Repair => activeGatherer != null && activeGatherer.CanRepair,
+            OrderKind.Pen => creature is Animal,
+            OrderKind.Barn => creature is Farmer,
+            _ => true,
+        };
+    }
 
     private void ClearCombatAndObey()
     {
@@ -144,7 +161,6 @@ public class CreatureBrain : MonoBehaviour
 
         if (isObeying)
         {
-            // Close enough, or held up by its neighbours a few steps short: either way it has reached the area.
             bool near = !agent.pathPending && (!agent.hasPath || agent.remainingDistance <= agent.stoppingDistance + 1f);
             bool stalled = !agent.pathPending && agent.hasPath && agent.remainingDistance <= 3f && agent.velocity.sqrMagnitude < 0.04f;
             if (Time.time < obeyGraceEnds || !(near || stalled)) return;
@@ -159,14 +175,12 @@ public class CreatureBrain : MonoBehaviour
             if (playerOrderedTarget != null && playerOrderedTarget.Down)
                 playerOrderedTarget = null;
 
-            // Out of a fight, it looks around from wherever it stands; in one, from where the fight began.
             if (!Engaged)
                 guardPost = transform.position;
 
             bool wasFighting = currentTarget != null;
             currentTarget = playerOrderedTarget != null ? playerOrderedTarget : creature.FindTarget(guardPost);
 
-            // Fight over: it stops where it is until it is ordered again or sees another enemy.
             if (currentTarget == null)
             {
                 if (wasFighting && agent.isOnNavMesh && agent.hasPath) agent.ResetPath();

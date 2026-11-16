@@ -209,7 +209,6 @@ MonoBehaviour:
   attackSpeed: 1
   attackRange: 1
   viewRadius: 8
-  anchored: 1
   beamEffectPrefab: {fileID: 0}
 --- !u!114 &-1807932057669856012
 MonoBehaviour:
@@ -270,7 +269,9 @@ MonoBehaviour:
     - transform: {fileID: 5038671724603542510}
       defaultVisualPrefab: {fileID: 0}
   socketScaleFactor: 1
-  defaultMutations: []
+  defaultMutations:
+  - mutation: {fileID: 11400000, guid: d072a8806c873c449a05b6d3f15b93a7, type: 2}
+    slot: 4
 --- !u!1 &4650746187239923855
 GameObject:
   m_ObjectHideFlags: 0

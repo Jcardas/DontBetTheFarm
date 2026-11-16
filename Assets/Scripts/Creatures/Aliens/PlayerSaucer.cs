@@ -230,6 +230,8 @@ public class PlayerSaucer : UFO
 
     void ProcessCollectedAlien(Creature alien)
     {
+        if (alien == null) return;
+
         if (HasNewMutationForPlayer(alien))
         {
             StoreAlienInBarn(alien);
@@ -248,23 +250,73 @@ public class PlayerSaucer : UFO
 
     bool HasNewMutationForPlayer(Creature alien)
     {
-        if (MutationUnlockManager.Instance == null) return false;
-        if (!alien.TryGetComponent<CreatureMutator>(out var mutator)) return false;
+        if (!alien.TryGetComponent<CreatureMutator>(out var mutator))
+            return false;
 
+        // Collect all mutations already waiting on aliens currently stored in the barn
+        HashSet<MutationData> alreadyInBarn = new();
+        if (CreatureManager.Instance != null)
+        {
+            foreach (Creature stored in CreatureManager.Instance.GetCapturedAliens())
+            {
+                if (stored == null || !stored.TryGetComponent<CreatureMutator>(out var storedMutator)) continue;
+
+                bool foundStored = false;
+                foreach (SlotType slot in AllSlots)
+                {
+                    MutationData m = storedMutator.GetEquippedMutation(slot);
+                    if (m != null)
+                    {
+                        alreadyInBarn.Add(m);
+                        foundStored = true;
+                    }
+                }
+
+                if (!foundStored)
+                {
+                    foreach (MutationData m in storedMutator.GetConfiguredStartingMutations())
+                    {
+                        if (m != null) alreadyInBarn.Add(m);
+                    }
+                }
+            }
+        }
+
+        // 1. Check live equipped mutations on the collected alien
+        bool foundAnyEquipped = false;
         foreach (SlotType slot in AllSlots)
         {
             MutationData mutation = mutator.GetEquippedMutation(slot);
-            if (mutation != null && !MutationUnlockManager.Instance.IsUnlocked(mutation))
+            if (mutation == null) continue;
+
+            foundAnyEquipped = true;
+            bool unlocked = MutationUnlockManager.Instance != null && MutationUnlockManager.Instance.IsUnlocked(mutation);
+            if (!unlocked && !alreadyInBarn.Contains(mutation))
                 return true;
         }
+
+        // 2. Fallback if CreatureMutator.Start() hasn't populated equippedMutations yet
+        if (!foundAnyEquipped)
+        {
+            foreach (MutationData mutation in mutator.GetConfiguredStartingMutations())
+            {
+                if (mutation == null) continue;
+                bool unlocked = MutationUnlockManager.Instance != null && MutationUnlockManager.Instance.IsUnlocked(mutation);
+                if (!unlocked && !alreadyInBarn.Contains(mutation))
+                    return true;
+            }
+        }
+
         return false;
     }
 
     void StoreAlienInBarn(Creature alien)
     {
-        // Park the captured alien inside the barn bay and disable world AI/colliders/renderers while stored
         if (hangar != null)
+        {
+            alien.transform.SetParent(hangar.transform, worldPositionStays: true);
             alien.transform.position = hangar.BayPosition;
+        }
 
         if (alien.TryGetComponent<CreatureBrain>(out var brain)) brain.enabled = false;
         if (alien.TryGetComponent<NavMeshAgent>(out var agent)) agent.enabled = false;
@@ -281,6 +333,12 @@ public class PlayerSaucer : UFO
         {
             CreatureManager.Instance.Unregister(alien);
             CreatureManager.Instance.RegisterCapturedAlien(alien);
+        }
+
+        var barnUI = FindAnyObjectByType<BarnResearchUIController>();
+        if (barnUI != null && barnUI.IsMenuOpen)
+        {
+            barnUI.OpenMenu();
         }
     }
 
