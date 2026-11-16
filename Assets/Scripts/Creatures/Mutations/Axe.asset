@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Axe
   m_EditorClassIdentifier: Assembly-CSharp::MutationData
   mutationName: Axe
-  mutationCost: 50
+  mutationCost: 5
   allowedSlots: 12
   pairedPrefab: 0
   prefab: {fileID: 4302044529087751167, guid: bf0a430d70596d444b6c4d3d70000c13, type: 3}

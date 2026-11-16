@@ -76,8 +76,25 @@ public class WaveManager : MonoBehaviour
     }
 
     public void RegisterEnemy(Creature enemy)
-    { 
-        activeEnemies.Add(enemy);
+    {
+        if (enemy == null) return;
+
+        if (!activeEnemies.Contains(enemy))
+            activeEnemies.Add(enemy);
+
+        if (enemy is Animal animal && animal.Team != GameConstants.Team.Alien)
+        {
+            if (AbductionManager.Instance != null)
+            {
+                AbductionManager.Instance.EnrollMindControlledAnimal(animal);
+            }
+            else
+            {
+                animal.SetTeam(GameConstants.Team.Alien);
+                if (animal.TryGetComponent(out Selectable selectable))
+                    selectable.enabled = false;
+            }
+        }
     }
 
     public void UnregisterEnemy(Creature enemy) => activeEnemies.Remove(enemy);

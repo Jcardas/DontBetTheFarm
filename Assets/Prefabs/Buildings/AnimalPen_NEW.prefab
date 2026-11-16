@@ -61,7 +61,7 @@ MonoBehaviour:
   brokenVisual: {fileID: 5285555361507221328}
   isStartingPen: 0
   startingAnimals: []
-  MaxAnimals: 5
+  MaxAnimals: 8
   animalsInPen: []
   breedIcon: {fileID: 0}
   healIcon: {fileID: 0}

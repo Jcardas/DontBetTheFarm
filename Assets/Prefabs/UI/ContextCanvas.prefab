@@ -120,6 +120,9 @@ MonoBehaviour:
   buttonPrefab: {fileID: 2581854289262247230, guid: b124589e93ee8f440ae6499f0a24245f, type: 3}
   titleText: {fileID: 6125590859340183905}
   subtitleText: {fileID: 3986911130068346405}
+  disabledBackgroundColor: {r: 0.25, g: 0.25, b: 0.25, a: 0.75}
+  disabledTextColor: {r: 0.65, g: 0.65, b: 0.65, a: 1}
+  menuScale: 1.35
   worldOffset: {x: 0, y: 3, z: 0}
 --- !u!1001 &4889468106231749402
 PrefabInstance:

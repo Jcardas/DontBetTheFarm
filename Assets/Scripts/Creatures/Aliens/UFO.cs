@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 // The abduction saucer. It flies to a knocked-out farm creature, beams it up and carries it off the map edge.
 // It flies in a straight line above everything by moving its transform, so it needs no NavMesh.
@@ -235,12 +236,20 @@ public class UFO : MonoBehaviour, IDamageable
     protected virtual void Deliver()
     {
         claimed.Remove(victim);
+        bool farmerAbducted = victim is Farmer;
+
         victim.transform.SetParent(null, true);
         victim.transform.localScale = victimScale;
         victim.gameObject.SetActive(false);
         Abducted.Add(victim);
         victim = null;
         state = State.Leave;
+
+        if (farmerAbducted)
+        {
+            Time.timeScale = 1f;
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        }
     }
 
     // Puts a body that was being lifted back on the ground and frees it for anyone else.

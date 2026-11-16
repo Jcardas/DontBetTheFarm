@@ -269,11 +269,7 @@ MonoBehaviour:
     - transform: {fileID: 5038671724603542510}
       defaultVisualPrefab: {fileID: 0}
   socketScaleFactor: 1
-  defaultMutations:
-  - mutation: {fileID: 11400000, guid: d072a8806c873c449a05b6d3f15b93a7, type: 2}
-    slot: 4
-  - mutation: {fileID: 11400000, guid: ed6ed41f8168ec342ae8e012a8262beb, type: 2}
-    slot: 2
+  defaultMutations: []
 --- !u!1 &4650746187239923855
 GameObject:
   m_ObjectHideFlags: 0

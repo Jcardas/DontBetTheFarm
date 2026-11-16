@@ -151,6 +151,34 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1195607888028234962, guid: 44ae4b1d4f518614c9f4b416fd00e60a, type: 3}
+      propertyPath: motherships.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1195607888028234962, guid: 44ae4b1d4f518614c9f4b416fd00e60a, type: 3}
+      propertyPath: waves.Array.data[0].waveName
+      value: Level 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1195607888028234962, guid: 44ae4b1d4f518614c9f4b416fd00e60a, type: 3}
+      propertyPath: waves.Array.data[0].batchSize
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1195607888028234962, guid: 44ae4b1d4f518614c9f4b416fd00e60a, type: 3}
+      propertyPath: waves.Array.data[0].maxOnScreenEnemies
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 1195607888028234962, guid: 44ae4b1d4f518614c9f4b416fd00e60a, type: 3}
+      propertyPath: waves.Array.data[0].enemyPool.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1195607888028234962, guid: 44ae4b1d4f518614c9f4b416fd00e60a, type: 3}
+      propertyPath: waves.Array.data[0].enemyPool.Array.data[0].weight
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1195607888028234962, guid: 44ae4b1d4f518614c9f4b416fd00e60a, type: 3}
+      propertyPath: waves.Array.data[0].enemyPool.Array.data[0].enemyPrefab
+      value: 
+      objectReference: {fileID: 1989022934381298033, guid: 1e975b6e0486f9f49bdf3afa6ebe0588, type: 3}
     - target: {fileID: 1293950438048861503, guid: 44ae4b1d4f518614c9f4b416fd00e60a, type: 3}
       propertyPath: m_Name
       value: WaveManager
@@ -301,6 +329,26 @@ PrefabInstance:
       propertyPath: m_Name
       value: MutationUnlockManager
       objectReference: {fileID: 0}
+    - target: {fileID: 2165454517729069249, guid: 4ca2316932c70f949964adddd3063e21, type: 3}
+      propertyPath: defaultUnlockedMutations.Array.size
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2165454517729069249, guid: 4ca2316932c70f949964adddd3063e21, type: 3}
+      propertyPath: 'defaultUnlockedMutations.Array.data[0]'
+      value: 
+      objectReference: {fileID: 11400000, guid: 641fb6d78ec57694b8329c7a16a0a1e6, type: 2}
+    - target: {fileID: 2165454517729069249, guid: 4ca2316932c70f949964adddd3063e21, type: 3}
+      propertyPath: 'defaultUnlockedMutations.Array.data[1]'
+      value: 
+      objectReference: {fileID: 11400000, guid: e1c062f48e897b44abb8c46cc79a7cd1, type: 2}
+    - target: {fileID: 2165454517729069249, guid: 4ca2316932c70f949964adddd3063e21, type: 3}
+      propertyPath: 'defaultUnlockedMutations.Array.data[2]'
+      value: 
+      objectReference: {fileID: 11400000, guid: 10abea103baa71d4cb93c95f1db9f833, type: 2}
+    - target: {fileID: 2165454517729069249, guid: 4ca2316932c70f949964adddd3063e21, type: 3}
+      propertyPath: 'defaultUnlockedMutations.Array.data[3]'
+      value: 
+      objectReference: {fileID: 11400000, guid: ed6ed41f8168ec342ae8e012a8262beb, type: 2}
     - target: {fileID: 4938915539301117202, guid: 4ca2316932c70f949964adddd3063e21, type: 3}
       propertyPath: m_LocalPosition.x
       value: -1.80357
@@ -584,14 +632,6 @@ PrefabInstance:
     - target: {fileID: 2171488730281525831, guid: d5a2ffe84081647a987c825ec060e30d, type: 3}
       propertyPath: m_Name
       value: BuildingManager
-      objectReference: {fileID: 0}
-    - target: {fileID: 7053585842074065778, guid: d5a2ffe84081647a987c825ec060e30d, type: 3}
-      propertyPath: mainCamera
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 7053585842074065778, guid: d5a2ffe84081647a987c825ec060e30d, type: 3}
-      propertyPath: navMeshSurface
-      value: 
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

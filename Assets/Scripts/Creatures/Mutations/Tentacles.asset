@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Tentacles
   m_EditorClassIdentifier: Assembly-CSharp::MutationData
   mutationName: Tentacles
-  mutationCost: 50
+  mutationCost: 2
   allowedSlots: -1
   pairedPrefab: 0
   prefab: {fileID: 5632547008824762036, guid: 9b6b594a81d059f49947e55c72ffba34, type: 3}
@@ -22,7 +22,7 @@ MonoBehaviour:
   grantedCapabilities: 0
   bonusMaxHealth: 0
   damageResistance: 0
-  bonusMoveSpeed: 0
+  bonusMoveSpeed: 2
   bonusAttackDamage: 1
   bonusAttackRange: 2
   bonusAttackSpeed: 1

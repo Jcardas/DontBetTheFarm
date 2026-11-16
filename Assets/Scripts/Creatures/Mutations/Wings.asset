@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Wings
   m_EditorClassIdentifier: Assembly-CSharp::MutationData
   mutationName: Wings
-  mutationCost: 50
+  mutationCost: 10
   allowedSlots: 2
   pairedPrefab: 1
   prefab: {fileID: 7851528953947801171, guid: f3931ae5f3e2530499e8067d629ad512, type: 3}

@@ -174,4 +174,24 @@ public class AbductionManager : MonoBehaviour
 
         return collar;
     }
+    
+    /// <summary>
+    /// Converts a wave-spawned Animal into a mind-controlled Alien enemy with a neck collar.
+    /// Knocking it out removes the collar and converts it to the Farm team.
+    /// </summary>
+    public void EnrollMindControlledAnimal(Animal animal)
+    {
+        if (animal == null) return;
+
+        if (animal.TryGetComponent(out Selectable selectable))
+            selectable.enabled = false;
+
+        animal.SetTeam(GameConstants.Team.Alien);
+
+        if (!collars.ContainsKey(animal))
+            collars[animal] = PutOnCollar(animal);
+
+        if (!returned.Contains(animal))
+            returned.Add(animal);
+    }
 }

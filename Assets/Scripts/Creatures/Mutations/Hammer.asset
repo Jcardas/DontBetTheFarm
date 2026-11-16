@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Hammer
   m_EditorClassIdentifier: Assembly-CSharp::MutationData
   mutationName: Hammer
-  mutationCost: 50
+  mutationCost: 5
   allowedSlots: 12
   pairedPrefab: 0
   prefab: {fileID: 5083048850711605595, guid: 2b637373708bd0f4dbfecf7b6c226b1c, type: 3}

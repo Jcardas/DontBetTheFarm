@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Scythe
   m_EditorClassIdentifier: Assembly-CSharp::MutationData
   mutationName: Scythe
-  mutationCost: 50
+  mutationCost: 5
   allowedSlots: 12
   pairedPrefab: 0
   prefab: {fileID: 1011658533013701507, guid: b8232a57deeee084bad68a962255e0b5, type: 3}

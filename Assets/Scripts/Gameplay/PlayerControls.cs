@@ -3,6 +3,7 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 
 // The player's mouse and keyboard. Nothing is picked at the start. Left-click only selects: click a unit to pick just it,
 // click a picked unit to drop it from the selection, double-click to pick every unit of its type on screen, or drag a box
@@ -172,6 +173,14 @@ public class PlayerControls : MonoBehaviour
     void ReadKeys(bool shift)
     {
         var player = input.Player;
+
+        // Playtest shortcut: press R to restart the current scene
+        if (Keyboard.current != null && Keyboard.current.rKey.wasPressedThisFrame)
+        {
+            Time.timeScale = 1f;
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+            return;
+        }
 
         // Toggle Barn Research menu with J
         if (Keyboard.current != null && Keyboard.current.jKey.wasPressedThisFrame && barnUI != null)

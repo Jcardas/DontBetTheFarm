@@ -49,6 +49,7 @@ GameObject:
   - component: {fileID: 2380666779268161952}
   - component: {fileID: 3116712401882294792}
   - component: {fileID: 5816330678417624955}
+  - component: {fileID: 1232104272495714558}
   m_Layer: 6
   m_Name: Goose
   m_TagString: Untagged
@@ -145,8 +146,8 @@ MonoBehaviour:
   beamEffectPrefab: {fileID: 0}
   sourcePrefab: {fileID: 2854385660736801272}
   neckSize: 1
-  breedingCost: 5
-  healCost: 1
+  breedingCost: 20
+  healCost: 10
   flightHeight: 1.5
 --- !u!65 &4709323681059249495
 BoxCollider:
@@ -252,6 +253,34 @@ MonoBehaviour:
   defaultMutations:
   - mutation: {fileID: 11400000, guid: ed6ed41f8168ec342ae8e012a8262beb, type: 2}
     slot: 2
+--- !u!114 &1232104272495714558
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2547991513553249598}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b6059da4355f4520b9ed9f89c0de6b5a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CreatureFlight
+  cruiseAltitude: 3.2
+  climbSpeed: 4.5
+  descendSpeed: 5
+  airSpeedMultiplier: 1.15
+  airTurnSpeed: 360
+  hoverBobAmplitude: 0.1
+  hoverBobFrequency: 1.6
+  minTakeoffDistance: 2.2
+  landingApproachDistance: 2
+  forceZeroBaseOffset: 1
+  groundMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  groundCombatStyle: 0
+  swoopAttackHeight: 0.15
+  swoopTriggerDistance: 3.5
 --- !u!1001 &4261114637206769621
 PrefabInstance:
   m_ObjectHideFlags: 0

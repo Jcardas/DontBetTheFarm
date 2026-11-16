@@ -510,11 +510,10 @@ MonoBehaviour:
   attackSpeed: 1
   attackRange: 6
   viewRadius: 8
-  anchored: 1
   beamEffectPrefab: {fileID: 0}
   sourcePrefab: {fileID: 47775288017998707}
   neckSize: 1.05
-  breedingCost: 5
+  breedingCost: 20
   healCost: 10
   projectile: {fileID: 567345593106106381, guid: 8588e2a7464d6ff45a9220c0f8c302bb, type: 3}
   launchHeight: 1.4
