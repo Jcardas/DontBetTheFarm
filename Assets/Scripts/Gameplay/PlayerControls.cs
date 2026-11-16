@@ -181,6 +181,14 @@ public class PlayerControls : MonoBehaviour
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
             return;
         }
+        
+        // Press I to add 5 of each resource for testing purposes:
+        if (Keyboard.current != null && Keyboard.current.iKey.wasPressedThisFrame)
+        {
+            ResourceManager.Instance.Deposit(ResourceType.Wood, 5);
+            ResourceManager.Instance.Deposit(ResourceType.Hay, 5);
+            ResourceManager.Instance.Deposit(ResourceType.Technology, 5);
+        }
 
         // Toggle Barn Research menu with J
         if (Keyboard.current != null && Keyboard.current.jKey.wasPressedThisFrame && barnUI != null)

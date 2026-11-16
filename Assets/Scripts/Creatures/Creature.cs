@@ -429,4 +429,11 @@ public abstract class Creature : MonoBehaviour, IDamageable
     {
         return creatureprefabName;
     }
+    
+    public void SetHealthFraction(float fraction)
+    {
+        if (Down) return;
+        int targetHealth = Mathf.Clamp(Mathf.RoundToInt(CalculatedMaxHealth * fraction), 1, CalculatedMaxHealth);
+        currentHealth = targetHealth;
+    }
 }

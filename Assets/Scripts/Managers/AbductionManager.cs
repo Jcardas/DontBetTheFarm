@@ -55,9 +55,19 @@ public class AbductionManager : MonoBehaviour
 
         if (CreatureManager.Instance == null || TimeManager.Instance == null || WaveManager.Instance == null || saucerPrefab == null) return;
 
+        // High-priority override: if the Farmer is downed and unclaimed, send a UFO immediately no matter what
         foreach (Creature c in CreatureManager.Instance.GetEnemies(GameConstants.Team.Alien))
         {
-            if (c == null) continue;
+            if (c is Farmer farmer && farmer.Down && !UFO.IsClaimed(farmer))
+            {
+                Send(farmer);
+                break;
+            }
+        }
+
+        foreach (Creature c in CreatureManager.Instance.GetEnemies(GameConstants.Team.Alien))
+        {
+            if (c == null || c is Farmer) continue;
             if (!c.Down || UFO.IsClaimed(c))
             {
                 downSince.Remove(c);
@@ -73,7 +83,7 @@ public class AbductionManager : MonoBehaviour
             foreach (UFO saucer in saucers)
                 if (saucer != null)
                 {
-                    if (saucer.IsVictimInUFO()) continue; // Already got its target, so let it leave on its own.
+                    if (saucer.IsVictimInUFO() || saucer.IsTargetingFarmer()) continue;
                     saucer.Retreat();
                 }
         }
@@ -113,6 +123,7 @@ public class AbductionManager : MonoBehaviour
             animal.NavMeshAgent.enabled = true;
             animal.NavMeshAgent.Warp(at);
             animal.HealToFull();
+            animal.SetHealthFraction(0.5f);
             animal.SetDespawnPoint(at);
             waves.RegisterEnemy(animal);
             returned.Add(animal);
@@ -187,6 +198,7 @@ public class AbductionManager : MonoBehaviour
             selectable.enabled = false;
 
         animal.SetTeam(GameConstants.Team.Alien);
+        animal.SetHealthFraction(0.5f);
 
         if (!collars.ContainsKey(animal))
             collars[animal] = PutOnCollar(animal);

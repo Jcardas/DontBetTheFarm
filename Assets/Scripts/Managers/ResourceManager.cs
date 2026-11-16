@@ -16,6 +16,9 @@ public class ResourceManager : MonoBehaviour
     [SerializeField] private TMP_Text hayValue;
     [SerializeField] private TMP_Text technologyValue;
     public static ResourceManager Instance { get; private set; }
+    
+    static readonly List<ResourceManager> all = new();
+    static readonly Dictionary<ResourceType, int> totals = new();
 
     private void Awake()
     {
@@ -36,16 +39,9 @@ public class ResourceManager : MonoBehaviour
 
         BindResourceTexts();
         
-        // add 200 of each resource to the resource manager for testing purposes
-        // Deposit(ResourceType.Wood, 200);
-        // Deposit(ResourceType.Hay, 200);
-        // Deposit(ResourceType.Technology, 200);
-        
-        // Start with 5 wood, and 5 Hay
-        Deposit(ResourceType.Wood, 5);
-        Deposit(ResourceType.Hay, 5);
-        
-        
+        totals[ResourceType.Wood] = 5;
+        totals[ResourceType.Hay] = 5;
+        totals[ResourceType.Technology] = 0;
     }
 
     void Update()
@@ -53,9 +49,6 @@ public class ResourceManager : MonoBehaviour
         if (!Application.isPlaying) return;
         UpdateResourceHUD();
     }
-
-    static readonly List<ResourceManager> all = new();
-    static readonly Dictionary<ResourceType, int> totals = new();
 
     // Clears totals between plays even when "Reload Domain" is turned off in Enter Play Mode settings.
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]

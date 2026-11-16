@@ -504,10 +504,10 @@ MonoBehaviour:
   team: 0
   creatureprefabName: Llama
   baseCapabilities: 0
-  maxHealth: 50
+  maxHealth: 75
   moveSpeed: 5
   attackDamage: 10
-  attackSpeed: 1
+  attackSpeed: 0.5
   attackRange: 6
   viewRadius: 8
   beamEffectPrefab: {fileID: 0}
@@ -517,7 +517,7 @@ MonoBehaviour:
   healCost: 10
   projectile: {fileID: 567345593106106381, guid: 8588e2a7464d6ff45a9220c0f8c302bb, type: 3}
   launchHeight: 1.4
-  keepAwayRange: 3
+  keepAwayRange: 1
 --- !u!65 &7739518994544259854
 BoxCollider:
   m_ObjectHideFlags: 0

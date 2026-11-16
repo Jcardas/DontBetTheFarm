@@ -5012,7 +5012,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::UFO
   maxHealth: 20
   destroyedEffectPrefab: {fileID: 0}
-  flySpeed: 2
+  flySpeed: 4
   hoverHeight: 3.5
   beam: {fileID: 8076097286781388867}
   liftTime: 5

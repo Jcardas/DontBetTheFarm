@@ -139,7 +139,7 @@ MonoBehaviour:
   baseCapabilities: 0
   maxHealth: 50
   moveSpeed: 5
-  attackDamage: 10
+  attackDamage: 5
   attackSpeed: 1
   attackRange: 1
   viewRadius: 8

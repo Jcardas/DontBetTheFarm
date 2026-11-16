@@ -103,12 +103,38 @@ public class UFO : MonoBehaviour, IDamageable
                 victim.transform.localScale = victimScale != Vector3.zero ? victimScale : Vector3.one;
 
                 Vector3 dropPos = new Vector3(transform.position.x, liftFrom.y, transform.position.z);
-                if (Physics.Raycast(transform.position, Vector3.down, out RaycastHit groundHit, hoverHeight + 10f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
+
+                // RaycastAll so we ignore the UFO itself and the victim's own collider hanging beneath it
+                var hits = Physics.RaycastAll(transform.position, Vector3.down, hoverHeight + 15f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore);
+                float highestGround = float.NegativeInfinity;
+                for (int i = 0; i < hits.Length; i++)
                 {
-                    dropPos.y = groundHit.point.y;
+                    var col = hits[i].collider;
+                    if (col.transform.IsChildOf(transform) || col.transform.IsChildOf(victim.transform))
+                        continue;
+
+                    if (hits[i].point.y > highestGround)
+                        highestGround = hits[i].point.y;
                 }
+
+                if (highestGround > float.NegativeInfinity)
+                {
+                    dropPos.y = highestGround;
+                }
+                else if (UnityEngine.AI.NavMesh.SamplePosition(dropPos, out UnityEngine.AI.NavMeshHit navHit, 5f, UnityEngine.AI.NavMesh.AllAreas))
+                {
+                    dropPos.y = navHit.position.y;
+                }
+
                 victim.transform.position = dropPos;
                 victim.gameObject.SetActive(true);
+
+                if (victim.NavMeshAgent != null && !victim.Down)
+                {
+                    victim.NavMeshAgent.enabled = true;
+                    if (victim.NavMeshAgent.isOnNavMesh)
+                        victim.NavMeshAgent.Warp(dropPos);
+                }
             }
 
             victim = null;
@@ -286,5 +312,10 @@ public class UFO : MonoBehaviour, IDamageable
     public bool IsVictimInUFO()
     {
         return state is State.Carry or State.Leave && victim != null;
+    }
+    
+    public bool IsTargetingFarmer()
+    {
+        return victim is Farmer;
     }
 }

@@ -959,7 +959,7 @@ MonoBehaviour:
   team: 0
   creatureprefabName: Cow
   baseCapabilities: 0
-  maxHealth: 50
+  maxHealth: 100
   moveSpeed: 5
   attackDamage: 10
   attackSpeed: 1

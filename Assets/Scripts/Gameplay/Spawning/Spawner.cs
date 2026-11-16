@@ -16,7 +16,7 @@ public class Spawner : MonoBehaviour
 
     public void StartNightRoutine(Wave wave, WaveManager manager)
     {
-        if(platforms.Length == 0)
+        if (platforms.Length == 0)
         {
             Debug.LogWarning(gameObject.name + ": No platforms assigned to Spawner.");
             return;
@@ -27,6 +27,23 @@ public class Spawner : MonoBehaviour
         isSpawning = true;
 
         StartCoroutine(NightRoutine());
+    }
+
+    private SpawnPlatform GetNextActivePlatform(ref int currentIndex)
+    {
+        int startIndex = currentIndex;
+
+        do
+        {
+            currentIndex = (currentIndex + 1) % platforms.Length;
+            if (platforms[currentIndex] != null && platforms[currentIndex].isActive)
+            {
+                return platforms[currentIndex];
+            }
+        }
+        while (currentIndex != startIndex);
+
+        return null;
     }
 
     public void StopSpawning()
@@ -128,6 +145,12 @@ public class Spawner : MonoBehaviour
 
     private IEnumerator FlyToPosistion(Vector3 targetPosition)
     {
+        if (currentWave.flightTime <= 0.001f)
+        {
+            transform.position = targetPosition;
+            yield break;
+        }
+
         Vector3 startPosition = transform.position;
         float elapsed = 0f;
 
@@ -139,22 +162,5 @@ public class Spawner : MonoBehaviour
         }
 
         transform.position = targetPosition;
-    }
-
-    private SpawnPlatform GetNextActivePlatform(ref int currentIndex)
-    {
-        int startIndex = currentIndex;
-
-        do
-        {
-            currentIndex = (currentIndex + 1) % platforms.Length;
-            if (platforms[currentIndex].isActive)
-            {
-                return platforms[currentIndex];
-            }
-        }
-        while (currentIndex != startIndex);
-
-        return null;
     }
 }
