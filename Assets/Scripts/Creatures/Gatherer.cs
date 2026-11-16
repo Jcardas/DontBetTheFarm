@@ -8,7 +8,7 @@ public class Gatherer : MonoBehaviour
 {
     private static readonly Color WorkTint = new(0.8f, 1f, 0.7f);
 
-    public enum State { Idle, GatheringNode, HarvestingField, RepairingBuilding }
+    public enum State { Idle, GatheringNode, HarvestingField, RepairingBuilding, RevivingAnimal }
 
     [Header("Work Settings")]
     public float reach = 1.2f;
@@ -28,6 +28,7 @@ public class Gatherer : MonoBehaviour
     private ResourceType activeResourceType;
     private WheatField field;
     private Buildable building;
+    private Animal reviveTarget;
     private Collider targetCollider;
     private Collider heading;
 
@@ -98,12 +99,25 @@ public class Gatherer : MonoBehaviour
         building = target;
     }
 
+    public void Revive(Animal target)
+    {
+        if (creature is not Farmer || creature.Down || target == null || !target.Down) return;
+        if (ResourceManager.Count(ResourceType.Hay) < target.HealCost) return;
+
+        Collider col = target.Body != null ? target.Body : target.GetComponentInChildren<Collider>();
+        if (col == null) return;
+
+        BeginTask(State.RevivingAnimal, target.transform.position, col);
+        reviveTarget = target;
+    }
+
     private void BeginTask(State newState, Vector3 sitePosition, Collider col)
     {
         if (state != State.Idle) AbortWork();
         node = null;
         field = null;
         building = null;
+        reviveTarget = null;
         heading = null;
         targetCollider = col;
         workTimer = 0f;
@@ -119,6 +133,7 @@ public class Gatherer : MonoBehaviour
         node = null;
         field = null;
         building = null;
+        reviveTarget = null;
         targetCollider = null;
         heading = null;
         workTimer = 0f;
@@ -143,6 +158,7 @@ public class Gatherer : MonoBehaviour
             case State.GatheringNode: UpdateNodeGathering(); break;
             case State.HarvestingField: UpdateFieldHarvest(); break;
             case State.RepairingBuilding: UpdateRepair(); break;
+            case State.RevivingAnimal: UpdateRevive(); break;
         }
     }
 
@@ -215,6 +231,26 @@ public class Gatherer : MonoBehaviour
             {
                 foreach (NavMeshSurface surface in FindObjectsByType<NavMeshSurface>(FindObjectsSortMode.None))
                     if (surface.isActiveAndEnabled) surface.BuildNavMesh();
+            }
+            AbortWork();
+        }
+    }
+
+    private void UpdateRevive()
+    {
+        if (creature is not Farmer || creature.Down || reviveTarget == null || !reviveTarget.Down || targetCollider == null)
+        {
+            AbortWork();
+            return;
+        }
+
+        if (!Arrive(targetCollider)) return;
+
+        if (DoWorkTick(secondsPerRepair))
+        {
+            if (reviveTarget.Down && ResourceManager.Spend(ResourceType.Hay, reviveTarget.HealCost))
+            {
+                reviveTarget.HealToFull();
             }
             AbortWork();
         }

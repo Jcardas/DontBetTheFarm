@@ -216,7 +216,9 @@ public abstract class Creature : MonoBehaviour, IDamageable
             CreatureManager.Instance.Unregister(this);
 
         if (creatureMutator != null)
+        {
             creatureMutator.OnMutationsUpdated -= OnMutationsChanged;
+        }
     }
 
     public void TakeDamage(int amount)
@@ -227,6 +229,12 @@ public abstract class Creature : MonoBehaviour, IDamageable
 
         currentHealth = Mathf.Max(0, currentHealth - mitigated);
         if (currentHealth <= 0) HandleZeroHealth();
+    }
+
+    public void HealAmount(int amount)
+    {
+        if (amount <= 0) return;
+        Heal(amount);
     }
 
     private void Heal(int amount)

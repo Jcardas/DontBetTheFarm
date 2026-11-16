@@ -114,7 +114,8 @@ public class ContextInteractionManager : MonoBehaviour
     {
         Vector2 screenPos = GetPointerScreenPosition();
 
-        if (UIBlocker.IsPointerOverUI(screenPos))
+        if (UIBlocker.IsPointerOverUI(screenPos) ||
+            (BuildingManager.Instance != null && BuildingManager.Instance.IsBusy))
         {
             _isTrackingClick = false;
             return;
@@ -148,6 +149,7 @@ public class ContextInteractionManager : MonoBehaviour
 
         Vector2 releasePos = GetPointerScreenPosition();
         if (UIBlocker.IsPointerOverUI(releasePos)) return;
+        if (BuildingManager.Instance != null && BuildingManager.Instance.IsBusy) return;
 
         float holdDuration = Time.unscaledTime - _pressTime;
         float dragDistance = Vector2.Distance(releasePos, _pressScreenPosition);
@@ -171,23 +173,35 @@ public class ContextInteractionManager : MonoBehaviour
         Component menuTarget = null;
         Transform anchorTransform = null;
 
-        // 1. Check renderer bounds first for broken buildings whose colliders are disabled
-        Buildable brokenTarget = Order.BrokenAt(ray);
-        if (brokenTarget != null)
+        // 1. Prioritize knocked-out animals first so downed animals inside a pen's bounds are always selectable over the pen
+        Animal knockedOutAnimal = FindKnockedOutAnimalAt(ray);
+        if (knockedOutAnimal != null)
         {
-            menuTarget = brokenTarget;
-            anchorTransform = brokenTarget.transform;
+            menuTarget = knockedOutAnimal;
+            anchorTransform = knockedOutAnimal.transform;
         }
-        else if (MouseTarget.Find(ray, out RaycastHit hit, maxRayDistance, interactableLayers))
+        else
         {
-            // Fall back to MouseTarget.Building so clicking the open ground inside a pen still targets the pen
-            menuTarget = MouseTarget.Menu(ray, hit) ?? MouseTarget.Building(ray, hit);
-            anchorTransform = menuTarget != null ? menuTarget.transform : hit.transform;
+            // 2. Check renderer bounds for broken buildings whose colliders are disabled
+            Buildable brokenTarget = Order.BrokenAt(ray);
+            if (brokenTarget != null)
+            {
+                menuTarget = brokenTarget;
+                anchorTransform = brokenTarget.transform;
+            }
+            else if (MouseTarget.Find(ray, out RaycastHit hit, maxRayDistance, interactableLayers))
+            {
+                // Fall back to MouseTarget.Building so clicking the open ground inside a pen still targets the pen
+                menuTarget = MouseTarget.Menu(ray, hit) ?? MouseTarget.Building(ray, hit);
+                anchorTransform = menuTarget != null ? menuTarget.transform : hit.transform;
+            }
         }
 
         if (menuTarget != null)
         {
-            string menuTitle = menuTarget.name.ToUpper();
+            string menuTitle = menuTarget is Buildable bTitle
+                ? bTitle.BuildableName.ToUpper()
+                : (menuTarget is Creature cTitle ? cTitle.CreatureName.ToUpper() : menuTarget.name.ToUpper());
 
             // Broken buildings only show the Repair menu if a repair-capable unit is currently selected
             if (menuTarget is Buildable buildable && buildable.IsBroken)
@@ -221,6 +235,17 @@ public class ContextInteractionManager : MonoBehaviour
                 return;
             }
 
+            // Knocked-out animals always open the context menu so the player sees the revive option/cost
+            if (menuTarget is Animal downedAnimal && downedAnimal.Down)
+            {
+                IReadOnlyList<ContextActionData> animalActions = downedAnimal.GetContextActions();
+                if (animalActions != null && animalActions.Count > 0)
+                {
+                    ContextMenuEventBus.RequestOpen(animalActions, anchorTransform, menuTitle, "Knocked Out");
+                    return;
+                }
+            }
+
             if (menuTarget is IContextInteractable interactable)
             {
                 IReadOnlyList<ContextActionData> actions = interactable.GetContextActions();
@@ -241,6 +266,37 @@ public class ContextInteractionManager : MonoBehaviour
         }
 
         ContextMenuEventBus.RequestClose();
+    }
+
+    private Animal FindKnockedOutAnimalAt(Ray ray)
+    {
+        Animal closest = null;
+        float closestDistance = float.MaxValue;
+
+        foreach (Animal candidate in FindObjectsByType<Animal>(FindObjectsSortMode.None))
+        {
+            if (candidate == null || !candidate.Down || !candidate.isActiveAndEnabled) continue;
+
+            if (candidate.Body != null && candidate.Body.enabled &&
+                candidate.Body.bounds.IntersectRay(ray, out float colDist) && colDist < closestDistance)
+            {
+                closestDistance = colDist;
+                closest = candidate;
+                continue;
+            }
+
+            foreach (Renderer r in candidate.GetComponentsInChildren<Renderer>())
+            {
+                if (!r.enabled || !r.gameObject.activeInHierarchy) continue;
+                if (r is not MeshRenderer && r is not SkinnedMeshRenderer) continue;
+                if (!r.bounds.IntersectRay(ray, out float rendDist) || rendDist >= closestDistance) continue;
+
+                closestDistance = rendDist;
+                closest = candidate;
+            }
+        }
+
+        return closest;
     }
 
     private static bool IsPointerOverUIElement(Vector2 screenPosition)

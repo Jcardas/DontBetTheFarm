@@ -71,6 +71,13 @@ public class CreatureBrain : MonoBehaviour
             return;
         }
 
+        if (order.kind == OrderKind.Revive && creature is Farmer && order.animalToRevive != null && order.animalToRevive.Down && activeGatherer != null)
+        {
+            ClearCombatAndObey();
+            activeGatherer.Revive(order.animalToRevive);
+            return;
+        }
+
         if (activeGatherer != null)
         {
             if (order.kind == OrderKind.Work && activeGatherer.CanWork(order.node))
@@ -112,6 +119,7 @@ public class CreatureBrain : MonoBehaviour
             OrderKind.Repair => activeGatherer != null && activeGatherer.CanRepair,
             OrderKind.Pen => creature is Animal,
             OrderKind.Barn => creature is Farmer,
+            OrderKind.Revive => creature is Farmer && order.animalToRevive != null && order.animalToRevive.Down,
             _ => true,
         };
     }

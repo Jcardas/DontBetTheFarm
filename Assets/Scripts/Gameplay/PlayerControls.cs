@@ -73,8 +73,8 @@ public class PlayerControls : MonoBehaviour
         bool shift = player.Add.IsPressed(), ctrl = player.SaveGroup.IsPressed();
         ReadKeys(shift);
 
-        // Stop world selection, shotgun firing, and building highlights while any modal UI is open
-        if (UIBlocker.IsModalUIOpen)
+        // Stop world selection, shotgun firing, and building highlights while modal UI or building placement/demolition is active
+        if (UIBlocker.IsModalUIOpen || (BuildingManager.Instance != null && BuildingManager.Instance.IsBusy))
         {
             Hover(System.Linq.Enumerable.Empty<Selectable>());
             HoverTarget(null);
@@ -148,6 +148,12 @@ public class PlayerControls : MonoBehaviour
             return;
         }
 
+        if (BuildingManager.Instance != null && BuildingManager.Instance.IsDemolishing)
+        {
+            ShowCursor(CursorType.Repair);
+            return;
+        }
+
         Ray ray = cam.ScreenPointToRay(at);
         bool overSomething = MouseTarget.Find(ray, out RaycastHit hit);
         var unit = overSomething
@@ -214,6 +220,9 @@ public class PlayerControls : MonoBehaviour
         if (broken != null) return broken;
         if (!overSomething) return null;
 
+        var knockedOut = hit.collider.GetComponentInParent<Animal>();
+        if (knockedOut != null && knockedOut.Down) return knockedOut;
+
         var order = Order.From(ray, hit);
         if (AnyPickedCan(order))
         {
@@ -247,6 +256,10 @@ public class PlayerControls : MonoBehaviour
     // when a picked unit can carry it out: with just cows picked, a tree shows the walk-here cursor, since they walk there.
     static CursorType CursorFor(Ray ray, RaycastHit hit, Selectable unit)
     {
+        var knockedOut = hit.collider.GetComponentInParent<Animal>();
+        if (knockedOut != null && knockedOut.Down)
+            return CursorType.Interact;
+
         var order = Order.From(ray, hit);
         if (AnyPickedCan(order))
         {
@@ -331,9 +344,24 @@ public class PlayerControls : MonoBehaviour
         return p.z > 0f && area.Contains(p);
     }
 
-    // Yields to ContextInteractionManager whenever clicking on or inside an intact building (including AnimalPen interior).
+    // Yields to ContextInteractionManager whenever clicking on or inside an intact building (including AnimalPen interior)
+    // or on a knocked-out animal so its context menu opens instead of auto-executing.
     void Command(Ray ray, RaycastHit hit)
     {
+        var clickedAnimal = hit.collider.GetComponentInParent<Animal>();
+        if (clickedAnimal != null && clickedAnimal.Down)
+        {
+            Gatherer.DismissRepairUI();
+            return;
+        }
+
+        // Always let AnimalPen open its context menu ("View Pen" / "Assign to pen") instead of auto-assigning on right-click.
+        if (MouseTarget.Building(ray, hit) is AnimalPen { IsBroken: false })
+        {
+            Gatherer.DismissRepairUI();
+            return;
+        }
+
         var order = Order.From(ray, hit);
         if (order.kind != OrderKind.Move && AnyPickedCan(order))
         {
@@ -355,6 +383,7 @@ public class PlayerControls : MonoBehaviour
     // side by side there instead of shoving for one spot.
     void Command(Order order)
     {
+        ContextMenuEventBus.RequestClose();
         var group = Selectable.All.Where(s => s.Selected).ToList();
 
         // Any right-click dismisses an open repair panel unless re-issuing repair on the same building to the active repairer.
