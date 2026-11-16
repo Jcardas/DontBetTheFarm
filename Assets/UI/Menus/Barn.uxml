@@ -24,48 +24,23 @@
                         <ui:VisualElement name="MutationsSection" style="flex-grow: 1;">
                             <ui:Label text="Select Mutations to Unlock" name="MutationSelectionHeader" class="header" style="align-self: center;"/>
                             <ui:VisualElement name="MutationsList" style="flex-grow: 1; flex-direction: row; align-self: auto; justify-content: center; align-items: center; align-content: auto; width: 100%; max-height: 200px; padding-top: 10px;">
-                                <ui:VisualElement template="MutationIcon">
-                                    <Style src="project://database/Assets/UI/StyleSheets/InteractionUI.uss?fileID=7433441132597879392&amp;guid=3c26107ceb91787478132dd32f00eb5c&amp;type=3"/>
-                                    <ui:VisualElement name="MutationIconContainer" class="mutationContainer cursor-clickable" style="flex-grow: 1; aspect-ratio: 1; width: 100%; height: 100%; max-width: 100%; margin-left: 10px; margin-top: 10px; margin-right: 10px; margin-bottom: 10px; cursor: url(&quot;project://database/Assets/UI/Cursors/hand_small_point.png?fileID=2800000&amp;guid=fedc076baeb05804cab1ff17dd39e132&amp;type=3#hand_small_point&quot;);">
-                                        <ui:VisualElement name="Mutation3DItem" style="flex-grow: 1; width: 100%; height: 100%; max-width: 100%; max-height: 100%; aspect-ratio: 1;">
-                                            <ui:Image source="project://database/Assets/UI/Icons/HeadIcon.png?fileID=-6940944650096720487&amp;guid=a63ff144064ddaf4d948979ac848bffd&amp;type=3#HeadIcon_0" style="flex-grow: 1;"/>
-                                        </ui:VisualElement>
-                                    </ui:VisualElement>
+                                <ui:VisualElement name="HeadSlotIcon" class="mutationContainer cursor-clickable" style="width: 140px; height: 140px; aspect-ratio: 1; margin: 10px; padding: 12px; align-items: center; justify-content: center;">
+                                    <ui:Image source="project://database/Assets/UI/Icons/HeadIcon.png?fileID=-6940944650096720487&amp;guid=a63ff144064ddaf4d948979ac848bffd&amp;type=3#HeadIcon_0" style="width: 100%; height: 100%;"/>
                                 </ui:VisualElement>
-                                <ui:VisualElement template="MutationIcon">
-                                    <Style src="project://database/Assets/UI/StyleSheets/InteractionUI.uss?fileID=7433441132597879392&amp;guid=3c26107ceb91787478132dd32f00eb5c&amp;type=3"/>
-                                    <ui:VisualElement name="MutationIconContainer" class="mutationContainer cursor-clickable" style="flex-grow: 1; aspect-ratio: 1; width: 100%; height: 100%; max-width: 100%; margin-left: 10px; margin-top: 10px; margin-right: 10px; margin-bottom: 10px; cursor: url(&quot;project://database/Assets/UI/Cursors/hand_small_point.png?fileID=2800000&amp;guid=fedc076baeb05804cab1ff17dd39e132&amp;type=3#hand_small_point&quot;);">
-                                        <ui:VisualElement name="Mutation3DItem" style="flex-grow: 1; width: 100%; height: 100%; max-width: 100%; max-height: 100%; aspect-ratio: 1;">
-                                            <ui:Image source="project://database/Assets/UI/Icons/BackIcon.png?fileID=-2389278446680308781&amp;guid=0ae226dc60339c848bc174a7d93a2e26&amp;type=3#BackIcon_0" style="flex-grow: 1;"/>
-                                        </ui:VisualElement>
-                                    </ui:VisualElement>
+                                <ui:VisualElement name="BackSlotIcon" class="mutationContainer cursor-clickable" style="width: 140px; height: 140px; aspect-ratio: 1; margin: 10px; padding: 12px; align-items: center; justify-content: center;">
+                                    <ui:Image source="project://database/Assets/UI/Icons/BackIcon.png?fileID=-2389278446680308781&amp;guid=0ae226dc60339c848bc174a7d93a2e26&amp;type=3#BackIcon_0" style="width: 100%; height: 100%;"/>
                                 </ui:VisualElement>
-                                <ui:VisualElement template="MutationIcon">
-                                    <Style src="project://database/Assets/UI/StyleSheets/InteractionUI.uss?fileID=7433441132597879392&amp;guid=3c26107ceb91787478132dd32f00eb5c&amp;type=3"/>
-                                    <ui:VisualElement name="MutationIconContainer" class="mutationContainer cursor-clickable" style="flex-grow: 1; aspect-ratio: 1; width: 100%; height: 100%; max-width: 100%; margin-left: 10px; margin-top: 10px; margin-right: 10px; margin-bottom: 10px; cursor: url(&quot;project://database/Assets/UI/Cursors/hand_small_point.png?fileID=2800000&amp;guid=fedc076baeb05804cab1ff17dd39e132&amp;type=3#hand_small_point&quot;);">
-                                        <ui:VisualElement name="Mutation3DItem" style="flex-grow: 1; width: 100%; height: 100%; max-width: 100%; max-height: 100%; aspect-ratio: 1;">
-                                            <ui:Image source="project://database/Assets/UI/Icons/LimbIcon.png?fileID=6308549905938073964&amp;guid=116a58c16902c424e8a6d3bba5006c16&amp;type=3#LimbIcon_0" style="flex-grow: 1;"/>
-                                        </ui:VisualElement>
-                                    </ui:VisualElement>
+                                <ui:VisualElement name="LimbsSlotIcon" class="mutationContainer cursor-clickable" style="width: 140px; height: 140px; aspect-ratio: 1; margin: 10px; padding: 12px; align-items: center; justify-content: center;">
+                                    <ui:Image source="project://database/Assets/UI/Icons/LimbIcon.png?fileID=6308549905938073964&amp;guid=116a58c16902c424e8a6d3bba5006c16&amp;type=3#LimbIcon_0" style="width: 100%; height: 100%;"/>
                                 </ui:VisualElement>
-                                <ui:VisualElement template="MutationIcon">
-                                    <Style src="project://database/Assets/UI/StyleSheets/InteractionUI.uss?fileID=7433441132597879392&amp;guid=3c26107ceb91787478132dd32f00eb5c&amp;type=3"/>
-                                    <ui:VisualElement name="MutationIconContainer" class="mutationContainer cursor-clickable" style="flex-grow: 1; aspect-ratio: 1; width: 100%; height: 100%; max-width: 100%; margin-left: 10px; margin-top: 10px; margin-right: 10px; margin-bottom: 10px; cursor: url(&quot;project://database/Assets/UI/Cursors/hand_small_point.png?fileID=2800000&amp;guid=fedc076baeb05804cab1ff17dd39e132&amp;type=3#hand_small_point&quot;);">
-                                        <ui:VisualElement name="Mutation3DItem" style="flex-grow: 1; width: 100%; height: 100%; max-width: 100%; max-height: 100%; aspect-ratio: 1;">
-                                            <ui:Image source="project://database/Assets/UI/Icons/TailIcon.png?fileID=-6254662425824378823&amp;guid=9f6cc3eb301afaa4189e075b3f16de1b&amp;type=3#tail_0" style="flex-grow: 1;"/>
-                                        </ui:VisualElement>
-                                    </ui:VisualElement>
+                                <ui:VisualElement name="TailSlotIcon" class="mutationContainer cursor-clickable" style="width: 140px; height: 140px; aspect-ratio: 1; margin: 10px; padding: 12px; align-items: center; justify-content: center;">
+                                    <ui:Image source="project://database/Assets/UI/Icons/TailIcon.png?fileID=-6254662425824378823&amp;guid=9f6cc3eb301afaa4189e075b3f16de1b&amp;type=3#tail_0" style="width: 100%; height: 100%;"/>
                                 </ui:VisualElement>
                             </ui:VisualElement>
                         </ui:VisualElement>
                     </ui:VisualElement>
                     <ui:VisualElement name="ContentPane" style="flex-grow: 0; max-width: 830px; min-width: 830px; width: 131px;">
-                        <ui:ScrollView name="CheckoutScrollView" vertical-scroller-visibility="Hidden" focusable="false" class="translucentPanel" style="visibility: visible; display: flex; overflow: visible; flex-grow: 1; margin-bottom: 20px; -unity-text-align: upper-left; justify-content: flex-start; align-items: flex-start; flex-direction: column; align-self: auto; padding-bottom: 10px; flex-wrap: nowrap; opacity: 1;">
-                            <ui:Instance template="SelectedMutationContainer" class="cursor-clickable"/>
-                            <ui:Instance template="SelectedMutationContainer" class="cursor-clickable"/>
-                            <ui:Instance template="SelectedMutationContainer" class="cursor-clickable"/>
-                            <ui:Instance template="SelectedMutationContainer" class="cursor-clickable"/>
-                        </ui:ScrollView>
+                        <ui:ScrollView name="CheckoutScrollView" vertical-scroller-visibility="Hidden" focusable="false" class="translucentPanel" style="visibility: visible; display: flex; overflow: visible; flex-grow: 1; margin-bottom: 20px; -unity-text-align: upper-left; justify-content: flex-start; align-items: flex-start; flex-direction: column; align-self: auto; padding-bottom: 10px; flex-wrap: nowrap; opacity: 1;"/>
                         <ui:VisualElement name="MutationCheckoutContainer" class="TabSelector" style="flex-grow: 1; max-height: 120px; flex-direction: row; justify-content: space-between;">
                             <ui:Button text="Cancel" name="CancelButton" class="button cancelButton" style="align-items: stretch; align-content: flex-start; font-size: 24px; border-left-color: rgba(149, 149, 149, 0); border-right-color: rgba(149, 149, 149, 0); border-top-color: rgba(149, 149, 149, 0); border-bottom-color: rgba(149, 149, 149, 0); border-top-width: 0; border-right-width: 0; border-bottom-width: 0; border-left-width: 0; align-self: auto; justify-content: flex-start; width: 100%; max-width: 300px;"/>
                             <ui:Button text="Unlock" name="UnlockButton" icon-image="project://database/Assets/UI/Cursors/Unused/lock_unlocked.png?fileID=2800000&amp;guid=c72fbccd26495554e8f1314f8eeefd57&amp;type=3#lock_unlocked" class="button" style="align-items: stretch; align-content: flex-start; font-size: 24px; border-left-color: rgba(149, 149, 149, 0); border-right-color: rgba(149, 149, 149, 0); border-top-color: rgba(149, 149, 149, 0); border-bottom-color: rgba(149, 149, 149, 0); border-top-width: 0; border-right-width: 0; border-bottom-width: 0; border-left-width: 0; width: 75%; max-width: 100%; flex-grow: 1; flex-shrink: 1; align-self: auto; justify-content: center;"/>

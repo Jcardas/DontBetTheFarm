@@ -2809,6 +2809,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 1989022934381298033, guid: 1e975b6e0486f9f49bdf3afa6ebe0588, type: 3}
     - target: {fileID: 1923878284154658051, guid: 59ba79a8fc03547d5999c44065bd285a, type: 3}
+      propertyPath: mainCamera
+      value: 
+      objectReference: {fileID: 1836987248}
+    - target: {fileID: 1923878284154658051, guid: 59ba79a8fc03547d5999c44065bd285a, type: 3}
       propertyPath: navMeshSurface
       value: 
       objectReference: {fileID: 1572670660}
@@ -2854,12 +2858,12 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2628628761612064679, guid: 59ba79a8fc03547d5999c44065bd285a, type: 3}
       propertyPath: defaultUnlockedMutations.Array.size
-      value: 3
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2628628761612064679, guid: 59ba79a8fc03547d5999c44065bd285a, type: 3}
       propertyPath: 'defaultUnlockedMutations.Array.data[0]'
       value: 
-      objectReference: {fileID: 11400000, guid: f730b7380f49e134c8aa7347bc062467, type: 2}
+      objectReference: {fileID: 11400000, guid: ed6ed41f8168ec342ae8e012a8262beb, type: 2}
     - target: {fileID: 2628628761612064679, guid: 59ba79a8fc03547d5999c44065bd285a, type: 3}
       propertyPath: 'defaultUnlockedMutations.Array.data[1]'
       value: 
@@ -4126,6 +4130,11 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 9d833c5f7f7f75e4aa5141d004a6aa89, type: 3}
+--- !u!20 &1836987248 stripped
+Camera:
+  m_CorrespondingSourceObject: {fileID: 3548949565765558411, guid: b443ab66fcdd6496a8ff05f3dfd8caf7, type: 3}
+  m_PrefabInstance: {fileID: 1302198804}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1838080873
 PrefabInstance:
   m_ObjectHideFlags: 0

@@ -6,8 +6,10 @@ using UnityEngine.InputSystem;
 
 public class BarnResearchUIController : MonoBehaviour
 {
+    private const float DragThreshold = 8f;
+
     public bool IsMenuOpen => gameObject.activeSelf;
-    
+
     [Header("UI & Sub-Templates")]
     [SerializeField] private UIDocument barnUIDocument;
     [SerializeField] private VisualTreeAsset mutationIconTemplate;          // MutationIcon.uxml
@@ -37,28 +39,43 @@ public class BarnResearchUIController : MonoBehaviour
     // Slots the player has selected to extract/unlock from this alien
     private readonly HashSet<SlotType> _selectedSlotsToUnlock = new();
     private readonly SlotType[] _slotOrder = { SlotType.Head, SlotType.Back, SlotType.Limbs, SlotType.Tail };
+    private readonly Dictionary<SlotType, VisualElement> _slotContainers = new();
+
+    // Drag-and-drop state (matches PenAnimalsTab)
+    private Image _dragGhost;
+    private MutationData _draggingMutation;
+    private SlotType? _dragSourceSlot;
+    private bool _draggingFromCheckout;
+    private Vector2 _dragStartPos;
+    private bool _isDragging;
 
     // Cached UI Elements
     private VisualElement _root;
+    private VisualElement _creaturePreviewContainer;
     private VisualElement _creature3DRender;
     private Label _alienHeaderLabel;
     private Label _aliensInBarnCountLabel;
+    private Label _selectMutationsHeaderLabel;
     private VisualElement _mutationsList;
+    private VisualElement _contentPane;
+    private VisualElement _checkoutContainer;
     private ScrollView _checkoutScrollView;
     private Label _costLabel;
+    private Button _prevAlienButton;
+    private Button _nextAlienButton;
     private Button _cancelButton;
     private Button _unlockButton;
 
     private void Awake()
     {
         _previewLayer = LayerMask.NameToLayer("UI_Preview");
+        CloseMenu();
     }
 
     private void Update()
     {
         if (previewSpawnPoint != null && _previewInstance != null)
         {
-            // Rotate the preview alien slowly for a dynamic effect
             _previewInstance.transform.Rotate(Vector3.up, 15f * Time.deltaTime, Space.World);
         }
 
@@ -84,8 +101,9 @@ public class BarnResearchUIController : MonoBehaviour
     {
         gameObject.SetActive(true);
 
-        // If the GameObject was already active when OpenMenu was called, refresh the UI immediately
-        // (Otherwise, OnEnable() will automatically run RefreshMenuContents() when activated)
+        if (barnUIDocument != null && barnUIDocument.rootVisualElement != null)
+            barnUIDocument.rootVisualElement.style.display = DisplayStyle.Flex;
+
         if (_root != null)
         {
             RefreshMenuContents();
@@ -108,6 +126,7 @@ public class BarnResearchUIController : MonoBehaviour
         _root.RegisterCallback<KeyDownEvent>(OnRootKeyDown, TrickleDown.TrickleDown);
 
         // 1. Bind RenderTexture to #Creature3DRender
+        _creaturePreviewContainer = _root.Q<VisualElement>("CreaturePreview");
         _creature3DRender = _root.Q<VisualElement>("Creature3DRender");
         if (_creature3DRender != null)
         {
@@ -123,63 +142,152 @@ public class BarnResearchUIController : MonoBehaviour
         _alienHeaderLabel = _root.Q<Label>("AlienHeader");
         _aliensInBarnCountLabel = _root.Q<Label>("AliensInBarnCount");
         _mutationsList = _root.Q<VisualElement>("MutationsList");
+        _contentPane = _root.Q<VisualElement>("ContentPane");
         _checkoutScrollView = _root.Q<ScrollView>("CheckoutScrollView");
         _costLabel = _root.Q<Label>("Cost");
+        _prevAlienButton = _root.Q<Button>("Back");
+        _nextAlienButton = _root.Q<Button>("Forward");
+
+        _selectMutationsHeaderLabel = _root.Q<Label>("MutationSelectionHeader") ?? _root.Q<Label>("SelectMutationsHeader");
+        if (_selectMutationsHeaderLabel == null && _mutationsList?.parent != null)
+        {
+            foreach (var lbl in _mutationsList.parent.Query<Label>().ToList())
+            {
+                if (lbl != _alienHeaderLabel && lbl != _aliensInBarnCountLabel)
+                {
+                    _selectMutationsHeaderLabel = lbl;
+                    break;
+                }
+            }
+        }
 
         _root.Q<Button>("BackButton")?.RegisterCallback<ClickEvent>(OnBackButtonClicked);
-        _root.Q<Button>("Back")?.RegisterCallback<ClickEvent>(OnPrevAlienClicked);
-        _root.Q<Button>("Forward")?.RegisterCallback<ClickEvent>(OnNextAlienClicked);
+        _prevAlienButton?.RegisterCallback<ClickEvent>(OnPrevAlienClicked);
+        _nextAlienButton?.RegisterCallback<ClickEvent>(OnNextAlienClicked);
 
-        var checkoutContainer = _root.Q<VisualElement>("MutationCheckoutContainer");
-        if (checkoutContainer != null)
+        _checkoutContainer = _root.Q<VisualElement>("MutationCheckoutContainer");
+        if (_checkoutContainer != null)
         {
-            _cancelButton = checkoutContainer.Q<Button>("CancelButton");
-            _unlockButton = checkoutContainer.Q<Button>("UnlockButton");
+            _cancelButton = _checkoutContainer.Q<Button>("CancelButton");
+            _unlockButton = _checkoutContainer.Q<Button>("UnlockButton");
 
             _cancelButton?.RegisterCallback<ClickEvent>(OnCancelButtonClicked);
             _unlockButton?.RegisterCallback<ClickEvent>(OnUnlockButtonClicked);
         }
 
-        // 3. Populate initial alien or show empty barn state
+        // 3. Create floating drag ghost (matching PenAnimalsTab)
+        EnsureDragGhost();
+
+        // 4. Bind slot containers and register drag-and-drop handlers once
+        BindSlotContainers();
+
+        // 5. Populate initial alien or show empty barn state
         RefreshMenuContents();
     }
 
     private void OnDisable()
     {
+        CancelDrag();
+
         if (_root != null)
         {
             _root.UnregisterCallback<KeyDownEvent>(OnRootKeyDown, TrickleDown.TrickleDown);
             _root.Q<Button>("BackButton")?.UnregisterCallback<ClickEvent>(OnBackButtonClicked);
-            _root.Q<Button>("Back")?.UnregisterCallback<ClickEvent>(OnPrevAlienClicked);
-            _root.Q<Button>("Forward")?.UnregisterCallback<ClickEvent>(OnNextAlienClicked);
         }
 
+        _prevAlienButton?.UnregisterCallback<ClickEvent>(OnPrevAlienClicked);
+        _nextAlienButton?.UnregisterCallback<ClickEvent>(OnNextAlienClicked);
         _cancelButton?.UnregisterCallback<ClickEvent>(OnCancelButtonClicked);
         _unlockButton?.UnregisterCallback<ClickEvent>(OnUnlockButtonClicked);
 
-        if (previewCamera != null)
-            previewCamera.enabled = false;
+        ClearPreviewInstanceAndTexture();
+    }
+
+    private void EnsureDragGhost()
+    {
+        if (_root == null) return;
+
+        if (_dragGhost == null)
+        {
+            _dragGhost = new Image
+            {
+                pickingMode = PickingMode.Ignore,
+                scaleMode = ScaleMode.ScaleToFit,
+                style =
+                {
+                    position = Position.Absolute,
+                    width = 96,
+                    height = 96,
+                    opacity = 0.9f,
+                    display = DisplayStyle.None
+                }
+            };
+        }
+
+        if (_dragGhost.parent != _root)
+        {
+            _dragGhost.RemoveFromHierarchy();
+            _root.Add(_dragGhost);
+        }
+    }
+
+    private bool IsOverCheckoutZone(Vector2 panelPointerPos)
+    {
+        if (_checkoutScrollView != null && _checkoutScrollView.worldBound.Contains(panelPointerPos))
+            return true;
+        if (_contentPane != null && _contentPane.worldBound.Contains(panelPointerPos))
+            return true;
+        return false;
+    }
+
+    private void BindSlotContainers()
+    {
+        _slotContainers.Clear();
+        if (_mutationsList == null) return;
+
+        List<VisualElement> ordered = new();
+        foreach (SlotType slot in _slotOrder)
+        {
+            var named = _mutationsList.Q<VisualElement>($"{slot}SlotIcon");
+            if (named != null) ordered.Add(named);
+        }
+
+        if (ordered.Count == 0)
+        {
+            foreach (var child in _mutationsList.Children())
+                ordered.Add(child);
+        }
+
+        for (int i = 0; i < _slotOrder.Length && i < ordered.Count; i++)
+        {
+            SlotType slot = _slotOrder[i];
+            VisualElement container = ordered[i];
+            container.userData = slot;
+            _slotContainers[slot] = container;
+            SetupSlotDragHandlers(container, slot);
+        }
     }
 
     private void RefreshMenuContents()
     {
-        // Pull the latest captured aliens from CreatureManager if available
+        CancelDrag();
+
         if (CreatureManager.Instance != null)
         {
             capturedAliens = CreatureManager.Instance.GetCapturedAliens();
         }
 
-        // Clean out any destroyed/null alien references
-        capturedAliens.RemoveAll(a => a == null);
+        PruneAliensWithNoNewMutations();
 
         // Inject Test Alien Prefab if assigned and list is empty
-        if (capturedAliens.Count == 0 && testAlienPrefab != null)
+        if (capturedAliens.Count == 0 && testAlienPrefab != null && HasAnyLockedMutation(testAlienPrefab))
         {
             capturedAliens.Add(testAlienPrefab);
         }
 
         if (capturedAliens.Count > 0)
         {
+            SetPopulatedUIVisible(true);
             _currentAlienIndex = Mathf.Clamp(_currentAlienIndex, 0, capturedAliens.Count - 1);
             LoadAlienPreview(_currentAlienIndex);
         }
@@ -187,6 +295,39 @@ public class BarnResearchUIController : MonoBehaviour
         {
             ShowEmptyBarnState();
         }
+    }
+
+    private void PruneAliensWithNoNewMutations()
+    {
+        for (int i = capturedAliens.Count - 1; i >= 0; i--)
+        {
+            Creature alien = capturedAliens[i];
+            if (alien == null)
+            {
+                capturedAliens.RemoveAt(i);
+                continue;
+            }
+
+            if (!HasAnyLockedMutation(alien))
+            {
+                RemoveAlienFromBarn(alien);
+                capturedAliens.RemoveAt(i);
+            }
+        }
+    }
+
+    private void SetPopulatedUIVisible(bool visible)
+    {
+        DisplayStyle display = visible ? DisplayStyle.Flex : DisplayStyle.None;
+
+        if (_creaturePreviewContainer != null) _creaturePreviewContainer.style.display = display;
+        if (_creature3DRender != null) _creature3DRender.style.display = display;
+        if (_mutationsList != null) _mutationsList.style.display = display;
+        if (_selectMutationsHeaderLabel != null) _selectMutationsHeaderLabel.style.display = display;
+        if (_checkoutContainer != null) _checkoutContainer.style.display = display;
+        if (_checkoutScrollView != null) _checkoutScrollView.style.display = display;
+        if (_prevAlienButton != null) _prevAlienButton.style.display = display;
+        if (_nextAlienButton != null) _nextAlienButton.style.display = display;
     }
 
     private void OnBackButtonClicked(ClickEvent evt) => CloseMenu();
@@ -198,6 +339,7 @@ public class BarnResearchUIController : MonoBehaviour
     private void CycleAlien(int direction)
     {
         if (capturedAliens.Count == 0) return;
+        CancelDrag();
         _currentAlienIndex = (_currentAlienIndex + direction + capturedAliens.Count) % capturedAliens.Count;
         LoadAlienPreview(_currentAlienIndex);
     }
@@ -209,17 +351,29 @@ public class BarnResearchUIController : MonoBehaviour
         _alienEquippedMutations.Clear();
 
         Creature alien = capturedAliens[_currentAlienIndex];
-        if (_alienHeaderLabel != null) _alienHeaderLabel.text = alien.name;
-        if (_aliensInBarnCountLabel != null) _aliensInBarnCountLabel.text = $"{_currentAlienIndex + 1}/{capturedAliens.Count}";
+        if (_alienHeaderLabel != null)
+            _alienHeaderLabel.text = FormatAlienDisplayName(alien);
+        if (_aliensInBarnCountLabel != null)
+            _aliensInBarnCountLabel.text = $"{_currentAlienIndex + 1}/{capturedAliens.Count}";
 
-        ReadAlienMutations(alien);
+        ReadAlienMutations(alien, _alienEquippedMutations);
         PopulateAlienMutationIcons();
         RebuildPreviewInstance();
         RefreshCheckoutScrollView();
     }
 
-    private void ReadAlienMutations(Creature alien)
+    private static string FormatAlienDisplayName(Creature alien)
     {
+        if (alien == null) return "Unknown Alien";
+        string raw = !string.IsNullOrWhiteSpace(alien.CreatureName) ? alien.CreatureName : alien.GetCreatureName();
+        return raw.Replace('_', ' ').Trim();
+    }
+
+    private void ReadAlienMutations(Creature alien, Dictionary<SlotType, MutationData> targetDict)
+    {
+        targetDict.Clear();
+        if (alien == null) return;
+
         if (alien.TryGetComponent<CreatureMutator>(out var mutator))
         {
             foreach (SlotType slot in _slotOrder)
@@ -227,22 +381,37 @@ public class BarnResearchUIController : MonoBehaviour
                 MutationData equipped = mutator.GetEquippedMutation(slot);
                 if (equipped != null)
                 {
-                    _alienEquippedMutations[slot] = equipped;
+                    targetDict[slot] = equipped;
+                }
+            }
+
+            if (targetDict.Count == 0)
+            {
+                foreach (var mutation in mutator.GetConfiguredStartingMutations())
+                {
+                    if (mutation == null) continue;
+                    foreach (SlotType slot in _slotOrder)
+                    {
+                        if ((mutation.allowedSlots & slot) != 0 && !targetDict.ContainsKey(slot))
+                        {
+                            targetDict[slot] = mutation;
+                            break;
+                        }
+                    }
                 }
             }
         }
 
-        // If testing a raw prefab whose CreatureMutator hasn't run Start() yet, load testFallbackMutations
-        if (_alienEquippedMutations.Count == 0 && alien == testAlienPrefab && testFallbackMutations.Count > 0)
+        if (targetDict.Count == 0 && alien == testAlienPrefab && testFallbackMutations.Count > 0)
         {
             foreach (var mutation in testFallbackMutations)
             {
                 if (mutation == null) continue;
                 foreach (SlotType slot in _slotOrder)
                 {
-                    if ((mutation.allowedSlots & slot) != 0 && !_alienEquippedMutations.ContainsKey(slot))
+                    if ((mutation.allowedSlots & slot) != 0 && !targetDict.ContainsKey(slot))
                     {
-                        _alienEquippedMutations[slot] = mutation;
+                        targetDict[slot] = mutation;
                         break;
                     }
                 }
@@ -250,41 +419,67 @@ public class BarnResearchUIController : MonoBehaviour
         }
     }
 
+    private bool HasAnyLockedMutation(Creature alien)
+    {
+        var temp = new Dictionary<SlotType, MutationData>();
+        ReadAlienMutations(alien, temp);
+
+        foreach (var mutation in temp.Values)
+        {
+            if (mutation == null) continue;
+            if (MutationUnlockManager.Instance == null || !MutationUnlockManager.Instance.IsUnlocked(mutation))
+                return true;
+        }
+        return false;
+    }
+
+    private bool CanSelectSlotForExtraction(SlotType slot)
+    {
+        if (!_alienEquippedMutations.TryGetValue(slot, out var mutation) || mutation == null)
+            return false;
+        if (_selectedSlotsToUnlock.Contains(slot))
+            return false;
+        if (MutationUnlockManager.Instance != null && MutationUnlockManager.Instance.IsUnlocked(mutation))
+            return false;
+        if (IsMutationStagedInAnySlot(mutation))
+            return false;
+        return true;
+    }
+
     private void PopulateAlienMutationIcons()
     {
         if (_mutationsList == null) return;
 
-        var slotContainers = _mutationsList.Query<TemplateContainer>().ToList();
-
-        for (int i = 0; i < _slotOrder.Length; i++)
+        foreach (SlotType slot in _slotOrder)
         {
-            if (i >= slotContainers.Count) break;
-
-            SlotType slot = _slotOrder[i];
-            TemplateContainer container = slotContainers[i];
-
-            container.UnregisterCallback<ClickEvent>(OnSlotContainerClicked);
-            container.userData = slot;
+            if (!_slotContainers.TryGetValue(slot, out var container)) continue;
 
             Image imageElement = container.Q<Image>();
             VisualElement bgTarget = container.Q<VisualElement>("Icon")
-                                  ?? container.Q<VisualElement>("MutationImage")
-                                  ?? container.Query<VisualElement>().Last();
+                                  ?? container.Q<VisualElement>("MutationImage");
 
             bool hasMutation = _alienEquippedMutations.TryGetValue(slot, out var mutation);
 
-            Sprite displaySprite = hasMutation && mutation.prefabSprite != null
-                ? mutation.prefabSprite
-                : GameConstants.Instance.DefaultSprite;
+            if (hasMutation)
+            {
+                Sprite displaySprite = mutation.prefabSprite != null
+                    ? mutation.prefabSprite
+                    : GameConstants.Instance.DefaultSprite;
 
-            if (imageElement != null)
-            {
-                imageElement.sprite = displaySprite;
-                imageElement.style.backgroundImage = StyleKeyword.None;
+                if (imageElement != null)
+                {
+                    imageElement.image = null;
+                    imageElement.sprite = displaySprite;
+                    imageElement.style.display = DisplayStyle.Flex;
+                }
+                if (bgTarget != null)
+                {
+                    bgTarget.style.backgroundImage = new StyleBackground(displaySprite);
+                }
             }
-            else if (bgTarget != null)
+            else if (imageElement != null)
             {
-                bgTarget.style.backgroundImage = new StyleBackground(displaySprite);
+                imageElement.style.display = DisplayStyle.Flex;
             }
 
             if (!hasMutation)
@@ -311,14 +506,13 @@ public class BarnResearchUIController : MonoBehaviour
             else
             {
                 SetSlotIconVisualState(container, imageElement, bgTarget, enabled: true, selected: isSelectedInThisSlot, lockedOut: false);
-                container.tooltip = $"{mutation.mutationName} ({slot}) — Cost: {mutation.mutationCost}";
-                container.RegisterCallback<ClickEvent>(OnSlotContainerClicked);
+                container.tooltip = $"{mutation.mutationName} ({slot}) — Drag into checkout or click ({mutation.mutationCost} Tech)";
             }
         }
     }
 
     private void SetSlotIconVisualState(
-        TemplateContainer container,
+        VisualElement container,
         Image imageElement,
         VisualElement bgTarget,
         bool enabled,
@@ -346,15 +540,17 @@ public class BarnResearchUIController : MonoBehaviour
             if (bgTarget != null) bgTarget.style.unityBackgroundImageTintColor = Color.white;
         }
 
+        container.EnableInClassList("slot-staged", selected);
+
         float borderWidth = selected ? 3f : 0f;
         container.style.borderBottomWidth = borderWidth;
         container.style.borderTopWidth = borderWidth;
         container.style.borderLeftWidth = borderWidth;
         container.style.borderRightWidth = borderWidth;
-        container.style.borderBottomColor = Color.white;
-        container.style.borderTopColor = Color.white;
-        container.style.borderLeftColor = Color.white;
-        container.style.borderRightColor = Color.white;
+        container.style.borderBottomColor = new Color(0.43f, 0.86f, 0.51f, 1f);
+        container.style.borderTopColor = new Color(0.43f, 0.86f, 0.51f, 1f);
+        container.style.borderLeftColor = new Color(0.43f, 0.86f, 0.51f, 1f);
+        container.style.borderRightColor = new Color(0.43f, 0.86f, 0.51f, 1f);
     }
 
     private bool IsMutationStagedInAnySlot(MutationData mutation)
@@ -367,32 +563,203 @@ public class BarnResearchUIController : MonoBehaviour
         return false;
     }
 
-    private void OnSlotContainerClicked(ClickEvent evt)
+    // Dragging FROM an alien's mutation slot box -> must be dropped into the right-hand checkout pane
+    private void SetupSlotDragHandlers(VisualElement box, SlotType slot)
     {
-        if (evt.currentTarget is VisualElement el && el.userData is SlotType slot)
+        box.RegisterCallback<PointerDownEvent>(evt =>
         {
-            ToggleSelectSlotForUnlock(slot);
+            if (evt.button != 0 || capturedAliens.Count == 0) return;
+            if (!_alienEquippedMutations.TryGetValue(slot, out var mutation) || mutation == null) return;
+
+            if (!_selectedSlotsToUnlock.Contains(slot) && !CanSelectSlotForExtraction(slot))
+                return;
+
+            BeginPointerTracking(box, evt.pointerId, evt.position, mutation, sourceSlot: slot, fromCheckout: false);
+            evt.StopPropagation();
+        });
+
+        box.RegisterCallback<PointerMoveEvent>(evt =>
+        {
+            if (_dragSourceSlot != slot || _draggingFromCheckout || !box.HasPointerCapture(evt.pointerId)) return;
+            HandlePointerMove(evt.position);
+        });
+
+        box.RegisterCallback<PointerUpEvent>(evt =>
+        {
+            if (_dragSourceSlot != slot || _draggingFromCheckout) return;
+            if (box.HasPointerCapture(evt.pointerId))
+                box.ReleasePointer(evt.pointerId);
+
+            bool wasDragging = _isDragging;
+            CancelDrag();
+
+            if (wasDragging)
+            {
+                // Only extract/stage if dropped inside the right-hand checkout pane
+                if (IsOverCheckoutZone(evt.position) && !_selectedSlotsToUnlock.Contains(slot))
+                {
+                    SetSlotSelectedForUnlock(slot, true);
+                }
+            }
+            else
+            {
+                // Click fallback: toggle selection
+                ToggleSelectSlotForUnlock(slot);
+            }
+        });
+
+        box.RegisterCallback<PointerCaptureOutEvent>(_ =>
+        {
+            if (_dragSourceSlot == slot && !_draggingFromCheckout)
+                CancelDrag();
+        });
+    }
+
+    // Dragging or clicking a staged card inside CheckoutScrollView to remove it
+    private void SetupCheckoutCardHandlers(VisualElement card, SlotType slot, MutationData mutation)
+    {
+        card.RegisterCallback<PointerDownEvent>(evt =>
+        {
+            if (evt.button != 0) return;
+            BeginPointerTracking(card, evt.pointerId, evt.position, mutation, sourceSlot: slot, fromCheckout: true);
+            evt.StopPropagation();
+        });
+
+        card.RegisterCallback<PointerMoveEvent>(evt =>
+        {
+            if (_dragSourceSlot != slot || !_draggingFromCheckout || !card.HasPointerCapture(evt.pointerId)) return;
+            HandlePointerMove(evt.position);
+        });
+
+        card.RegisterCallback<PointerUpEvent>(evt =>
+        {
+            if (_dragSourceSlot != slot || !_draggingFromCheckout) return;
+            if (card.HasPointerCapture(evt.pointerId))
+                card.ReleasePointer(evt.pointerId);
+
+            bool wasDragging = _isDragging;
+            CancelDrag();
+
+            if (wasDragging)
+            {
+                // Dragged out of CheckoutScrollView -> unstage
+                if (!IsOverCheckoutZone(evt.position))
+                {
+                    SetSlotSelectedForUnlock(slot, false);
+                }
+            }
+            else
+            {
+                // Click fallback -> unstage
+                SetSlotSelectedForUnlock(slot, false);
+            }
+        });
+
+        card.RegisterCallback<PointerCaptureOutEvent>(_ =>
+        {
+            if (_dragSourceSlot == slot && _draggingFromCheckout)
+                CancelDrag();
+        });
+    }
+
+    private void BeginPointerTracking(
+        VisualElement target,
+        int pointerId,
+        Vector2 startPos,
+        MutationData mutation,
+        SlotType sourceSlot,
+        bool fromCheckout)
+    {
+        _draggingMutation = mutation;
+        _dragSourceSlot = sourceSlot;
+        _draggingFromCheckout = fromCheckout;
+        _dragStartPos = startPos;
+        _isDragging = false;
+        target.CapturePointer(pointerId);
+    }
+
+    private void HandlePointerMove(Vector2 panelPointerPos)
+    {
+        if (!_isDragging && Vector2.Distance(panelPointerPos, _dragStartPos) >= DragThreshold)
+        {
+            _isDragging = true;
+            EnsureDragGhost();
+
+            if (_dragGhost != null)
+            {
+                _dragGhost.image = null;
+                _dragGhost.sprite = _draggingMutation != null && _draggingMutation.prefabSprite != null
+                    ? _draggingMutation.prefabSprite
+                    : GameConstants.Instance.DefaultSprite;
+                _dragGhost.style.display = DisplayStyle.Flex;
+                _dragGhost.BringToFront();
+            }
+        }
+
+        if (_isDragging)
+        {
+            if (_dragGhost != null && _root != null)
+            {
+                Vector2 localPos = _root.WorldToLocal(panelPointerPos);
+                _dragGhost.style.left = localPos.x - 48f;
+                _dragGhost.style.top = localPos.y - 48f;
+            }
+
+            UpdateDropZoneHighlight(panelPointerPos);
+        }
+    }
+
+    private void UpdateDropZoneHighlight(Vector2 panelPointerPos)
+    {
+        if (_checkoutScrollView == null) return;
+
+        if (!_draggingFromCheckout && _dragSourceSlot.HasValue)
+        {
+            bool overCheckout = IsOverCheckoutZone(panelPointerPos);
+            _checkoutScrollView.EnableInClassList("slot-drop-valid", true);
+            _checkoutScrollView.EnableInClassList("slot-drop-hover", overCheckout);
+        }
+        else
+        {
+            _checkoutScrollView.RemoveFromClassList("slot-drop-valid");
+            _checkoutScrollView.RemoveFromClassList("slot-drop-hover");
+        }
+    }
+
+    private void CancelDrag()
+    {
+        _draggingMutation = null;
+        _dragSourceSlot = null;
+        _draggingFromCheckout = false;
+        _isDragging = false;
+
+        if (_dragGhost != null)
+            _dragGhost.style.display = DisplayStyle.None;
+
+        if (_checkoutScrollView != null)
+        {
+            _checkoutScrollView.RemoveFromClassList("slot-drop-valid");
+            _checkoutScrollView.RemoveFromClassList("slot-drop-hover");
         }
     }
 
     private void ToggleSelectSlotForUnlock(SlotType slot)
     {
-        if (!_alienEquippedMutations.TryGetValue(slot, out var mutation)) return;
+        SetSlotSelectedForUnlock(slot, !_selectedSlotsToUnlock.Contains(slot));
+    }
 
-        // Block selecting if already unlocked globally or if an identical mutation is already staged
-        if (!_selectedSlotsToUnlock.Contains(slot))
+    private void SetSlotSelectedForUnlock(SlotType slot, bool selected)
+    {
+        if (!_alienEquippedMutations.ContainsKey(slot)) return;
+
+        if (selected)
         {
-            if (MutationUnlockManager.Instance != null && MutationUnlockManager.Instance.IsUnlocked(mutation))
-                return;
-
-            if (IsMutationStagedInAnySlot(mutation))
-                return;
-
+            if (!CanSelectSlotForExtraction(slot)) return;
             _selectedSlotsToUnlock.Add(slot);
         }
         else
         {
-            _selectedSlotsToUnlock.Remove(slot);
+            if (!_selectedSlotsToUnlock.Remove(slot)) return;
         }
 
         PopulateAlienMutationIcons();
@@ -402,14 +769,19 @@ public class BarnResearchUIController : MonoBehaviour
 
     private void RebuildPreviewInstance()
     {
-        if (capturedAliens.Count == 0) return;
+        if (capturedAliens.Count == 0 || previewSpawnPoint == null)
+        {
+            ClearPreviewInstanceAndTexture();
+            return;
+        }
 
         if (_previewInstance != null)
             Destroy(_previewInstance);
 
         Creature alien = capturedAliens[_currentAlienIndex];
 
-        // Temporarily deactivate spawn point so Instantiate doesn't trigger Awake/OnEnable before lobotomizing
+        previewSpawnPoint.localRotation = Quaternion.identity;
+
         bool wasSpawnActive = previewSpawnPoint.gameObject.activeSelf;
         previewSpawnPoint.gameObject.SetActive(false);
 
@@ -419,6 +791,8 @@ public class BarnResearchUIController : MonoBehaviour
             previewSpawnPoint.rotation,
             previewSpawnPoint
         );
+        _previewInstance.transform.localPosition = Vector3.zero;
+        _previewInstance.transform.localRotation = Quaternion.identity;
 
         SanitizePreviewClone(_previewInstance);
 
@@ -426,6 +800,13 @@ public class BarnResearchUIController : MonoBehaviour
 
         if (_previewInstance.TryGetComponent<CreatureMutator>(out var previewMutator))
         {
+            if (alien.TryGetComponent<CreatureMutator>(out var sourceMutator))
+            {
+                previewMutator.CopySocketsFrom(sourceMutator, alien.transform, _previewInstance.transform);
+                previewMutator.ClearAllSocketChildrenImmediate();
+                previewMutator.InitializeForPreview();
+            }
+
             foreach (var kvp in _alienEquippedMutations)
             {
                 if (!_selectedSlotsToUnlock.Contains(kvp.Key))
@@ -437,6 +818,26 @@ public class BarnResearchUIController : MonoBehaviour
 
         SetLayerRecursively(_previewInstance, _previewLayer);
         if (previewCamera != null) previewCamera.enabled = true;
+    }
+
+    private void ClearPreviewInstanceAndTexture()
+    {
+        if (_previewInstance != null)
+        {
+            Destroy(_previewInstance);
+            _previewInstance = null;
+        }
+
+        if (previewCamera != null)
+            previewCamera.enabled = false;
+
+        if (previewRenderTexture != null)
+        {
+            RenderTexture prev = RenderTexture.active;
+            RenderTexture.active = previewRenderTexture;
+            GL.Clear(true, true, Color.clear);
+            RenderTexture.active = prev;
+        }
     }
 
     private void RefreshCheckoutScrollView()
@@ -457,7 +858,6 @@ public class BarnResearchUIController : MonoBehaviour
 
             VisualElement card = selectedMutationCardTemplate.Instantiate();
 
-            // 1. Icon
             Sprite sprite = mutation.prefabSprite != null
                 ? mutation.prefabSprite
                 : GameConstants.Instance.DefaultSprite;
@@ -465,6 +865,7 @@ public class BarnResearchUIController : MonoBehaviour
             Image cardImage = card.Q<Image>();
             if (cardImage != null)
             {
+                cardImage.image = null;
                 cardImage.sprite = sprite;
                 cardImage.style.backgroundImage = StyleKeyword.None;
             }
@@ -475,7 +876,6 @@ public class BarnResearchUIController : MonoBehaviour
                     iconBox.style.backgroundImage = new StyleBackground(sprite);
             }
 
-            // 2. Labels
             var labels = card.Query<Label>().ToList();
             string formattedSlots = FormatAllowedSlots(mutation.allowedSlots);
             string effectSummary = mutation.GetEffectSummary();
@@ -496,8 +896,7 @@ public class BarnResearchUIController : MonoBehaviour
                 if (labels.Count > 2) labels[2].text = $"Effect: {effectSummary}";
             }
 
-            SlotType capturedSlot = slot;
-            card.RegisterCallback<ClickEvent>(_ => ToggleSelectSlotForUnlock(capturedSlot));
+            SetupCheckoutCardHandlers(card, slot, mutation);
 
             _checkoutScrollView.Add(card);
         }
@@ -509,7 +908,7 @@ public class BarnResearchUIController : MonoBehaviour
         {
             _costLabel.text = totalCost.ToString();
             _costLabel.style.color = (!hasSelection || canAfford)
-                ? new Color(0.65f, 0.35f, 1f, 1f) // Purple
+                ? new Color(0.65f, 0.35f, 1f, 1f)
                 : new Color(1f, 0.35f, 0.35f, 1f);
         }
 
@@ -585,62 +984,58 @@ public class BarnResearchUIController : MonoBehaviour
 
         _selectedSlotsToUnlock.Clear();
 
-        // Check if all parts have now been stripped off this alien
-        if (_alienEquippedMutations.Count == 0)
+        // Purge ALL captured aliens in the barn that now have zero unresearched mutations remaining
+        PruneAliensWithNoNewMutations();
+
+        if (capturedAliens.Count > 0)
         {
-            capturedAliens.RemoveAt(_currentAlienIndex);
-
-            // Unregister from CreatureManager and destroy the live scene GameObject
-            if (!isPrefabAsset && liveAlien != null)
-            {
-                if (CreatureManager.Instance != null)
-                {
-                    CreatureManager.Instance.UnregisterCapturedAlien(liveAlien);
-                    CreatureManager.Instance.Unregister(liveAlien);
-                }
-                Destroy(liveAlien.gameObject);
-            }
-
-            if (capturedAliens.Count > 0)
-            {
-                _currentAlienIndex = Mathf.Clamp(_currentAlienIndex, 0, capturedAliens.Count - 1);
-                LoadAlienPreview(_currentAlienIndex);
-            }
-            else
-            {
-                ShowEmptyBarnState();
-            }
-            return;
+            _currentAlienIndex = Mathf.Clamp(_currentAlienIndex, 0, capturedAliens.Count - 1);
+            LoadAlienPreview(_currentAlienIndex);
         }
+        else
+        {
+            ShowEmptyBarnState();
+        }
+    }
 
-        PopulateAlienMutationIcons();
-        RebuildPreviewInstance();
-        RefreshCheckoutScrollView();
+    private static void RemoveAlienFromBarn(Creature alien)
+    {
+        if (alien == null) return;
+        bool isPrefabAsset = !alien.gameObject.scene.IsValid();
+        if (isPrefabAsset) return;
+
+        if (CreatureManager.Instance != null)
+        {
+            CreatureManager.Instance.UnregisterCapturedAlien(alien);
+            CreatureManager.Instance.Unregister(alien);
+        }
+        Destroy(alien.gameObject);
     }
 
     private void ShowEmptyBarnState()
     {
-        if (_previewInstance != null)
-            Destroy(_previewInstance);
-
-        if (previewCamera != null)
-            previewCamera.enabled = false;
+        ClearPreviewInstanceAndTexture();
 
         _alienEquippedMutations.Clear();
         _selectedSlotsToUnlock.Clear();
 
+        SetPopulatedUIVisible(false);
+
         if (_alienHeaderLabel != null) _alienHeaderLabel.text = "No Aliens in Barn";
         if (_aliensInBarnCountLabel != null) _aliensInBarnCountLabel.text = "0/0";
 
-        PopulateAlienMutationIcons();
         RefreshCheckoutScrollView();
     }
 
     public void CloseMenu()
     {
-        if (previewCamera != null) previewCamera.enabled = false;
-        if (_previewInstance != null) Destroy(_previewInstance);
+        CancelDrag();
+        ClearPreviewInstanceAndTexture();
         _selectedSlotsToUnlock.Clear();
+
+        if (barnUIDocument != null && barnUIDocument.rootVisualElement != null)
+            barnUIDocument.rootVisualElement.style.display = DisplayStyle.None;
+
         gameObject.SetActive(false);
     }
 
@@ -652,7 +1047,7 @@ public class BarnResearchUIController : MonoBehaviour
         viewport.RegisterCallback<PointerLeaveEvent>(_ => isDragging = false);
         viewport.RegisterCallback<PointerMoveEvent>(evt =>
         {
-            if (isDragging && previewSpawnPoint != null)
+            if (isDragging && !_isDragging && previewSpawnPoint != null)
                 previewSpawnPoint.Rotate(Vector3.up, -evt.deltaPosition.x * 0.6f, Space.World);
         });
     }
@@ -670,12 +1065,6 @@ public class BarnResearchUIController : MonoBehaviour
         return names.Count > 0 ? string.Join(", ", names) : flags.ToString();
     }
 
-    private static string FormatEnumName(string rawName)
-    {
-        // Inserts spaces before capital letters (e.g. "CanFly" -> "Can Fly")
-        return System.Text.RegularExpressions.Regex.Replace(rawName, "(\\B[A-Z])", " $1");
-    }
-
     private void SanitizePreviewClone(GameObject clone)
     {
         foreach (var brain in clone.GetComponentsInChildren<CreatureBrain>(true))
@@ -691,14 +1080,18 @@ public class BarnResearchUIController : MonoBehaviour
             selectable.enabled = false;
 
         foreach (var bob in clone.GetComponentsInChildren<ToyBob>(true))
+        {
             bob.enabled = false;
+            bob.transform.localPosition = Vector3.zero;
+            bob.transform.localRotation = Quaternion.identity;
+        }
 
         foreach (var rb in clone.GetComponentsInChildren<Rigidbody>(true))
             rb.isKinematic = true;
 
         foreach (var outline in clone.GetComponentsInChildren<Outline>(true))
             outline.enabled = false;
-        
+
         foreach (var r in clone.GetComponentsInChildren<Renderer>(true))
             r.enabled = true;
     }
