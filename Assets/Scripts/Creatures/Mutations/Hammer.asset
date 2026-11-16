@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 648ab8f84157c384ba07347834213586, type: 3}
+  m_Name: Hammer
+  m_EditorClassIdentifier: Assembly-CSharp::MutationData
+  mutationName: Hammer
+  mutationCost: 50
+  allowedSlots: 12
+  pairedPrefab: 0
+  prefab: {fileID: 5083048850711605595, guid: 2b637373708bd0f4dbfecf7b6c226b1c, type: 3}
+  prefabSprite: {fileID: 2811976617056343325, guid: 906d499cbb7d26f4498c310cd76d3326, type: 3}
+  localScale: 3
+  grantedCapabilities: 4
+  bonusMaxHealth: 0
+  damageResistance: 0
+  bonusMoveSpeed: 0
+  bonusAttackDamage: 5
+  bonusAttackRange: 0
+  bonusAttackSpeed: 0
+  bonusViewRadius: 0
+  overridesAttack: 0
+  extraDescription: 

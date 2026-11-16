@@ -22,10 +22,10 @@ MonoBehaviour:
   grantedCapabilities: 8
   bonusMaxHealth: 0
   damageResistance: 0
-  bonusMoveSpeed: 0
+  bonusMoveSpeed: 3
   bonusAttackDamage: 0
   bonusAttackRange: 0
-  bonusAttackSpeed: 0
+  bonusAttackSpeed: 2
   bonusViewRadius: 0
   overridesAttack: 0
   extraDescription: 

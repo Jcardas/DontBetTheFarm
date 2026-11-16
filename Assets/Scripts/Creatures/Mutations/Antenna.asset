@@ -20,11 +20,12 @@ MonoBehaviour:
   prefabSprite: {fileID: -3892537948950645436, guid: 1c0fbe938f6a93f45a4592f3dfaf1cf6, type: 3}
   localScale: 0.1
   grantedCapabilities: 0
-  bonusMaxHealth: 0
+  bonusMaxHealth: 10
   damageResistance: 0
   bonusMoveSpeed: 0
   bonusAttackDamage: 0
   bonusAttackRange: 0
   bonusAttackSpeed: 0
-  bonusViewRadius: 0
+  bonusViewRadius: 5
   overridesAttack: 0
+  extraDescription: 
