@@ -291,7 +291,15 @@ public class PenAnimalsTab
         if (_hayCostLbl != null) _hayCostLbl.text = hay.ToString();
         if (_techCostLbl != null) _techCostLbl.text = tech.ToString();
         _cancelBtn?.SetEnabled(_staged.Count > 0);
-        _mutateBtn?.SetEnabled(_staged.Count > 0 && ResourceManager.Count(ResourceType.Hay) >= hay && ResourceManager.Count(ResourceType.Technology) >= tech);
+        int hayShort = hay - ResourceManager.Count(ResourceType.Hay);
+        int techShort = tech - ResourceManager.Count(ResourceType.Technology);
+        _mutateBtn?.SetEnabled(_staged.Count > 0 && hayShort <= 0 && techShort <= 0);
+        // Say why Mutate is greyed out instead of leaving players guessing
+        if (_mutateBtn != null)
+            _mutateBtn.text = _staged.Count == 0 ? "Mutate"
+                : hayShort > 0 ? $"Need {hayShort} Hay"
+                : techShort > 0 ? $"Need {techShort} Tech"
+                : "Mutate";
 
         var defaultPreview = Slots.Select(s => Effective(mutator, s)).FirstOrDefault(m => m != null);
         ShowDetails(defaultPreview);
@@ -642,6 +650,13 @@ public class PenAnimalsTab
         _booth?.InvalidatePortrait(animal);
         _staged.Clear();
         Refresh();
+
+        // Confirm it worked, then put the label back
+        if (_mutateBtn != null)
+        {
+            _mutateBtn.text = "Mutated!";
+            _mutateBtn.schedule.Execute(() => { if (_staged.Count == 0) _mutateBtn.text = "Mutate"; }).StartingIn(1500);
+        }
     }
 
     private void ShowDetails(MutationData m)
