@@ -122,7 +122,7 @@ public class PlayerControls : MonoBehaviour
         if (left == LeftButton.Idle || !player.Select.WasReleasedThisFrame()) return;
 
         if (left == LeftButton.Dragging) Pick(Selectable.All.Where(s => OnScreen(cam, s, Box(pressedAt, at))), shift, ctrl);
-        else if (!overUI) Click(cam, unit, shift, ctrl);
+        else if (!overUI) Click(cam, unit, shift, ctrl, ray, overSomething, hit);
         left = LeftButton.Idle;
     }
 
@@ -325,7 +325,7 @@ public class PlayerControls : MonoBehaviour
     }
 
     // `unit` is whatever unit is under the mouse, or null.
-    void Click(Camera cam, Selectable unit, bool shift, bool ctrl)
+    void Click(Camera cam, Selectable unit, bool shift, bool ctrl, Ray ray, bool overSomething, RaycastHit hit)
     {
         if (unit != null && unit.Down) unit = null;
         bool twice = unit != null && unit == lastClicked && Time.unscaledTime - lastClickAt < DoubleClickSeconds;
@@ -335,6 +335,17 @@ public class PlayerControls : MonoBehaviour
         // Left-clicking the ground or another unit dismisses any open repair panel unless the active repairer was clicked.
         if (unit == null || !Gatherer.IsActiveRepairer(unit))
             Gatherer.DismissRepairUI();
+
+        // Left-clicking a pen picks the animals in it
+        if (unit == null && overSomething && MouseTarget.Building(ray, hit) is AnimalPen pen)
+        {
+            var penned = pen.AnimalsInPen.Where(a => a != null).Select(a => a.GetComponent<Selectable>()).Where(s => s != null && !s.Down).ToList();
+            if (penned.Count > 0)
+            {
+                Pick(penned, shift, ctrl);
+                return;
+            }
+        }
 
         if (unit == null)
         {
