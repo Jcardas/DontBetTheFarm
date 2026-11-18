@@ -29,7 +29,7 @@ public abstract class Buildable : MonoBehaviour, IDamageable
     public virtual (ResourceType, int) CostAndResource { get; private set; }
     public string BuildableName => string.IsNullOrWhiteSpace(buildableName) ? gameObject.name : buildableName;
     public int MaxHealth => maxHealth;
-    private int CurrentHealth { get; set; }
+    public int CurrentHealth { get; private set; }
     public bool Down => CurrentHealth <= 0;
     public Vector3 Position => transform.position;
     public Collider Body { get; private set; }
@@ -45,6 +45,7 @@ public abstract class Buildable : MonoBehaviour, IDamageable
     protected virtual void Awake()
     {
         obstacle = GetComponent<NavMeshObstacle>();
+        if (!TryGetComponent<BuildingHealthBar>(out _)) gameObject.AddComponent<BuildingHealthBar>();
         IsBroken = startsBroken;
         UpdateVisuals();
 
