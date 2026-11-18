@@ -63,6 +63,27 @@ public class AnimalPen : Buildable, IContextInteractable
         animalsInPen ??= new List<Animal>(MaxAnimals);
     }
 
+    bool? wasDay; // last frame's day/night, to spot daybreak
+
+    // At daybreak every animal assigned to this pen walks back to it (playtest: players lost track of them)
+    private void Update()
+    {
+        if (TimeManager.Instance == null) return;
+        bool day = TimeManager.Instance.IsDayTime();
+        if (day && wasDay == false) RecallAnimals();
+        wasDay = day;
+    }
+
+    public void RecallAnimals()
+    {
+        foreach (Animal animal in AnimalsInPen.ToList())
+        {
+            if (animal == null || animal.Down || !animal.TryGetComponent(out Selectable unit)) continue;
+            Order order = Order.ForPen(this);
+            if (unit.CanObey(order)) unit.Command(order);
+        }
+    }
+
     private void Start()
     {
         if (MaxAnimals <= 0 && GameConstants.Instance != null)
