@@ -28,4 +28,4 @@ MonoBehaviour:
   bonusAttackSpeed: 1
   bonusViewRadius: 0
   overridesAttack: 0
-  extraDescription: Also does this!
+  extraDescription: 
