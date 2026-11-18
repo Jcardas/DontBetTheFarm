@@ -198,6 +198,10 @@ public class PlayerControls : MonoBehaviour
             else barnUI.OpenMenu();
         }
 
+        // F selects the farmer (Shift+F adds him to the selection)
+        if (Keyboard.current != null && Keyboard.current.fKey.wasPressedThisFrame)
+            Pick(Selectable.All.Where(s => s.Creature is Farmer), shift);
+
         if (player.Cancel.WasPressedThisFrame()) Clear();
         for (int g = 0; g < groups.Length; g++)
         {
