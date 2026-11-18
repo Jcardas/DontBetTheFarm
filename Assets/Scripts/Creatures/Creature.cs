@@ -270,6 +270,14 @@ public abstract class Creature : MonoBehaviour, IDamageable
         Heal(CalculatedMaxHealth - currentHealth);
     }
 
+    // Gets a downed creature back up on `health` HP instead of full (daytime auto-revive)
+    public void ReviveWithHealth(int health)
+    {
+        if (!Down) return;
+        HandleRevive();
+        currentHealth = Mathf.Clamp(health, 1, CalculatedMaxHealth);
+    }
+
     protected virtual void HandleRevive()
     {
         if (currentHealth > 0) return;
@@ -351,6 +359,7 @@ public abstract class Creature : MonoBehaviour, IDamageable
         {
             CreatureBrain.enabled = false;
         }
+        if (NavMeshAgent != null) NavMeshAgent.updateRotation = true; // the brain may have left it off mid-fight
 
         // Flying creatures can fly straight to the despawn point without needing NavMesh
         if (flight != null && flight.CanFly)
@@ -359,7 +368,6 @@ public abstract class Creature : MonoBehaviour, IDamageable
             StartCoroutine(FlightRetreatRoutine());
             return;
         }
-        if (NavMeshAgent != null) NavMeshAgent.updateRotation = true; // the brain may have left it off mid-fight
 
         if (flight != null)
             flight.ForceGroundImmediate();
