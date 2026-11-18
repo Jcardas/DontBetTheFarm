@@ -9,9 +9,8 @@ public class SoundManager : MonoBehaviour
     [SerializeField] private AudioSource sfxSource;
     [SerializeField] private AudioSource musicSource;
 
-    [SerializeField] private int musicVolume = 50;
-    [SerializeField] private int sfxVolume = 50;
-
+    [SerializeField] private float musicVolume = 0.50f;
+    [SerializeField] private float sfxVolume = 0.50f;
 
     [System.Serializable]
     public struct Sound
@@ -43,7 +42,7 @@ public class SoundManager : MonoBehaviour
 
         foreach (Sound sound in soundLibrary)
         {
-            if (!soundDictionary.ContainsKey(sound.name))
+            if (!soundDictionary.ContainsKey((sound.name)))
             {
                 soundDictionary.Add(sound.name, sound.clip);
             }
@@ -56,32 +55,50 @@ public class SoundManager : MonoBehaviour
 
     public void PlayMusic(string songName, bool loop = true)
     {
-        musicSource.volume = ((float)musicVolume) / 100;
         musicSource.loop = loop;
 
-        if (soundDictionary.TryGetValue(soundName, out AudioClip clip))
+        if (soundDictionary.TryGetValue(songName, out AudioClip clip))
         {
-            sfxSource.PlayOneShot(clip, volume);
+            sfxSource.PlayOneShot(clip, musicVolume);
         }
         else
         {
-            Debug.LogWarning($"Sound '{soundName}' not found in SoundManager!");
+            Debug.LogWarning($"Song '{songName}' not found in SoundManager!");
         }
         
         musicSource.Play();
     }
 
-    public void PlaySFX(string soundName, float volume = 1f)
-    {
-        sfxSource.volume = ((float)sfxVolume) / 100;
-
+    public void PlaySFX(string soundName)
+    { 
         if (soundDictionary.TryGetValue(soundName, out AudioClip clip))
         {
-            sfxSource.PlayOneShot(clip, volume);
+            sfxSource.PlayOneShot(clip, sfxVolume);
         }
         else
         {
             Debug.LogWarning($"Sound '{soundName}' not found in SoundManager!");
         }
+    }
+
+    public void setMusicVolume(float newVolume)
+    {
+        if (newVolume > 1 || newVolume < 0)
+        {
+            Debug.LogWarning($"New SFXVolume must be between 0 and 1");
+        }
+
+        musicVolume = newVolume;
+        musicSource.volume = newVolume;
+    }
+
+    public void setSFXVolume(float newVolume)
+    {
+        if(newVolume > 1 || newVolume < 0)
+        {
+            Debug.LogWarning($"New SFXVolume must be between 0 and 1");
+        }
+        sfxVolume = newVolume;
+        sfxSource.volume = newVolume;
     }
 }
