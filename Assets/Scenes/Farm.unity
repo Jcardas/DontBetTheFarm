@@ -1656,6 +1656,14 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4043472958252779076, guid: 395b62908db6a0e479c67844f14873bc, type: 3}
+      propertyPath: m_NavMeshData
+      value: 
+      objectReference: {fileID: 23800000, guid: ee9517b67e513eb42b3d718f492577b3, type: 2}
+    - target: {fileID: 4043472958252779076, guid: 395b62908db6a0e479c67844f14873bc, type: 3}
+      propertyPath: m_LayerMask.m_Bits
+      value: 8
+      objectReference: {fileID: 0}
     - target: {fileID: 4133856349230199020, guid: 395b62908db6a0e479c67844f14873bc, type: 3}
       propertyPath: m_Layer
       value: 3
@@ -1712,17 +1720,6 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 395b62908db6a0e479c67844f14873bc, type: 3}
---- !u!114 &1466052859 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 4043472958252779076, guid: 395b62908db6a0e479c67844f14873bc, type: 3}
-  m_PrefabInstance: {fileID: 1466052858}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7a5ac11cc976e418e8d13136b07e1f52, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Unity.AI.Navigation::Unity.AI.Navigation.NavMeshSurface
 --- !u!1001 &1504969801
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3125,7 +3122,7 @@ PrefabInstance:
     - target: {fileID: 1923878284154658051, guid: 59ba79a8fc03547d5999c44065bd285a, type: 3}
       propertyPath: navMeshSurface
       value: 
-      objectReference: {fileID: 1466052859}
+      objectReference: {fileID: 0}
     - target: {fileID: 2015635895908373888, guid: 59ba79a8fc03547d5999c44065bd285a, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
