@@ -319,11 +319,12 @@ public class CreatureBrain : MonoBehaviour
         }
 
         if (agent.enabled && agent.hasPath && !retreating) agent.ResetPath();
-        if (agent.enabled) agent.updateRotation = false;
+        // Backing away: face the way it walks instead of moonwalking. Otherwise turn to face the target.
+        if (agent.enabled) agent.updateRotation = retreating;
 
         Vector3 toTarget = currentTarget.Position - transform.position;
         toTarget.y = 0;
-        if (toTarget.sqrMagnitude > 0.001f)
+        if (!retreating && toTarget.sqrMagnitude > 0.001f)
         {
             float turnSpeed = agent.enabled ? agent.angularSpeed : 360f;
             transform.rotation = Quaternion.RotateTowards(

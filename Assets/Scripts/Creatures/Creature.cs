@@ -359,6 +359,7 @@ public abstract class Creature : MonoBehaviour, IDamageable
             StartCoroutine(FlightRetreatRoutine());
             return;
         }
+        if (NavMeshAgent != null) NavMeshAgent.updateRotation = true; // the brain may have left it off mid-fight
 
         if (flight != null)
             flight.ForceGroundImmediate();
