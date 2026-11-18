@@ -29,7 +29,7 @@ public class PenAnimalsTab
     private Vector2 _dragStartPos;
     private bool _isDragging;
 
-    private readonly Label _countLbl, _nameLbl, _hpLbl, _healCostLbl, _hayCostLbl, _techCostLbl;
+    private readonly Label _countLbl, _nameLbl, _hpLbl, _healTextLbl, _healCostLbl, _hayCostLbl, _techCostLbl;
     private readonly Label _lvlLbl, _hpStatLbl, _spdLbl, _meleeLbl, _rangedLbl;
     private readonly VisualElement _hpFill, _slotsBox, _gridContainer, _selectedCard;
     private readonly Button _healBtn, _cancelBtn, _mutateBtn;
@@ -66,6 +66,7 @@ public class PenAnimalsTab
         _hpFill = root.Q("HPFillBar");
         _healBtn = root.Q<Button>("HealButton");
         _healCostLbl = root.Q<Label>("HealCostLabel");
+        _healTextLbl = root.Q<Label>("HealTextLabel");
         _slotsBox = root.Q("EquippedSlotsContainer");
         _hayCostLbl = root.Q<Label>("MutationHayCost");
         _techCostLbl = root.Q<Label>("MutationTechCost");
@@ -153,6 +154,7 @@ public class PenAnimalsTab
         if (_hpLbl != null) _hpLbl.text = $"HP: {curHp}/{maxHp}";
 
         int healCost = animal.HealCost > 0 ? animal.HealCost : HealFallbackCost;
+        if (_healTextLbl != null) _healTextLbl.text = animal.Down ? "Revive: " : "Heal: ";
         if (_healCostLbl != null) _healCostLbl.text = healCost.ToString();
         _healBtn?.SetEnabled(curHp < maxHp && ResourceManager.Count(ResourceType.Hay) >= healCost);
     }
