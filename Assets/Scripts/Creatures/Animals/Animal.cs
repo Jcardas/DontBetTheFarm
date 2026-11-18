@@ -94,7 +94,7 @@ public class Animal : Creature, IContextInteractable
         return new List<ContextActionData>
         {
             new ContextActionData(
-                label: $"Revive {CreatureName} ({healCost} <sprite name=\"Hay\">)",
+                label: $"Revive {CreatureName} ({healCost} <sprite=\"ResourceIcons\" name=\"Hay\">)",
                 onExecute: () =>
                 {
                     if (hasHay)
