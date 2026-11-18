@@ -12,15 +12,24 @@ public class SoundManager : MonoBehaviour
     [SerializeField] private float musicVolume = 0.50f;
     [SerializeField] private float sfxVolume = 0.50f;
 
+    public enum SoundName
+    {
+        RoosterSFX,
+        Daytime,
+        Nighttime,
+    }
+
+
     [System.Serializable]
     public struct Sound
     {
-        public string name;
+        public SoundName name;
         public AudioClip clip;
     }
 
     [SerializeField] private List<Sound> soundLibrary;
-    private Dictionary<string, AudioClip> soundDictionary;
+    private Dictionary<SoundName, AudioClip> soundDictionary;
+
 
     private void Awake()
     {
@@ -38,7 +47,7 @@ public class SoundManager : MonoBehaviour
 
     private void InitalizeSoundLibrary()
     {
-        soundDictionary = new Dictionary<string, AudioClip>();
+        soundDictionary = new Dictionary<SoundName, AudioClip>();
 
         foreach (Sound sound in soundLibrary)
         {
@@ -48,18 +57,19 @@ public class SoundManager : MonoBehaviour
             }
             else
             {
-                Debug.LogWarning($"Duplicate sound name detected: {sound.name}. Only the first occurrence will be used.");
+                Debug.LogWarning($"Duplicate enum name detected: {sound.name}. Only the first occurrence will be used.");
             }
         }
     }
 
-    public void PlayMusic(string songName, bool loop = true)
+    public void PlayMusic(SoundName songName, bool loop = true)
     {
-        musicSource.loop = loop;
-
         if (soundDictionary.TryGetValue(songName, out AudioClip clip))
         {
-            sfxSource.PlayOneShot(clip, musicVolume);
+            musicSource.loop = loop;
+            musicSource.clip = clip;
+            musicSource.volume = musicVolume;
+            musicSource.Play();
         }
         else
         {
@@ -69,7 +79,7 @@ public class SoundManager : MonoBehaviour
         musicSource.Play();
     }
 
-    public void PlaySFX(string soundName)
+    public void PlaySFX(SoundName soundName)
     { 
         if (soundDictionary.TryGetValue(soundName, out AudioClip clip))
         {
@@ -86,6 +96,11 @@ public class SoundManager : MonoBehaviour
         if (newVolume > 1 || newVolume < 0)
         {
             Debug.LogWarning($"New SFXVolume must be between 0 and 1");
+        }
+
+        if (musicSource == null)
+        {
+            return;
         }
 
         musicVolume = newVolume;
