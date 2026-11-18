@@ -22,6 +22,10 @@
     border-bottom-left-radius: 8px;
     background-color: rgb(42, 72, 53);
     cursor: url("project://database/Assets/UI/Cursors/hand_small_point.png?fileID=2800000&guid=fedc076baeb05804cab1ff17dd39e132&type=3#hand_small_point");
+    border-top-width: 0;
+    border-right-width: 0;
+    border-bottom-width: 0;
+    border-left-width: 0;
 }
 
 .TabSelector {
@@ -192,6 +196,7 @@
 .horizontalScrollbar .unity-scroller--horizontal .unity-base-slider__dragger:active {
     background-color: rgb(76, 205, 130);
 }
+
 .breeding-parent-slot {
     width: 320px;
     height: 320px;
@@ -239,4 +244,15 @@
 .breeding-parent-slot.slot-drop-hover {
     scale: 1.05 1.05;
     background-color: rgba(110, 220, 130, 0.25);
+}
+
+.title {
+    font-size: 72px;
+    -unity-font-definition: url("project://database/Assets/UI%20Toolkit/UnityThemes/UnityDefaultRuntimeTheme.tss?fileID=2230732570650464555&guid=cbce476ed8aef1b48a1fd5ca72adeec2&type=3#NotInter-Regular");
+    -unity-font-style: bold;
+    color: rgb(255, 255, 255);
+}
+
+.dragBar * {
+    cursor: url("project://database/Assets/UI/Cursors/hand_small_point.png?fileID=2800000&guid=fedc076baeb05804cab1ff17dd39e132&type=3#hand_small_point");
 }

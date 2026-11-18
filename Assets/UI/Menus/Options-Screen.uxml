@@ -1,0 +1,62 @@
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Assets/UI/StyleSheets/InteractionUI.uss?fileID=7433441132597879392&amp;guid=3c26107ceb91787478132dd32f00eb5c&amp;type=3#InteractionUI"/>
+    <ui:VisualElement name="UI_PANE" style="flex-grow: 1; width: 100%; height: 100%; justify-content: center; align-items: center; padding: 50px;">
+        <ui:VisualElement name="Background" picking-mode="Position" style="position: absolute; left: 0; top: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.58); filter: blur(4); cursor: url(&quot;project://database/Assets/UI/Cursors/hand_small_point.png?fileID=2800000&amp;guid=fedc076baeb05804cab1ff17dd39e132&amp;type=3#hand_small_point&quot;);"/>
+        <ui:VisualElement name="OptionsModal" class="SolidPanel" style="width: 780px; max-width: 90%; padding: 28px; border-radius: 16px; border-width: 2px; border-color: rgba(255, 255, 255, 0.14); border-top-width: 0; border-right-width: 0; border-bottom-width: 0; border-left-width: 0;">
+            <ui:VisualElement name="TopBar" style="flex-direction: row; align-items: center; justify-content: space-between; margin-bottom: 20px;">
+                <ui:VisualElement style="flex-direction: row; align-items: center;">
+                    <ui:Button text="" name="BackButton" icon-image="project://database/Assets/UI/Cursors/Unused/arrow_w.png?fileID=2800000&amp;guid=3e30aa2d7d8b8a84c8f4b674ed72eacb&amp;type=3#arrow_w" class="button" style="background-color: rgba(0, 0, 0, 0); border-width: 0; aspect-ratio: 1; width: 48px; height: 48px; margin-right: 12px;"/>
+                    <ui:Label text="Options" name="OptionsTitle" class="header" style="font-size: 36px;"/>
+                </ui:VisualElement>
+                <ui:Button text="Defaults" name="ResetDefaultsButton" class="button cancelButton" style="font-size: 18px; padding-left: 16px; padding-right: 16px; padding-top: 8px; padding-bottom: 8px;"/>
+            </ui:VisualElement>
+            <ui:ScrollView name="OptionsScroll" mode="Vertical" style="max-height: 620px; margin-bottom: 22px;">
+                <ui:VisualElement name="AudioSection" class="translucentPanel" style="padding: 18px; margin-bottom: 16px; background-color: rgba(42, 72, 53, 0.35);">
+                    <ui:Label text="Audio" class="header" style="font-size: 24px; margin-bottom: 14px;"/>
+                    <ui:VisualElement style="flex-direction: row; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                        <ui:Label text="Master Volume" class="descriptionHeader" style="width: 210px;"/>
+                        <ui:Slider name="MasterVolumeSlider" low-value="0" high-value="100" value="100" class="dragBar" style="flex-grow: 1; margin-left: 12px; margin-right: 14px;"/>
+                        <ui:Label text="100%" name="MasterVolumeValue" class="description-text" style="width: 56px; -unity-text-align: middle-right; -unity-font-style: bold;"/>
+                    </ui:VisualElement>
+                    <ui:VisualElement style="flex-direction: row; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                        <ui:Label text="Music Volume" class="descriptionHeader" style="width: 210px;"/>
+                        <ui:Slider name="MusicVolumeSlider" low-value="0" high-value="100" value="80" class="dragBar" style="flex-grow: 1; margin-left: 12px; margin-right: 14px;"/>
+                        <ui:Label text="80%" name="MusicVolumeValue" class="description-text" style="width: 56px; -unity-text-align: middle-right; -unity-font-style: bold;"/>
+                    </ui:VisualElement>
+                    <ui:VisualElement style="flex-direction: row; align-items: center; justify-content: space-between;">
+                        <ui:Label text="SFX Volume" class="descriptionHeader" style="width: 210px;"/>
+                        <ui:Slider name="SFXVolumeSlider" low-value="0" high-value="100" value="100" class="dragBar" style="flex-grow: 1; margin-left: 12px; margin-right: 14px;"/>
+                        <ui:Label text="100%" name="SFXVolumeValue" class="description-text" style="width: 56px; -unity-text-align: middle-right; -unity-font-style: bold;"/>
+                    </ui:VisualElement>
+                </ui:VisualElement>
+                <ui:VisualElement name="DisplaySection" class="translucentPanel" style="padding: 18px; margin-bottom: 16px; background-color: rgba(42, 72, 53, 0.35);">
+                    <ui:Label text="Display" class="header" style="font-size: 24px; margin-bottom: 14px;"/>
+                    <ui:VisualElement style="flex-direction: row; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                        <ui:Label text="Fullscreen" class="descriptionHeader"/>
+                        <ui:Toggle name="FullscreenToggle" value="true" class="cursor-clickable"/>
+                    </ui:VisualElement>
+                    <ui:VisualElement style="flex-direction: row; align-items: center; justify-content: space-between;">
+                        <ui:Label text="VSync" class="descriptionHeader"/>
+                        <ui:Toggle name="VSyncToggle" value="true" class="cursor-clickable"/>
+                    </ui:VisualElement>
+                </ui:VisualElement>
+                <ui:VisualElement name="GameplaySection" class="translucentPanel" style="padding: 18px; background-color: rgba(42, 72, 53, 0.35);">
+                    <ui:Label text="Controls &amp; Camera" class="header" style="font-size: 24px; margin-bottom: 14px;"/>
+                    <ui:VisualElement style="flex-direction: row; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                        <ui:Label text="Camera Pan Speed" class="descriptionHeader" style="width: 210px;"/>
+                        <ui:Slider name="CameraSpeedSlider" low-value="25" high-value="200" value="100" class="dragBar" style="flex-grow: 1; margin-left: 12px; margin-right: 14px;"/>
+                        <ui:Label text="100%" name="CameraSpeedValue" class="description-text" style="width: 56px; -unity-text-align: middle-right; -unity-font-style: bold;"/>
+                    </ui:VisualElement>
+                    <ui:VisualElement style="flex-direction: row; align-items: center; justify-content: space-between;">
+                        <ui:Label text="Edge Scrolling" class="descriptionHeader"/>
+                        <ui:Toggle name="EdgeScrollToggle" value="true" class="cursor-clickable"/>
+                    </ui:VisualElement>
+                </ui:VisualElement>
+            </ui:ScrollView>
+            <ui:VisualElement name="FooterButtons" style="flex-direction: row; justify-content: space-between; align-items: center;">
+                <ui:Button text="Main Menu" name="MainMenuButton" class="button cancelButton" style="font-size: 22px; padding-left: 22px; padding-right: 22px; padding-top: 10px; padding-bottom: 10px;"/>
+                <ui:Button text="Close" name="CloseButton" class="button" style="font-size: 22px; padding-left: 28px; padding-right: 28px; padding-top: 10px; padding-bottom: 10px;"/>
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>
