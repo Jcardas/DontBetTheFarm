@@ -3,22 +3,64 @@ using System.Linq;
 using UnityEngine;
 
 // What the mouse is over, the same answer for every script that asks. A creature wins, even one behind a building
-// or a fence, so a unit is never hidden from the mouse; then a building by its whole outline; otherwise it is
-// whatever the ray hits first.
+// or a fence (including knocked-out animals inside a pen), so a unit is never hidden from the mouse;
+// then a building by its whole outline; otherwise it is whatever the ray hits first.
 public static class MouseTarget
 {
     static readonly int Creatures = LayerMask.GetMask("Creature");
     static readonly List<Collider> colliders = new();
     static readonly List<MeshRenderer> parts = new();
 
-    // The barn is the exception: in front of a creature it keeps the mouse, so it can still be hovered and right-clicked.
+    // Knocked-out animals inside a pen or standing creatures win over buildings; otherwise the Barn keeps priority
+    // over creatures behind it so it can still be hovered and right-clicked.
     public static bool Find(Ray ray, out RaycastHit hit, float maxDistance = Mathf.Infinity, int layers = Physics.DefaultRaycastLayers)
     {
         bool any = Physics.Raycast(ray, out hit, maxDistance, layers, QueryTriggerInteraction.Ignore);
-        if (any && hit.collider.GetComponentInParent<Barn>() != null) return true;
-        if (!Physics.Raycast(ray, out RaycastHit creature, maxDistance, Creatures & layers, QueryTriggerInteraction.Ignore)) return any;
-        hit = creature;
-        return true;
+
+        if (Physics.Raycast(ray, out RaycastHit creature, maxDistance, Creatures & layers, QueryTriggerInteraction.Ignore))
+        {
+            var downedAnimal = creature.collider.GetComponentInParent<Animal>();
+            if (downedAnimal != null && downedAnimal.Down)
+            {
+                hit = creature;
+                return true;
+            }
+
+            if (any && hit.collider.GetComponentInParent<Barn>() != null)
+                return true;
+
+            hit = creature;
+            return true;
+        }
+
+        // Fallback bounds check for knocked-out animals whose colliders may be occluded by a pen's BoxCollider
+        Animal downedByBounds = FindDownedAnimalByBounds(ray, maxDistance);
+        if (downedByBounds != null && downedByBounds.Body != null)
+        {
+            if (Physics.Raycast(ray, out RaycastHit directDowned, maxDistance, 1 << downedByBounds.Body.gameObject.layer, QueryTriggerInteraction.Collide))
+            {
+                hit = directDowned;
+                return true;
+            }
+        }
+
+        return any;
+    }
+
+    static Animal FindDownedAnimalByBounds(Ray ray, float maxDistance)
+    {
+        Animal closest = null;
+        float bestDist = maxDistance;
+        foreach (Animal a in Object.FindObjectsByType<Animal>(FindObjectsSortMode.None))
+        {
+            if (a == null || !a.Down || !a.isActiveAndEnabled) continue;
+            if (a.Body != null && a.Body.bounds.IntersectRay(ray, out float dist) && dist < bestDist)
+            {
+                bestDist = dist;
+                closest = a;
+            }
+        }
+        return closest;
     }
 
     // The building the ray reaches before `hit`, judged by its active colliders so fence gaps still count as the pen

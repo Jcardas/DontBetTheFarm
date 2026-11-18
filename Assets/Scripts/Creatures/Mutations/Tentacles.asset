@@ -13,19 +13,19 @@ MonoBehaviour:
   m_Name: Tentacles
   m_EditorClassIdentifier: Assembly-CSharp::MutationData
   mutationName: Tentacles
-  mutationCost: 50
+  mutationCost: 2
   allowedSlots: -1
   pairedPrefab: 0
   prefab: {fileID: 5632547008824762036, guid: 9b6b594a81d059f49947e55c72ffba34, type: 3}
   prefabSprite: {fileID: 1298857179512933694, guid: 70f01e1d3309800438799987648f9213, type: 3}
   localScale: 0.1
   grantedCapabilities: 0
-  bonusMaxHealth: 2
-  damageResistance: 18
-  bonusMoveSpeed: 3
-  bonusAttackDamage: 2
+  bonusMaxHealth: 0
+  damageResistance: 0
+  bonusMoveSpeed: 2
+  bonusAttackDamage: 1
   bonusAttackRange: 2
   bonusAttackSpeed: 1
-  bonusViewRadius: 2
+  bonusViewRadius: 0
   overridesAttack: 0
   extraDescription: Also does this!

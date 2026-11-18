@@ -9,7 +9,7 @@ public class CreatureBrain : MonoBehaviour
     private Gatherer gatherer;
 
     private IDamageable currentTarget;
-    private Creature playerOrderedTarget;
+    private IDamageable playerOrderedTarget;
 
     private Vector3 guardPost;
     private float nextThinkTime;
@@ -21,22 +21,42 @@ public class CreatureBrain : MonoBehaviour
     public bool IsPassive { get; set; }
     public bool Engaged => currentTarget != null && !currentTarget.Down;
 
+    private bool CanTargetAirborne =>
+        creature is Farmer ||
+        creature is RangedAnimal ||
+        creature.HasCapability(CreatureCapabilities.IsRangedAttacker) ||
+        creature.HasCapability(CreatureCapabilities.CanFly);
+
     private void Awake()
     {
         creature = GetComponent<Creature>();
         agent = GetComponent<NavMeshAgent>();
-        gatherer = GetComponent<Gatherer>();
+        gatherer = GetComponentInChildren<Gatherer>();
     }
 
     private void Start() => guardPost = transform.position;
+
+    public void RefreshGatherer(Gatherer updated = null)
+    {
+        gatherer = updated != null ? updated : GetComponentInChildren<Gatherer>();
+    }
+
+    private Gatherer EnsureGatherer()
+    {
+        if (gatherer == null)
+            gatherer = GetComponentInChildren<Gatherer>();
+        return gatherer;
+    }
 
     public void ExecuteCommand(Order order)
     {
         if (creature == null || creature.Down) return;
 
-        if (order.kind == OrderKind.Attack && creature.CalculatedAttackDamage > 0)
+        var activeGatherer = EnsureGatherer();
+
+        if (order.kind == OrderKind.Attack && creature.CalculatedAttackDamage > 0 && CanAttackTarget(order.enemy))
         {
-            if (gatherer != null) gatherer.AbortWork();
+            if (activeGatherer != null) activeGatherer.AbortWork();
             Attack(order.enemy);
             return;
         }
@@ -48,46 +68,79 @@ public class CreatureBrain : MonoBehaviour
             return;
         }
 
-        if (gatherer != null)
+        if (order.kind == OrderKind.Pen && creature is Animal animal && order.building is AnimalPen pen)
         {
-            if (order.kind == OrderKind.Work && gatherer.CanWork(order.node))
+            if (pen.AddAnimal(animal))
+            {
+                Guard(order.point);
+            }
+            return;
+        }
+
+        if (order.kind == OrderKind.Revive && creature is Farmer && order.animalToRevive != null && order.animalToRevive.Down && activeGatherer != null)
+        {
+            ClearCombatAndObey();
+            activeGatherer.Revive(order.animalToRevive);
+            return;
+        }
+
+        if (activeGatherer != null)
+        {
+            if (order.kind == OrderKind.Work && activeGatherer.CanWork(order.node))
             {
                 ClearCombatAndObey();
-                gatherer.Work(order.node);
+                activeGatherer.Work(order.node);
                 return;
             }
 
             if (order.kind == OrderKind.Harvest && creature.HasCapability(CreatureCapabilities.CanHarvestCrops))
             {
                 ClearCombatAndObey();
-                gatherer.Harvest(order.field);
+                activeGatherer.Harvest(order.field);
                 return;
             }
 
-            if (order.kind == OrderKind.Repair && creature.HasCapability(CreatureCapabilities.CanRepair))
+            if (order.kind == OrderKind.Repair && activeGatherer.CanRepair)
             {
                 ClearCombatAndObey();
-                gatherer.Repair(order.building);
+                activeGatherer.Repair(order.building);
                 return;
             }
 
-            gatherer.AbortWork();
+            activeGatherer.AbortWork();
         }
 
         Guard(order.point);
     }
 
-    // Whether ExecuteCommand would carry this order out rather than just walk to its point (the same checks).
-    public bool CanObey(Order order) => order.kind switch
+    // Ground melee units cannot hit airborne UFOs or airborne flying creatures;
+    // Farmer (shotgun), ranged animals, and other flying creatures can.
+    private bool CanAttackTarget(IDamageable target)
     {
-        OrderKind.Attack => creature.CalculatedAttackDamage > 0,
-        OrderKind.Work => gatherer != null && gatherer.CanWork(order.node),
-        OrderKind.Harvest => gatherer != null && creature.HasCapability(CreatureCapabilities.CanHarvestCrops),
-        OrderKind.Repair => gatherer != null && creature.HasCapability(CreatureCapabilities.CanRepair),
-        OrderKind.Pen => creature is Animal,
-        OrderKind.Barn => creature is Farmer,
-        _ => true,
-    };
+        if (target == null || target.Down) return false;
+        if (target is UFO ufo)
+            return ufo.CanBeShotDown && CanTargetAirborne && GameConstants.IsHostile(creature.Team, GameConstants.Team.Alien);
+        if (target is Creature targetCreature && targetCreature.IsAirborne)
+            return CanTargetAirborne;
+        return true;
+    }
+
+    // Whether ExecuteCommand would carry this order out rather than just walk to its point (the same checks).
+    public bool CanObey(Order order)
+    {
+        var activeGatherer = EnsureGatherer();
+        return order.kind switch
+        {
+            OrderKind.Attack => creature.CalculatedAttackDamage > 0 && CanAttackTarget(order.enemy),
+            OrderKind.Work => activeGatherer != null && activeGatherer.CanWork(order.node),
+            OrderKind.Harvest => activeGatherer != null && creature.HasCapability(CreatureCapabilities.CanHarvestCrops),
+            OrderKind.Repair => activeGatherer != null && activeGatherer.CanRepair,
+            OrderKind.Pen => creature is Animal,
+            OrderKind.Barn => creature is Farmer,
+            OrderKind.Revive => creature is Farmer && order.animalToRevive != null && order.animalToRevive.Down,
+            _ => true,
+        };
+    }
 
     private void ClearCombatAndObey()
     {
@@ -103,6 +156,10 @@ public class CreatureBrain : MonoBehaviour
         obeyGraceEnds = Time.time + 0.5f;
 
         guardPost = NavMesh.SamplePosition(point, out NavMeshHit hit, 3f, NavMesh.AllAreas) ? hit.position : point;
+
+        if (creature.Flight != null && creature.Flight.FlyToAndLand(guardPost))
+            return;
+
         if (agent.isOnNavMesh)
         {
             agent.updateRotation = true;
@@ -118,7 +175,7 @@ public class CreatureBrain : MonoBehaviour
         obeyGraceEnds = Time.time + 0.5f;
     }
 
-    public void Attack(Creature enemy)
+    public void Attack(IDamageable enemy)
     {
         if (gatherer != null) gatherer.AbortWork();
         isObeying = false;
@@ -128,14 +185,85 @@ public class CreatureBrain : MonoBehaviour
 
     public void SetGuardPost(Vector3 point) => guardPost = point;
 
+    private float DistanceToTarget(IDamageable target)
+    {
+        if (target == null) return float.MaxValue;
+        if (target is UFO || (target is Creature c && c.IsAirborne))
+        {
+            Vector3 a = transform.position;
+            Vector3 b = target.Position;
+            return Vector2.Distance(new Vector2(a.x, a.z), new Vector2(b.x, b.z));
+        }
+        return target.Body != null ? Reach.Gap(transform.position, target.Body) : Vector3.Distance(transform.position, target.Position);
+    }
+
+    private void MoveTowardTarget(IDamageable target)
+    {
+        if (target == null) return;
+
+        if (creature.Flight != null && creature.Flight.CanFly)
+        {
+            float cooldownRemaining = Mathf.Max(0f, nextAttackTime - Time.time);
+            creature.Flight.EngageTarget(target, creature.CalculatedAttackRange, cooldownRemaining);
+            return;
+        }
+
+        if (!agent.isOnNavMesh) return;
+
+        agent.updateRotation = true;
+        if (target is UFO)
+        {
+            Vector3 groundUnderUfo = new Vector3(target.Position.x, transform.position.y, target.Position.z);
+            if (NavMesh.SamplePosition(groundUnderUfo, out NavMeshHit navHit, 8f, NavMesh.AllAreas))
+                agent.SetDestination(navHit.position);
+            else
+                agent.SetDestination(groundUnderUfo);
+            return;
+        }
+
+        if (target.Body != null)
+            Reach.WalkTo(agent, target.Body);
+    }
+
+    private IDamageable FindTargetWithUFOs()
+    {
+        IDamageable best = creature.FindTarget(guardPost);
+
+        if (!CanTargetAirborne || UFO.Active.Count == 0 || !GameConstants.IsHostile(creature.Team, GameConstants.Team.Alien))
+            return best;
+
+        float maxRange = Mathf.Max(creature.CalculatedViewRadius, creature.CalculatedAttackRange);
+        float bestDist = best != null ? DistanceToTarget(best) : maxRange;
+
+        foreach (UFO ufo in UFO.Active)
+        {
+            if (ufo == null || !ufo.CanBeShotDown || ufo.Down) continue;
+            float dist = DistanceToTarget(ufo);
+            if (dist > maxRange || dist >= bestDist) continue;
+            bestDist = dist;
+            best = ufo;
+        }
+
+        return best;
+    }
+
     private void Update()
     {
         if (creature == null || creature.Down || IsPassive) return;
 
         if (isObeying)
         {
-            bool arrived = !agent.pathPending && (!agent.hasPath || agent.remainingDistance <= agent.stoppingDistance + 0.2f);
-            if (Time.time < obeyGraceEnds || !arrived) return;
+            if (creature.Flight != null && creature.Flight.IsAirborne)
+            {
+                if (Time.time >= obeyGraceEnds && !creature.Flight.HasDestination && creature.Flight.State == CreatureFlight.FlightState.Grounded)
+                    isObeying = false;
+                return;
+            }
+
+            bool near = !agent.pathPending && (!agent.hasPath || agent.remainingDistance <= agent.stoppingDistance + 1f);
+            bool stalled = !agent.pathPending && agent.hasPath && agent.remainingDistance <= 3f && agent.velocity.sqrMagnitude < 0.04f;
+            if (Time.time < obeyGraceEnds || !(near || stalled)) return;
+            if (stalled) agent.ResetPath();
             isObeying = false;
         }
 
@@ -143,54 +271,65 @@ public class CreatureBrain : MonoBehaviour
         {
             nextThinkTime = Time.time + 0.25f;
 
-            if (playerOrderedTarget != null && playerOrderedTarget.Down)
+            if (playerOrderedTarget != null && (playerOrderedTarget.Down || playerOrderedTarget.Body == null || !CanAttackTarget(playerOrderedTarget)))
                 playerOrderedTarget = null;
 
-            if (!creature.Anchored && !Engaged)
+            if (!Engaged)
                 guardPost = transform.position;
 
-            currentTarget = playerOrderedTarget != null ? playerOrderedTarget : creature.FindTarget(guardPost);
+            bool wasFighting = currentTarget != null;
+            currentTarget = playerOrderedTarget != null ? playerOrderedTarget : FindTargetWithUFOs();
 
             if (currentTarget == null)
             {
-                if (Vector3.Distance(transform.position, guardPost) > agent.stoppingDistance + 0.5f && agent.isOnNavMesh)
+                if (wasFighting)
                 {
-                    agent.updateRotation = true;
-                    agent.SetDestination(guardPost);
+                    if (creature.Flight != null && creature.Flight.IsAirborne)
+                        creature.Flight.StopAndLand();
+                    else if (agent.isOnNavMesh && agent.hasPath)
+                        agent.ResetPath();
                 }
                 return;
             }
 
             retreating = false;
-            if (currentTarget.Body != null)
+            float gap = DistanceToTarget(currentTarget);
+            if (gap > creature.CalculatedAttackRange)
             {
-                float gap = Reach.Gap(transform.position, currentTarget.Body);
-                if (gap > creature.CalculatedAttackRange)
-                {
-                    agent.updateRotation = true;
-                    Reach.WalkTo(agent, currentTarget.Body);
-                }
-                else if (gap < creature.KeepAwayRange)
-                {
-                    BackAwayFrom(currentTarget, gap);
-                }
+                MoveTowardTarget(currentTarget);
+            }
+            else if (gap < creature.KeepAwayRange && currentTarget is not UFO)
+            {
+                BackAwayFrom(currentTarget, gap);
             }
         }
 
-        if (currentTarget == null || currentTarget.Down || currentTarget.Body == null) return;
-        if (Reach.Gap(transform.position, currentTarget.Body) > creature.CalculatedAttackRange) return;
+        if (currentTarget == null || currentTarget.Down || currentTarget.Body == null || !CanAttackTarget(currentTarget)) return;
+        if (DistanceToTarget(currentTarget) > creature.CalculatedAttackRange) return;
 
-        if (agent.hasPath && !retreating) agent.ResetPath();
-        agent.updateRotation = false;
+        // Ensure melee fliers finish swooping down to ground level before striking a ground target
+        if (creature.Flight != null && creature.Flight.CanFly)
+        {
+            float cooldownRemaining = Mathf.Max(0f, nextAttackTime - Time.time);
+            creature.Flight.EngageTarget(currentTarget, creature.CalculatedAttackRange, cooldownRemaining);
+
+            bool targetIsAirborne = CreatureFlight.IsTargetAirborne(currentTarget);
+            if (!targetIsAirborne && !creature.HasCapability(CreatureCapabilities.IsRangedAttacker) && creature.Flight.CurrentAltitude > 0.6f)
+                return;
+        }
+
+        if (agent.enabled && agent.hasPath && !retreating) agent.ResetPath();
+        if (agent.enabled) agent.updateRotation = false;
 
         Vector3 toTarget = currentTarget.Position - transform.position;
         toTarget.y = 0;
         if (toTarget.sqrMagnitude > 0.001f)
         {
+            float turnSpeed = agent.enabled ? agent.angularSpeed : 360f;
             transform.rotation = Quaternion.RotateTowards(
                 transform.rotation,
                 Quaternion.LookRotation(toTarget),
-                agent.angularSpeed * Time.deltaTime
+                turnSpeed * Time.deltaTime
             );
         }
 
@@ -206,6 +345,14 @@ public class CreatureBrain : MonoBehaviour
         if (away.sqrMagnitude < 0.001f) away = -transform.forward;
 
         Vector3 to = transform.position + away.normalized * (creature.KeepAwayRange - gap + 1f);
+
+        if (creature.Flight != null && creature.Flight.IsAirborne)
+        {
+            creature.Flight.FlyToHover(to);
+            retreating = true;
+            return;
+        }
+
         if (!agent.isOnNavMesh || !NavMesh.SamplePosition(to, out NavMeshHit hit, 2f, NavMesh.AllAreas)) return;
 
         agent.SetDestination(hit.position);

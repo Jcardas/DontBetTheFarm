@@ -18,7 +18,7 @@
                 </ui:VisualElement>
             </ui:VisualElement>
             <ui:VisualElement name="Cost" style="flex-grow: 1; width: auto; flex-direction: row; align-self: center; align-items: center; justify-content: center; aspect-ratio: 1;">
-                <ui:Label text="#" name="CostAmount" class="header"/>
+                <ui:Label text="#" name="CostAmount" class="header" style="color: rgb(206, 9, 215);"/>
                 <ui:Image source="project://database/Assets/UI/Icons/PROTOTYPE_MISSING_ICON.png?fileID=8520217413990361559&amp;guid=b91736b96387c4d4ab44ad2fd62ca7a8&amp;type=3#PROTOTYPE_MISSING_ICON_0" style="aspect-ratio: 1; max-width: 75px;"/>
             </ui:VisualElement>
         </ui:VisualElement>

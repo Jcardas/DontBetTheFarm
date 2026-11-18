@@ -2,15 +2,13 @@ using TMPro;
 using Unity.AI.Navigation;
 using UnityEngine;
 using UnityEngine.AI;
-using UnityEngine.UI;
 
 [RequireComponent(typeof(NavMeshAgent), typeof(Creature), typeof(CreatureBrain))]
 public class Gatherer : MonoBehaviour
 {
     private static readonly Color WorkTint = new(0.8f, 1f, 0.7f);
-    private static Gatherer activeRepairer; // The RepairPanel is shared by all workers.
 
-    public enum State { Idle, GatheringNode, HarvestingField, RepairingBuilding }
+    public enum State { Idle, GatheringNode, HarvestingField, RepairingBuilding, RevivingAnimal }
 
     [Header("Work Settings")]
     public float reach = 1.2f;
@@ -19,10 +17,6 @@ public class Gatherer : MonoBehaviour
 
     [Header("Repair")]
     [SerializeField] private float repairRange = 3f;
-    [SerializeField] private RectTransform repairPanel;
-    [SerializeField] private Button repairButton;
-    [SerializeField] private TMP_Text repairButtonText;
-    [SerializeField] private TMP_Text statusText;
 
     private NavMeshAgent agent;
     private Creature creature;
@@ -34,7 +28,7 @@ public class Gatherer : MonoBehaviour
     private ResourceType activeResourceType;
     private WheatField field;
     private Buildable building;
-    private Bounds repairArea;
+    private Animal reviveTarget;
     private Collider targetCollider;
     private Collider heading;
 
@@ -48,21 +42,10 @@ public class Gatherer : MonoBehaviour
                              creature.HasCapability(CreatureCapabilities.CanRepair);
     public Buildable CurrentRepairTarget => building;
 
-    // True when `unit` is the worker currently holding the shared repair panel.
-    public static bool IsActiveRepairer(Selectable unit) =>
-        unit != null && activeRepairer != null && unit.gameObject == activeRepairer.gameObject;
-
-    // True when `unit` is already queued up to repair `target`.
-    public static bool IsActiveRepairerOn(Selectable unit, Buildable target) =>
-        IsActiveRepairer(unit) && activeRepairer.building == target;
-
-    // Closes the shared repair panel and cancels any pending repair stance when the player clicks elsewhere.
-    public static void DismissRepairUI()
-    {
-        if (activeRepairer == null) return;
-        if (!activeRepairer.repairing) activeRepairer.AbortWork();
-        else if (activeRepairer.repairPanel) activeRepairer.repairPanel.gameObject.SetActive(false);
-    }
+    // Kept as no-op stubs so existing calls in PlayerControls compile cleanly
+    public static bool IsActiveRepairer(Selectable unit) => false;
+    public static bool IsActiveRepairerOn(Selectable unit, Buildable target) => false;
+    public static void DismissRepairUI() { }
 
     private void Awake()
     {
@@ -73,7 +56,6 @@ public class Gatherer : MonoBehaviour
         progress = GetComponentInChildren<ProgressRing>();
     }
 
-    // Existing resource gathering is unchanged.
     public bool CanWork(ResourceNode target)
     {
         if (target == null) return false;
@@ -99,10 +81,10 @@ public class Gatherer : MonoBehaviour
         field = target;
     }
 
-    // This is called by the existing CreatureBrain when it receives a Repair order.
     public void Repair(Buildable target)
     {
-        if (!CanRepair || !target || !target.IsBroken || !FindRepairUI()) return;
+        if (!CanRepair || !target || !target.IsBroken) return;
+        if (ResourceManager.Count(ResourceType.Wood) < target.RepairWoodCost) return;
 
         Collider col = target.Body && target.Body.enabled && target.Body.gameObject.activeInHierarchy
             ? target.Body : target.GetComponentInChildren<Collider>();
@@ -113,15 +95,20 @@ public class Gatherer : MonoBehaviour
             return;
         }
 
-        if (activeRepairer && activeRepairer != this)
-            activeRepairer.AbortWork();
-
         BeginTask(State.RepairingBuilding, target.transform.position, col);
         building = target;
-        repairArea = Footprint(target);
-        activeRepairer = this;
-        repairButton.onClick.AddListener(StartRepair);
-        repairPanel.gameObject.SetActive(false);
+    }
+
+    public void Revive(Animal target)
+    {
+        if (creature is not Farmer || creature.Down || target == null || !target.Down) return;
+        if (ResourceManager.Count(ResourceType.Hay) < target.HealCost) return;
+
+        Collider col = target.Body != null ? target.Body : target.GetComponentInChildren<Collider>();
+        if (col == null) return;
+
+        BeginTask(State.RevivingAnimal, target.transform.position, col);
+        reviveTarget = target;
     }
 
     private void BeginTask(State newState, Vector3 sitePosition, Collider col)
@@ -130,6 +117,7 @@ public class Gatherer : MonoBehaviour
         node = null;
         field = null;
         building = null;
+        reviveTarget = null;
         heading = null;
         targetCollider = col;
         workTimer = 0f;
@@ -141,17 +129,11 @@ public class Gatherer : MonoBehaviour
 
     public void AbortWork()
     {
-        if (activeRepairer == this)
-        {
-            if (repairButton) repairButton.onClick.RemoveListener(StartRepair);
-            if (repairPanel) repairPanel.gameObject.SetActive(false);
-            activeRepairer = null;
-        }
-
         state = State.Idle;
         node = null;
         field = null;
         building = null;
+        reviveTarget = null;
         targetCollider = null;
         heading = null;
         workTimer = 0f;
@@ -176,6 +158,7 @@ public class Gatherer : MonoBehaviour
             case State.GatheringNode: UpdateNodeGathering(); break;
             case State.HarvestingField: UpdateFieldHarvest(); break;
             case State.RepairingBuilding: UpdateRepair(); break;
+            case State.RevivingAnimal: UpdateRevive(); break;
         }
     }
 
@@ -220,7 +203,6 @@ public class Gatherer : MonoBehaviour
         }
     }
 
-    // Repair reaches its target exactly like wood gathering (Arrive -> Reach.WalkTo).
     private void UpdateRepair()
     {
         if (!CanRepair || !building || !building.IsBroken || !targetCollider)
@@ -229,92 +211,51 @@ public class Gatherer : MonoBehaviour
             return;
         }
 
-        if (repairing)
+        if (!repairing)
         {
-            if (DoWorkTick(secondsPerRepair))
+            if (!Arrive(targetCollider, repairRange)) return;
+
+            if (ResourceManager.Count(ResourceType.Wood) < building.RepairWoodCost)
             {
-                if (building.TryRepair())
-                {
-                    foreach (NavMeshSurface surface in FindObjectsByType<NavMeshSurface>(FindObjectsSortMode.None))
-                        if (surface.isActiveAndEnabled) surface.BuildNavMesh();
-                }
                 AbortWork();
+                return;
             }
+
+            repairing = true;
+            workTimer = 0f;
+        }
+
+        if (DoWorkTick(secondsPerRepair))
+        {
+            if (building.TryRepair())
+            {
+                foreach (NavMeshSurface surface in FindObjectsByType<NavMeshSurface>(FindObjectsSortMode.None))
+                    if (surface.isActiveAndEnabled) surface.BuildNavMesh();
+            }
+            AbortWork();
+        }
+    }
+
+    private void UpdateRevive()
+    {
+        if (creature is not Farmer || creature.Down || reviveTarget == null || !reviveTarget.Down || targetCollider == null)
+        {
+            AbortWork();
             return;
         }
 
-        if (!Arrive(targetCollider, repairRange))
+        if (!Arrive(targetCollider)) return;
+
+        if (DoWorkTick(secondsPerRepair))
         {
-            repairPanel.gameObject.SetActive(false);
-            return;
+            if (reviveTarget.Down && ResourceManager.Spend(ResourceType.Hay, reviveTarget.HealCost))
+            {
+                reviveTarget.HealToFull();
+            }
+            AbortWork();
         }
-
-        ShowRepairUI();
     }
 
-    private void StartRepair()
-    {
-        if (repairing || state != State.RepairingBuilding ||
-            !building || !building.IsBroken || !targetCollider ||
-            Reach.Gap(transform.position, targetCollider) > repairRange ||
-            ResourceManager.Count(ResourceType.Wood) < building.RepairWoodCost) return;
-
-        repairing = true;
-        workTimer = 0f;
-        repairPanel.gameObject.SetActive(false);
-    }
-
-    private bool FindRepairUI()
-    {
-        if (!repairPanel)
-            foreach (RectTransform panel in FindObjectsByType<RectTransform>(
-                FindObjectsInactive.Include, FindObjectsSortMode.None))
-                if (panel.name == "RepairPanel") { repairPanel = panel; break; }
-
-        if (repairPanel)
-        {
-            if (!repairButton) repairButton = repairPanel.GetComponentInChildren<Button>(true);
-            if (!repairButtonText && repairButton)
-                repairButtonText = repairButton.GetComponentInChildren<TMP_Text>(true);
-            if (!statusText) statusText = repairPanel.Find("StatusText")?.GetComponent<TMP_Text>();
-        }
-
-        if (repairPanel && repairButton && repairButtonText && statusText) return true;
-        Debug.LogWarning("Gatherer: RepairPanel UI is missing.", this);
-        return false;
-    }
-
-    private void ShowRepairUI()
-    {
-        Camera cam = Camera.main;
-        if (!cam) return;
-
-        Vector3 screen = cam.WorldToScreenPoint(
-            new Vector3(repairArea.center.x, repairArea.max.y, repairArea.center.z));
-        if (screen.z <= 0f) { repairPanel.gameObject.SetActive(false); return; }
-
-        repairPanel.position = screen + Vector3.up * 28f;
-        int missing = building.RepairWoodCost - ResourceManager.Count(ResourceType.Wood);
-        repairButton.interactable = missing <= 0;
-        repairButtonText.text = missing <= 0
-            ? $"Repair ({building.RepairWoodCost} Wood)" : "Collect Wood First";
-        statusText.text = missing <= 0 ? "Ready to repair" : $"Need {missing} more wood";
-        repairPanel.gameObject.SetActive(true);
-    }
-
-    private static Bounds Footprint(Buildable target)
-    {
-        if (target.GroundElement &&
-            target.GroundElement.GetComponentInChildren<Renderer>(true) is Renderer ground)
-            return ground.bounds;
-
-        Bounds area = new(target.transform.position, Vector3.zero);
-        foreach (Renderer renderer in target.GetComponentsInChildren<Renderer>())
-            if (renderer.enabled) area.Encapsulate(renderer.bounds);
-        return area;
-    }
-
-    // Shared by chopping, harvesting and repairing.
     private bool DoWorkTick(float duration)
     {
         workTimer += Time.deltaTime;
@@ -329,7 +270,6 @@ public class Gatherer : MonoBehaviour
         return true;
     }
 
-  
     private bool Arrive(Collider target, float stopDistance = -1f)
     {
         if (!target || !target.enabled || !target.gameObject.activeInHierarchy ||

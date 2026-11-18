@@ -1,9 +1,29 @@
-<?xml version="1.0" encoding="utf-8"?>
-<ui:UXML
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xmlns:ui="UnityEngine.UIElements"
-    xmlns:uie="UnityEditor.UIElements"
-    xsi:noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd"
->
-    
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Assets/UI/StyleSheets/InteractionUI.uss?fileID=7433441132597879392&amp;guid=3c26107ceb91787478132dd32f00eb5c&amp;type=3#InteractionUI"/>
+    <ui:VisualElement name="UI_PANE" style="flex-grow: 1; width: 1920px; height: 1080px;">
+        <ui:VisualElement name="Background" style="flex-grow: 1; position: absolute; left: 0; top: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0); margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; border-top-left-radius: 0; border-top-right-radius: 0; border-bottom-right-radius: 0; border-bottom-left-radius: 0; filter: blur(2.06); background-image: url(&quot;project://database/Assets/UI/MainMenuBG.png?fileID=2800000&amp;guid=9019b39d6723764429f574f6a046898a&amp;type=3#MainMenuBG&quot;); background-position-x: right 0; background-position-y: bottom 0; background-size: 125% 125%; -unity-background-image-tint-color: rgb(255, 255, 255);"/>
+        <ui:VisualElement name="UIPaneContainer" style="flex-grow: 1; padding-left: 50px; padding-right: 50px; padding-top: 50px; padding-bottom: 50px;">
+            <ui:VisualElement name="PanelContainer" style="flex-grow: 1; justify-content: flex-start;">
+                <ui:VisualElement name="TitlePane" style="flex-grow: 1; flex-direction: row; max-height: 20%;">
+                    <ui:VisualElement name="ContentPane" style="flex-grow: 1; max-width: 830px; min-width: 500px; width: 131px; justify-content: space-between; align-items: center; align-self: center; padding-top: 25px; padding-right: 25px; padding-bottom: 25px; padding-left: 25px; background-color: rgba(0, 0, 0, 0.318); border-top-left-radius: 12px; border-top-right-radius: 12px; border-bottom-right-radius: 12px; border-bottom-left-radius: 12px;">
+                        <ui:Label text="Dont Bet The Farm!" name="Title" class="title" style="-unity-text-align: middle-center;"/>
+                    </ui:VisualElement>
+                </ui:VisualElement>
+                <ui:VisualElement name="MainContent" style="flex-grow: 1; flex-direction: row; max-height: 100%;">
+                    <ui:VisualElement name="LeftSide" style="flex-grow: 1; width: 30%;">
+                        <ui:VisualElement name="Spacer" style="flex-grow: 1; height: 55%;"/>
+                        <ui:VisualElement name="ContentPane" style="flex-grow: 1; max-width: none; min-width: auto; width: auto; justify-content: space-between; height: 400px;">
+                            <ui:Button text="Play" name="LoadGameButton" class="button" style="flex-grow: 1;"/>
+                            <ui:Button text="Options" name="OptionsButton" class="button" style="margin-top: 10px;"/>
+                            <ui:VisualElement name="Spacer" style="flex-grow: 0; height: 10px; margin-top: 10px;"/>
+                            <ui:Button text="Exit" name="ExitButton" class="button"/>
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+                    <ui:VisualElement name="AsideSection" style="flex-grow: 1; width: 70%; align-items: center; justify-content: center; padding-left: 50px; padding-right: 50px;">
+                        <ui:VisualElement name="AnimalPreview" style="flex-grow: 1; aspect-ratio: 1; background-image: url(&quot;project://database/Assets/Creature%20Render%20Textures/MainMenu/MenuPreviewRenderTexture.renderTexture?fileID=8400000&amp;guid=58313d61f4de6bf4d99feb2752a3ec26&amp;type=2#MenuPreviewRenderTexture&quot;); margin-left: 0;"/>
+                    </ui:VisualElement>
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
 </ui:UXML>

@@ -42,6 +42,7 @@ public class CreatureMutator : MonoBehaviour
     private readonly List<IMutationBehavior> activeBehaviors = new List<IMutationBehavior>();
 
     private Creature ownerCreature;
+    private bool isInitialized;
     
     // Whenever a mutation is equipped or unequipped, this event is triggered to notify listeners (e.g., Creature) that the mutations have changed.
     public event Action OnMutationsUpdated;
@@ -56,6 +57,9 @@ public class CreatureMutator : MonoBehaviour
 
     private void Start()
     {
+        if (isInitialized) return;
+        isInitialized = true;
+
         // 1. Spawn all base visual defaults for every slot (e.g., normal cow legs, head, tail)
         RestoreAllDefaults();
 
@@ -73,6 +77,15 @@ public class CreatureMutator : MonoBehaviour
                 }
             }
         }
+    }
+
+    /// <summary>
+    /// Initializes visual defaults for UI preview clones and prevents Start() from overwriting them later in the frame.
+    /// </summary>
+    public void InitializeForPreview()
+    {
+        isInitialized = true;
+        RestoreAllDefaults();
     }
 
     /// <summary>
@@ -96,6 +109,13 @@ public class CreatureMutator : MonoBehaviour
         {
             Debug.LogWarning($"[CreatureMutator] Cannot equip {mutation?.mutationName} on {targetSlot}");
             return;
+        }
+
+        // Prevent Start() from overwriting mutations applied immediately after Instantiate() (e.g., bred babies)
+        if (!isInitialized)
+        {
+            isInitialized = true;
+            RestoreAllDefaults();
         }
 
         // Clear existing visuals/mutations in this slot without restoring defaults yet
@@ -122,19 +142,35 @@ public class CreatureMutator : MonoBehaviour
             // If the mutation prefab is paired (e.g., wings, legs), determine which side to keep based on the socket's local X position relative to the creature's origin.
             if (mutation.pairedPrefab)
             {
-                // Local X < 0 is Left (_L), Local X >= 0 is Right (_R)
-                float localX = transform.InverseTransformPoint(socketSlot.transform.position).x;
-                bool useLeftSide = localX < -0.01f;
+                string sockName = socketSlot.transform.name;
+                bool isNamedLeft  = Regex.IsMatch(sockName, @"(?:^|[._\-\s])(L|Left|FL|RL)(?:[._\-\s\d]|$)", RegexOptions.IgnoreCase);
+                bool isNamedRight = Regex.IsMatch(sockName, @"(?:^|[._\-\s])(R|Right|FR|RR)(?:[._\-\s\d]|$)", RegexOptions.IgnoreCase);
+
+                bool useLeftSide;
+                if (isNamedLeft != isNamedRight)
+                {
+                    useLeftSide = isNamedLeft;
+                }
+                else
+                {
+                    // Fallback to local X relative to root if the socket name has no side suffix
+                    float localX = transform.InverseTransformPoint(socketSlot.transform.position).x;
+                    useLeftSide = localX < -0.01f;
+                }
+
                 FilterPairedSide(part, useLeftSide);
             }
 
-            // Hook behaviors (e.g. venom slow, spores aura)
-            var behaviors = part.GetComponentsInChildren<IMutationBehavior>();
-            foreach (var behavior in behaviors)
+            // Hook behaviors only when attached to a live gameplay Creature (skip on UI preview clones)
+            if (ownerCreature != null)
             {
-                behavior.Initialize(ownerCreature);
-                behavior.OnEquipped();
-                activeBehaviors.Add(behavior);
+                var behaviors = part.GetComponentsInChildren<IMutationBehavior>();
+                foreach (var behavior in behaviors)
+                {
+                    behavior.Initialize(ownerCreature);
+                    behavior.OnEquipped();
+                    activeBehaviors.Add(behavior);
+                }
             }
 
             spawnedParts.Add(part);
@@ -211,10 +247,32 @@ public class CreatureMutator : MonoBehaviour
                     b.OnUnequipped();
                     activeBehaviors.Remove(b);
                 }
-                Destroy(part);
+
+                if (ownerCreature == null)
+                    DestroyImmediate(part);
+                else
+                    Destroy(part);
             }
             parts.Clear();
             activePartObjects.Remove(targetSlot);
+        }
+
+        // Safety net: remove any untracked/leftover spawned children still attached to this slot's sockets
+        int bindingIndex = socketBindings.FindIndex(b => b.slotType == targetSlot);
+        if (bindingIndex != -1 && socketBindings[bindingIndex].sockets != null)
+        {
+            foreach (var socketSlot in socketBindings[bindingIndex].sockets)
+            {
+                if (socketSlot.transform == null) continue;
+                for (int i = socketSlot.transform.childCount - 1; i >= 0; i--)
+                {
+                    var child = socketSlot.transform.GetChild(i).gameObject;
+                    if (ownerCreature == null)
+                        DestroyImmediate(child);
+                    else
+                        Destroy(child);
+                }
+            }
         }
     }
 
@@ -223,6 +281,8 @@ public class CreatureMutator : MonoBehaviour
     /// </summary>
     private void RestoreSlotDefaults(SlotType targetSlot)
     {
+        if (equippedMutations.ContainsKey(targetSlot)) return;
+
         int bindingIndex = socketBindings.FindIndex(b => b.slotType == targetSlot);
         if (bindingIndex == -1) return;
 
@@ -237,7 +297,7 @@ public class CreatureMutator : MonoBehaviour
                 socketSlot.defaultVisualPrefab,
                 socketSlot.transform,
                 true
-                );
+            );
             spawnedDefaults.Add(defaultPart);
         }
 
@@ -378,9 +438,85 @@ public class CreatureMutator : MonoBehaviour
         return mutation;
     }
     
+    /// <summary>
+    ///  Used to copy the socket configuration from one CreatureMutator to another, for the UI preview purposes.
+    /// </summary>
+    /// <param name="source"></param>
+    /// <param name="sourceRoot"></param>
+    /// <param name="targetRoot"></param>
+    public void CopySocketsFrom(CreatureMutator source, Transform sourceRoot, Transform targetRoot)
+    {
+        socketScaleFactor = source.socketScaleFactor;
+        socketBindings.Clear();
+
+        foreach (var binding in source.socketBindings)
+        {
+            var newSockets = new List<SocketSlot>();
+            if (binding.sockets != null)
+            {
+                foreach (var s in binding.sockets)
+                {
+                    if (s.transform == null) continue;
+                    string path = GetRelativePath(sourceRoot, s.transform);
+                    Transform mapped = string.IsNullOrEmpty(path) ? targetRoot : targetRoot.Find(path);
+                    if (mapped != null)
+                    {
+                        newSockets.Add(new SocketSlot
+                        {
+                            transform = mapped,
+                            defaultVisualPrefab = s.defaultVisualPrefab
+                        });
+                    }
+                }
+            }
+
+            socketBindings.Add(new SocketBinding
+            {
+                slotType = binding.slotType,
+                sockets = newSockets
+            });
+        }
+    }
+    
+    /// <summary>
+    /// Destroys all children of the sockets immediately, without waiting for the end of the frame.
+    /// This is useful for UI preview clones that need to reset their visuals instantly.
+    /// </summary>
+    public void ClearAllSocketChildrenImmediate()
+    {
+        foreach (var binding in socketBindings)
+        {
+            if (binding.sockets == null) continue;
+            foreach (var s in binding.sockets)
+            {
+                if (s.transform == null) continue;
+                for (int i = s.transform.childCount - 1; i >= 0; i--)
+                    DestroyImmediate(s.transform.GetChild(i).gameObject);
+            }
+        }
+    }
+
+    /// <summary>
+    ///  Returns the relative path from the root Transform to the target Transform, or an empty string if they are the same.
+    /// </summary>
+    /// <param name="root"></param>
+    /// <param name="target"></param>
+    /// <returns></returns>
+    private static string GetRelativePath(Transform root, Transform target)
+    {
+        if (target == root) return string.Empty;
+        var stack = new Stack<string>();
+        var curr = target;
+        while (curr != null && curr != root)
+        {
+            stack.Push(curr.name);
+            curr = curr.parent;
+        }
+        return string.Join("/", stack);
+    }
+    
     public IEnumerable<MutationData> GetConfiguredStartingMutations()
     {
-        // Return your serialized starting/default mutations list/array from CreatureMutator
         return defaultMutations.ConvertAll(entry => entry.mutation); 
     }
 }

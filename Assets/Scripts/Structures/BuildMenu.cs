@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 using TMPro;
 #if UNITY_EDITOR
 using UnityEditor;
@@ -12,20 +13,32 @@ public class BuildMenu : MonoBehaviour
     [Header("UI Elements")]
     public GameObject buildMenu;
     public TMP_Text buildButtonText;
+    public TMP_Text demolishButtonText;
 
     [Header("Optional Direct References (Auto-Found if Left Empty)")]
     [SerializeField] private Button buildFieldButton;
     [SerializeField] private Button buildPenButton;
+    [SerializeField] private Button demolishButton;
 
     [Header("Prefabs for buttons")]
     [SerializeField] private Buildable fieldPrefab;
     [SerializeField] private Buildable penPrefab;
 
     private BuildingManager _buildingManager;
+    private int _lastDemolishClickFrame = -1;
+
+    private BuildingManager ResolveBuildingManager()
+    {
+        if (_buildingManager == null)
+            _buildingManager = BuildingManager.Instance != null
+                ? BuildingManager.Instance
+                : FindAnyObjectByType<BuildingManager>();
+        return _buildingManager;
+    }
 
     private void OnEnable()
     {
-        _buildingManager = FindAnyObjectByType<BuildingManager>();
+        ResolveBuildingManager();
         BindButtons();
     }
 
@@ -33,13 +46,16 @@ public class BuildMenu : MonoBehaviour
     {
         if (!Application.isPlaying) return;
 
-        if (_buildingManager == null)
-            _buildingManager = FindAnyObjectByType<BuildingManager>();
-
+        ResolveBuildingManager();
         BindButtons();
 
-        buildMenu.SetActive(false);
-        buildButtonText.text = "+ Build";
+        if (buildMenu != null)
+            buildMenu.SetActive(false);
+
+        if (buildButtonText != null)
+            buildButtonText.text = "+ Build";
+
+        UpdateDemolishButtonLabel(false);
     }
 
     void Update()
@@ -51,37 +67,49 @@ public class BuildMenu : MonoBehaviour
         {
             ToggleBuildMenu();
         }
+
+        var manager = ResolveBuildingManager();
+        if (manager != null)
+        {
+            UpdateDemolishButtonLabel(manager.IsDemolishing);
+        }
     }
 
     private void BindButtons()
     {
-        if (_buildingManager == null)
-            _buildingManager = FindAnyObjectByType<BuildingManager>();
+        ResolveBuildingManager();
 
-        if (_buildingManager == null)
+        if (buildButtonText == null)
         {
-            if (Application.isPlaying)
-                Debug.LogWarning("[BuildMenu] No BuildingManager found in the scene.");
-            return;
+            Button buildBtn = FindButtonByName("BuildButton");
+            if (buildBtn != null)
+                buildButtonText = buildBtn.GetComponentInChildren<TMP_Text>(true);
         }
 
-        // Auto-locate buttons by exact Hierarchy name if not manually assigned
         if (buildFieldButton == null)
             buildFieldButton = FindButtonByName("BuildFieldButton");
 
         if (buildPenButton == null)
             buildPenButton = FindButtonByName("BuildPenButton");
 
+        if (demolishButton == null)
+            demolishButton = FindButtonByName("DemolishButton");
+
+        if (demolishButton != null && demolishButtonText == null)
+            demolishButtonText = demolishButton.GetComponentInChildren<TMP_Text>(true);
+
         if (Application.isPlaying)
         {
-            // Runtime listeners
+
             if (buildFieldButton != null)
             {
                 buildFieldButton.onClick.RemoveAllListeners();
                 buildFieldButton.onClick.AddListener(() =>
                 {
-                    _buildingManager.StartBuilding(fieldPrefab);
+                    var manager = ResolveBuildingManager();
+                    if (manager != null) manager.StartBuilding(fieldPrefab);
                     CloseBuildMenu();
+                    ClearUISelection();
                 });
             }
 
@@ -90,19 +118,75 @@ public class BuildMenu : MonoBehaviour
                 buildPenButton.onClick.RemoveAllListeners();
                 buildPenButton.onClick.AddListener(() =>
                 {
-                    _buildingManager.StartBuilding(penPrefab);
+                    var manager = ResolveBuildingManager();
+                    if (manager != null) manager.StartBuilding(penPrefab);
                     CloseBuildMenu();
+                    ClearUISelection();
                 });
+            }
+
+            if (demolishButton != null)
+            {
+                var nav = demolishButton.navigation;
+                nav.mode = Navigation.Mode.None;
+                demolishButton.navigation = nav;
+
+                demolishButton.onClick.RemoveAllListeners();
+                demolishButton.onClick.AddListener(OnDemolishClicked);
             }
         }
 #if UNITY_EDITOR
         else
         {
-            // Editor persistent listeners (visible in the Button Inspector and saved with the scene)
             BindPersistentButton(buildFieldButton, fieldPrefab);
             BindPersistentButton(buildPenButton, penPrefab);
+
+            if (demolishButton != null)
+            {
+                for (int i = demolishButton.onClick.GetPersistentEventCount() - 1; i >= 0; i--)
+                {
+                    UnityEventTools.RemovePersistentListener(demolishButton.onClick, i);
+                }
+
+                UnityEventTools.AddVoidPersistentListener(
+                    demolishButton.onClick,
+                    OnDemolishClicked
+                );
+
+                EditorUtility.SetDirty(demolishButton);
+                EditorUtility.SetDirty(this);
+            }
         }
 #endif
+    }
+
+    public void OnDemolishClicked()
+    {
+
+        if (Time.frameCount == _lastDemolishClickFrame)
+        {
+            return;
+        }
+        _lastDemolishClickFrame = Time.frameCount;
+
+        CloseBuildMenu();
+        var manager = ResolveBuildingManager();
+        if (manager != null)
+        {
+            manager.ToggleDemolishMode();
+            UpdateDemolishButtonLabel(manager.IsDemolishing);
+        }
+        else
+        {
+            Debug.LogError("[BuildMenu] ResolveBuildingManager returned NULL!");
+        }
+        ClearUISelection();
+    }
+
+    private static void ClearUISelection()
+    {
+        if (EventSystem.current != null)
+            EventSystem.current.SetSelectedGameObject(null);
     }
 
 #if UNITY_EDITOR
@@ -110,7 +194,6 @@ public class BuildMenu : MonoBehaviour
     {
         if (button == null || _buildingManager == null || prefab == null) return;
 
-        // Clear existing persistent listeners so reloading the scene doesn't duplicate entries
         for (int i = button.onClick.GetPersistentEventCount() - 1; i >= 0; i--)
         {
             UnityEventTools.RemovePersistentListener(button.onClick, i);
@@ -134,7 +217,6 @@ public class BuildMenu : MonoBehaviour
 
     private Button FindButtonByName(string objectName)
     {
-        // Searches even if buildMenu starts inactive
         foreach (Button btn in GetComponentsInChildren<Button>(true))
         {
             if (btn.gameObject.name == objectName)
@@ -143,18 +225,42 @@ public class BuildMenu : MonoBehaviour
         return null;
     }
 
+    private void UpdateDemolishButtonLabel(bool isDemolishing)
+    {
+        string targetLabel = isDemolishing ? "× Cancel" : "- Demolish";
+        if (demolishButtonText != null)
+        {
+            demolishButtonText.text = targetLabel;
+        }
+        else if (isDemolishing)
+        {
+            Debug.LogWarning("[BuildMenu] demolishButtonText is NULL while IsDemolishing=true!");
+        }
+    }
+
     public void ToggleBuildMenu()
     {
-        bool isOpen = !buildMenu.activeSelf;
+        var manager = ResolveBuildingManager();
+        if (manager != null && manager.IsDemolishing)
+            manager.CancelDemolishMode();
 
+        if (buildMenu == null) return;
+
+        bool isOpen = !buildMenu.activeSelf;
         buildMenu.SetActive(isOpen);
 
-        buildButtonText.text = isOpen ? "× Close" : "+ Build";
+        if (buildButtonText != null)
+            buildButtonText.text = isOpen ? "× Close" : "+ Build";
+
+        ClearUISelection();
     }
 
     public void CloseBuildMenu()
     {
-        buildMenu.SetActive(false);
-        buildButtonText.text = "+ Build";
+        if (buildMenu != null)
+            buildMenu.SetActive(false);
+
+        if (buildButtonText != null)
+            buildButtonText.text = "+ Build";
     }
 }

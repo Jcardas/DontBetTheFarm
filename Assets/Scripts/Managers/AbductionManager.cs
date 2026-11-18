@@ -14,12 +14,15 @@ public class AbductionManager : MonoBehaviour
     [SerializeField] GameObject collarPrefab;
     [Tooltip("Seconds a farm creature lies knocked out before a saucer comes for it.")]
     [SerializeField] float delay = 4f;
+    [Tooltip("Cooldown seconds after a UFO is shot down before another saucer can be dispatched.")]
+    [SerializeField] float shotDownRespawnCooldown = 12f;
     [SerializeField] int maxSaucers = 1;
 
     readonly Dictionary<Creature, float> downSince = new();
     readonly List<UFO> saucers = new();
     readonly List<Animal> returned = new();
     readonly Dictionary<Animal, GameObject> collars = new();
+    float nextDispatchAllowedAt;
 
     void Awake()
     {
@@ -31,31 +34,56 @@ public class AbductionManager : MonoBehaviour
         Instance = this;
     }
 
+    void OnEnable() => UFO.OnUFODestroyed += HandleUFODestroyed;
+    void OnDisable() => UFO.OnUFODestroyed -= HandleUFODestroyed;
+
+    void HandleUFODestroyed(UFO destroyedUfo, Creature releasedVictim)
+    {
+        saucers.Remove(destroyedUfo);
+        nextDispatchAllowedAt = Time.time + shotDownRespawnCooldown;
+        if (releasedVictim != null)
+        {
+            // Reset the creature's downed timer so it gets a fresh delay window after the cooldown
+            downSince[releasedVictim] = nextDispatchAllowedAt;
+        }
+    }
+
     void Update()
     {
         MarchReturned();
         saucers.RemoveAll(s => s == null);
-        
+
         if (CreatureManager.Instance == null || TimeManager.Instance == null || WaveManager.Instance == null || saucerPrefab == null) return;
+
+        // High-priority override: if the Farmer is downed and unclaimed, send a UFO immediately no matter what
+        foreach (Creature c in CreatureManager.Instance.GetEnemies(GameConstants.Team.Alien))
+        {
+            if (c is Farmer farmer && farmer.Down && !UFO.IsClaimed(farmer))
+            {
+                Send(farmer);
+                break;
+            }
+        }
 
         foreach (Creature c in CreatureManager.Instance.GetEnemies(GameConstants.Team.Alien))
         {
-            if (c == null) continue;
+            if (c == null || c is Farmer) continue;
             if (!c.Down || UFO.IsClaimed(c))
             {
                 downSince.Remove(c);
                 continue;
             }
             if (!downSince.TryGetValue(c, out float since)) downSince[c] = since = Time.time;
-            if (Time.time - since >= delay && saucers.Count < maxSaucers && !TimeManager.Instance.IsDayTime()) Send(c);
+            if (Time.time >= nextDispatchAllowedAt && Time.time - since >= delay && saucers.Count < maxSaucers && !TimeManager.Instance.IsDayTime())
+                Send(c);
         }
-        
+
         if (saucers.Count > 0 && TimeManager.Instance.IsDayTime())
         {
             foreach (UFO saucer in saucers)
                 if (saucer != null)
                 {
-                    if (saucer.IsVictimInUFO()) continue; // Already got its target, so let it leave on its own.
+                    if (saucer.IsVictimInUFO() || saucer.IsTargetingFarmer()) continue;
                     saucer.Retreat();
                 }
         }
@@ -95,6 +123,7 @@ public class AbductionManager : MonoBehaviour
             animal.NavMeshAgent.enabled = true;
             animal.NavMeshAgent.Warp(at);
             animal.HealToFull();
+            animal.SetHealthFraction(0.5f);
             animal.SetDespawnPoint(at);
             waves.RegisterEnemy(animal);
             returned.Add(animal);
@@ -119,12 +148,7 @@ public class AbductionManager : MonoBehaviour
             if (collars.Remove(a, out GameObject collar) && collar != null) Destroy(collar);
             if (WaveManager.Instance != null) WaveManager.Instance.UnregisterEnemy(a);
             a.SetTeam(GameConstants.Team.Farm);
-            
-            // TODO: Instead of healing to full, leave the animal downed, the farmer (or a healing capable creature) can heal it back up.
-            // a.HealToFull(); 
-            // For now this is just commented out, but eventually we will remove
-            // all this because the player will have to heal the animal back up to get it back on their side.
-            
+
             a.CreatureBrain.Guard(a.Position); // forget the farm creature it was attacking
             if (a.TryGetComponent(out Selectable selectable)) selectable.enabled = true;
         }
@@ -160,5 +184,26 @@ public class AbductionManager : MonoBehaviour
         collar.transform.localScale = Vector3.one * animal.NeckSize;
 
         return collar;
+    }
+    
+    /// <summary>
+    /// Converts a wave-spawned Animal into a mind-controlled Alien enemy with a neck collar.
+    /// Knocking it out removes the collar and converts it to the Farm team.
+    /// </summary>
+    public void EnrollMindControlledAnimal(Animal animal)
+    {
+        if (animal == null) return;
+
+        if (animal.TryGetComponent(out Selectable selectable))
+            selectable.enabled = false;
+
+        animal.SetTeam(GameConstants.Team.Alien);
+        animal.SetHealthFraction(0.5f);
+
+        if (!collars.ContainsKey(animal))
+            collars[animal] = PutOnCollar(animal);
+
+        if (!returned.Contains(animal))
+            returned.Add(animal);
     }
 }

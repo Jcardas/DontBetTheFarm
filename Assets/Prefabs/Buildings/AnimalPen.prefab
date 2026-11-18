@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1626970427543816891}
   - component: {fileID: 1022346897317935710}
+  - component: {fileID: 426068150920341743}
   m_Layer: 7
   m_Name: DoorPivot
   m_TagString: Untagged
@@ -45,11 +46,42 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9bc4d84ebbfb04a619115ae42b8396b7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PenDoor
-  openAngle: 90
-  speed: 600
-  closeDelay: 0.5
-  detectionCenter: {x: 1.5, y: 0, z: 0}
-  detectionSize: {x: 4.5, y: 3.25, z: 2}
+  leftGate: {fileID: 0}
+  rightGate: {fileID: 0}
+  gateCenter: {fileID: 0}
+  slideDistance: 1.6
+  secondsToOpen: 0.5
+  openWhenAnimalWithin: 3
+  scanEverySeconds: 0.6
+--- !u!114 &426068150920341743
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 349712498069681784}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b5a9e4bad7f930842a50fea80472c6e8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AnimalPen
+  buildableName: 
+  maxHealth: 100
+  buildingCost: 10
+  resourceType: 0
+  repairWoodCost: 10
+  startsBroken: 0
+  repairedVisual: {fileID: 0}
+  brokenVisual: {fileID: 0}
+  isStartingPen: 0
+  startingAnimals: []
+  MaxAnimals: 5
+  animalsInPen: []
+  breedIcon: {fileID: 0}
+  healIcon: {fileID: 0}
+  enabledButtonTint: {r: 0.18, g: 0.28, b: 0.2, a: 1}
+  disabledButtonTint: {r: 0.25, g: 0.25, b: 0.25, a: 0.7}
+  penMenuController: {fileID: 0}
 --- !u!1 &696256357465890556
 GameObject:
   m_ObjectHideFlags: 0
@@ -5655,6 +5687,10 @@ MonoBehaviour:
   maxHealth: 100
   buildingCost: 10
   resourceType: 0
+  repairWoodCost: 10
+  startsBroken: 0
+  repairedVisual: {fileID: 0}
+  brokenVisual: {fileID: 0}
   isStartingPen: 0
   startingAnimals: []
   MaxAnimals: 5
@@ -5663,6 +5699,7 @@ MonoBehaviour:
   healIcon: {fileID: -7631897544656223232, guid: 945d7e10d48412745a0fbf5f6858a76b, type: 3}
   enabledButtonTint: {r: 0.18, g: 0.28, b: 0.2, a: 1}
   disabledButtonTint: {r: 0.25, g: 0.25, b: 0.25, a: 0.7}
+  penMenuController: {fileID: 0}
 --- !u!1 &5034780888845456789
 GameObject:
   m_ObjectHideFlags: 0

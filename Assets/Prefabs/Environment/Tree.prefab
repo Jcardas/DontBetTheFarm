@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 3940249657317254809}
   - component: {fileID: 5074571424191497514}
   - component: {fileID: 3784633509808642823}
+  - component: {fileID: 5658158543892485778}
   m_Layer: 0
   m_Name: Tree
   m_TagString: Building
@@ -74,6 +75,22 @@ MonoBehaviour:
   type: 0
   amount: 20
   regrowSeconds: 30
+--- !u!208 &5658158543892485778
+NavMeshObstacle:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1387497180882812563}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Shape: 0
+  m_Extents: {x: 0.7, y: 1.4, z: 0.7}
+  m_MoveThreshold: 0.1
+  m_Carve: 1
+  m_CarveOnlyStationary: 1
+  m_Center: {x: 0, y: 1.4, z: 0}
+  m_TimeToStationary: 0.5
 --- !u!1 &3501659346562782899
 GameObject:
   m_ObjectHideFlags: 0

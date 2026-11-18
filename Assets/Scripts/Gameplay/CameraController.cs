@@ -153,11 +153,20 @@ public class CameraController : MonoBehaviour
     private void OnPanPerformed(InputAction.CallbackContext ctx) => _moveInput = ctx.ReadValue<Vector2>();
     private void OnPanCanceled(InputAction.CallbackContext ctx) => _moveInput = Vector2.zero;
 
-    private void OnZoomPerformed(InputAction.CallbackContext ctx) => _zoomAccumulator += ctx.ReadValue<float>();
-    private void OnZoomCanceled(InputAction.CallbackContext ctx) => _zoomAccumulator = 0f;
+    private void OnZoomPerformed(InputAction.CallbackContext ctx)
+    {
+        if (UIBlocker.IsPointerOverUI())
+        {
+            _zoomAccumulator = 0f;
+            return;
+        }
+
+        _zoomAccumulator += ctx.ReadValue<float>();
+    }    private void OnZoomCanceled(InputAction.CallbackContext ctx) => _zoomAccumulator = 0f;
 
     private void OnDragStarted(InputAction.CallbackContext ctx)
     {
+        if (UIBlocker.IsPointerOverUI()) return;
         StartDragging();
     }
 
@@ -171,6 +180,18 @@ public class CameraController : MonoBehaviour
     /// </summary>
     private void Update()
     {
+        if (UIBlocker.IsModalUIOpen)
+        {
+            _zoomAccumulator = 0f;
+            _isEdgeScrolling = false;
+            return;
+        }
+
+        if (UIBlocker.IsPointerOverUI())
+        {
+            _zoomAccumulator = 0f;
+        }
+
         if (_isDragging)
         {
             HandleDragPan();

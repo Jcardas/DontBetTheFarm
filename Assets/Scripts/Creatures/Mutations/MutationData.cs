@@ -49,4 +49,56 @@ public class MutationData : ScriptableObject
     
     [Header("Extra Description (Optional)")]
     [TextArea(3, 10)] public string extraDescription; // e.g., "This mutation allows the creature to breathe fire, dealing AoE damage to enemies in front of it
+    
+    // Add inside MutationData.cs:
+    public string GetEffectSummary()
+    {
+        var effects = new System.Collections.Generic.List<string>();
+
+        // 1. Stat Modifiers
+        if (bonusMaxHealth != 0)
+            effects.Add($"{bonusMaxHealth:+#;-#} Max Health");
+
+        if (damageResistance != 0f)
+            effects.Add($"{damageResistance:+#;-#}% Damage Resistance");
+
+        if (bonusMoveSpeed != 0f)
+            effects.Add($"{bonusMoveSpeed:+#.##;-#.##}x Move Speed");
+
+        if (bonusAttackDamage != 0)
+            effects.Add($"{bonusAttackDamage:+#;-#} Attack Damage");
+
+        if (bonusAttackRange != 0f)
+            effects.Add($"{bonusAttackRange * 100f:+#;-#}% Attack Range");
+
+        if (bonusAttackSpeed != 0f)
+            effects.Add($"{bonusAttackSpeed:+#.##;-#.##} Attack Speed");
+
+        if (bonusViewRadius != 0f)
+            effects.Add($"{bonusViewRadius:+#.##;-#.##} Vision Radius");
+
+        // 2. Granted Capabilities (Flags enum)
+        if (grantedCapabilities != 0)
+        {
+            foreach (CreatureCapabilities cap in System.Enum.GetValues(typeof(CreatureCapabilities)))
+            {
+                if (cap == 0) continue;
+                if ((grantedCapabilities & cap) != 0)
+                {
+                    string formatted = System.Text.RegularExpressions.Regex.Replace(cap.ToString(), "(\\B[A-Z])", " $1");
+                    effects.Add($"Grants {formatted}");
+                }
+            }
+        }
+
+        // 3. Attack Replacement & Extra Description
+        if (overridesAttack)
+            effects.Add("Replaces Basic Attack");
+
+        if (!string.IsNullOrWhiteSpace(extraDescription))
+            effects.Add(extraDescription.Trim());
+
+        return effects.Count > 0 ? string.Join(", ", effects) : "No stat modifiers";
+    }
+    
 }

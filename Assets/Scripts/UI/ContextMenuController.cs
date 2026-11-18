@@ -69,18 +69,6 @@ public class ContextMenuController : MonoBehaviour
         SetHiddenStateImmediate();
     }
 
-    private void OnEnable()
-    {
-        ContextMenuEventBus.OnRequestOpen += HandleOpenRequest;
-        ContextMenuEventBus.OnRequestClose += CloseMenu;
-    }
-
-    private void OnDisable()
-    {
-        ContextMenuEventBus.OnRequestOpen -= HandleOpenRequest;
-        ContextMenuEventBus.OnRequestClose -= CloseMenu;
-    }
-
     private void Update()
     {
         if (!_isOpen) return;
