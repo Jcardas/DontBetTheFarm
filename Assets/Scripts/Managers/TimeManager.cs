@@ -95,7 +95,7 @@ public class TimeManager : MonoBehaviour
         currentDay++;
         Debug.Log("Day " + currentDay + " has started.");
 
-        SoundManager.Instance?.PlaySFX("SFXRoosterCry", 0.5f);
+        SoundManager.Instance?.PlaySFX("SFXRoosterCry");
 
         isDayTimeFlag = true;
         NightLightOff();
