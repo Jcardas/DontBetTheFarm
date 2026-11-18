@@ -1658,6 +1658,10 @@ PrefabInstance:
       propertyPath: soundLibrary.Array.data[34].clip
       value: 
       objectReference: {fileID: 8300000, guid: bef4960e869617b46a2514eafa8a493a, type: 3}
+    - target: {fileID: 4881549133825247550, guid: 59ba79a8fc03547d5999c44065bd285a, type: 3}
+      propertyPath: soundLibrary.Array.data[0].clipVolume
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 5332429866215224919, guid: 59ba79a8fc03547d5999c44065bd285a, type: 3}
       propertyPath: starSystem
       value: 
