@@ -38,7 +38,6 @@ public class PlayerControls : MonoBehaviour
     CursorType cursor;
     float lastClickAt;
     readonly List<Selectable>[] groups = { new(), new(), new() };
-    readonly Plane ground = new(Vector3.up, Vector3.zero);
 
     void Awake()
     {
@@ -90,7 +89,9 @@ public class PlayerControls : MonoBehaviour
         bool overUI = UIBlocker.IsPointerOverUI(at);
 
         Ray ray = cam.ScreenPointToRay(at);
-        if (!overUI && player.Fire.WasPressedThisFrame() && shotgun && shotgun.isActiveAndEnabled && ground.Raycast(ray, out float along))
+        // Aim on a flat plane at the farmer's own height, so the shot goes under the cursor on hills and slopes too
+        if (!overUI && player.Fire.WasPressedThisFrame() && shotgun && shotgun.isActiveAndEnabled
+            && new Plane(Vector3.up, shotgun.transform.position).Raycast(ray, out float along))
             shotgun.Fire(ray.GetPoint(along));
 
         RaycastHit hit = default;
