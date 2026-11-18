@@ -194,8 +194,17 @@ public class CreatureBrain : MonoBehaviour
             Vector3 b = target.Position;
             return Vector2.Distance(new Vector2(a.x, a.z), new Vector2(b.x, b.z));
         }
+        // A building on the slope above can't be hit through the ground: count it as out of reach until the
+        // attacker's feet are within MaxDropBelowBuilding of its floor (buildings sit level, so Position is the floor).
+        if (target is Buildable && target.Body != null)
+        {
+            float feet = transform.position.y - (agent != null && agent.enabled ? agent.baseOffset : 0f);
+            if (target.Position.y - feet > MaxDropBelowBuilding) return float.MaxValue;
+        }
         return target.Body != null ? Reach.Gap(transform.position, target.Body) : Vector3.Distance(transform.position, target.Position);
     }
+
+    const float MaxDropBelowBuilding = 1.5f;
 
     private void MoveTowardTarget(IDamageable target)
     {
