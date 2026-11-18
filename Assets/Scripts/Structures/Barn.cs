@@ -8,10 +8,17 @@ using UnityEngine.AI;
 [RequireComponent(typeof(BarnHangar))]
 public class Barn : Buildable, IContextInteractable
 {
-    Farmer heading; // on his way to the doors
-    Farmer inside;
+    [Header("Shelter Healing")]
+    [SerializeField] private float healPerSecondInside = 15f;
+
+    private Farmer heading; // on his way to the doors
+    private Farmer inside;
+    private float healAccumulator;
+
+    [SerializeField] private static BarnResearchUIController barnResearchUIController;
 
     public bool HasFarmer => inside != null;
+    public override bool CanBeRemoved => false;
 
     // The ground in front of the doors.
     public Vector3 Door
@@ -26,8 +33,19 @@ public class Barn : Buildable, IContextInteractable
     // He goes in once he reaches the doors, unless he is ordered somewhere else first.
     public void TakeIn(Farmer farmer) => heading = farmer;
 
-    void Update()
+    private void Update()
     {
+        if (inside != null && !Down && !inside.Down && inside.CurrentHealth < inside.CalculatedMaxHealth)
+        {
+            healAccumulator += healPerSecondInside * Time.deltaTime;
+            int wholeHeal = Mathf.FloorToInt(healAccumulator);
+            if (wholeHeal > 0)
+            {
+                healAccumulator -= wholeHeal;
+                inside.HealAmount(wholeHeal);
+            }
+        }
+
         if (heading == null) return;
         var agent = heading.GetComponent<NavMeshAgent>();
         Vector3 door = Door;
@@ -38,16 +56,18 @@ public class Barn : Buildable, IContextInteractable
         }
         if (Flat(heading.transform.position - door) > 1f) return;
         inside = heading;
+        healAccumulator = 0f;
         heading = null;
         inside.gameObject.SetActive(false);
     }
 
-    void LetOut()
+    private void LetOut()
     {
         if (inside == null) return;
         inside.transform.position = Door;
         inside.gameObject.SetActive(true);
         inside = null;
+        healAccumulator = 0f;
     }
 
     protected override void HandleDestroyed()
@@ -56,19 +76,40 @@ public class Barn : Buildable, IContextInteractable
         LetOut();
     }
 
-    static float Flat(Vector3 v) => new Vector2(v.x, v.z).magnitude;
+    private static float Flat(Vector3 v) => new Vector2(v.x, v.z).magnitude;
 
-    static void OpenMenu()
+    private static void OpenMenu()
     {
-        var menu = FindAnyObjectByType<MutationMenuController>();
-        if (menu != null && !menu.mutationMenuPanel.activeSelf) menu.ToggleMenu();
+        if (barnResearchUIController == null)
+            barnResearchUIController = FindAnyObjectByType<BarnResearchUIController>(FindObjectsInactive.Include);
+
+        if (barnResearchUIController != null)
+        {
+            barnResearchUIController.OpenMenu();
+        }
+        else
+        {
+            Debug.LogWarning("[Barn] BarnResearchUIController not found in scene!");
+        }
     }
 
-    // A lone action runs straight away (ContextInteractionManager), so with nobody inside the menu opens on the click.
+    #region IContextInteractable Implementation
+
     public IReadOnlyList<ContextActionData> GetContextActions()
     {
-        var actions = new List<ContextActionData> { new("Open Barn Menu", OpenMenu) };
-        if (HasFarmer) actions.Add(new ContextActionData("Take Farmer Out", LetOut));
+        var actions = new List<ContextActionData>
+        {
+            new ContextActionData("Open Barn", OpenMenu)
+        };
+
+        // Only show the "Take Farmer Out" action if there's a farmer inside the barn
+        if (HasFarmer)
+        {
+            actions.Add(new ContextActionData("Take Farmer Out", LetOut));
+        }
+
         return actions;
     }
+
+    #endregion
 }

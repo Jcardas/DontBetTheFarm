@@ -13,18 +13,19 @@ MonoBehaviour:
   m_Name: Antenna
   m_EditorClassIdentifier: Assembly-CSharp::MutationData
   mutationName: Antenna
-  mutationCost: 50
+  mutationCost: 5
   allowedSlots: -1
   pairedPrefab: 0
   prefab: {fileID: 5324089482644020415, guid: 9747bf84f89b44f4aaee63513981e154, type: 3}
   prefabSprite: {fileID: -3892537948950645436, guid: 1c0fbe938f6a93f45a4592f3dfaf1cf6, type: 3}
   localScale: 0.1
   grantedCapabilities: 0
-  bonusMaxHealth: 0
+  bonusMaxHealth: 10
   damageResistance: 0
   bonusMoveSpeed: 0
   bonusAttackDamage: 0
-  bonusAttackRange: 0
+  bonusAttackRange: 5
   bonusAttackSpeed: 0
-  bonusViewRadius: 0
+  bonusViewRadius: 5
   overridesAttack: 0
+  extraDescription: 

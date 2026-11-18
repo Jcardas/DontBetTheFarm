@@ -46,7 +46,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TimeManager
   timePaused: 0
   currentDay: 0
-  lengthOfHour: 5
+  lengthOfHour: 10
   currentTime: 0
   timePassed: 0
   starEmissionRate: 1000

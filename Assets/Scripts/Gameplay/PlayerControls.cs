@@ -1,22 +1,23 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.EventSystems;
+using UnityEngine.AI;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 
 // The player's mouse and keyboard. Nothing is picked at the start. Left-click only selects: click a unit to pick just it,
 // click a picked unit to drop it from the selection, double-click to pick every unit of its type on screen, or drag a box
 // around several (Shift-click toggles one unit, Shift-drag adds, Ctrl-click and Ctrl-drag drop). Left-clicking anything
-// that isn't a unit, or pressing Escape, drops everyone. Right-click the ground, a resource, an alien, a broken structure
-// (for repairers), (for animals) a pen or (for the farmer) the barn to order the picked units there; with nobody picked,
-// right-click an intact building to open its menu (ContextInteractionManager). Ctrl+1..3 saves the picked units as a group,
-// 1..3 picks the group again (Shift+1..3 adds it).
+// that isn't a unit, or pressing Escape, drops everyone. Right-click the ground, a resource, an alien,
+// (for animals) a pen or (for the farmer) the barn to order the picked units there; with nobody picked (or on a broken
+// building), right-click opens its context menu (ContextInteractionManager). Ctrl+1..3 saves the picked units as a group,
+// 1..3 picks the group again (Shift+1..3 adds it). J toggles the Barn Research menu.
 // Space fires the farmer's shotgun toward the cursor.
 // The cursor shows what a right-click would do on whatever the mouse is over, or how far along a shotgun reload is.
 public class PlayerControls : MonoBehaviour
 {
     const float DragPixels = 8f;
-    const float Spacing = 1.2f;
+    const float Gap = 0.4f; // between the edges of units standing side by side after a group order
     const float DoubleClickSeconds = 0.35f;
 
     enum LeftButton { Idle, Pressed, Dragging }
@@ -30,6 +31,7 @@ public class PlayerControls : MonoBehaviour
     Vector2 pressedAt;
     Shotgun shotgun;
     CameraController cameraController;
+    BarnResearchUIController barnUI;
     Selectable lastClicked;
     HashSet<Selectable> lit = new();
     Highlight litTarget;
@@ -37,8 +39,6 @@ public class PlayerControls : MonoBehaviour
     float lastClickAt;
     readonly List<Selectable>[] groups = { new(), new(), new() };
     readonly Plane ground = new(Vector3.up, Vector3.zero);
-    
-    BarnResearchUIController barnUI;
 
     void Awake()
     {
@@ -73,12 +73,13 @@ public class PlayerControls : MonoBehaviour
         var player = input.Player;
         bool shift = player.Add.IsPressed(), ctrl = player.SaveGroup.IsPressed();
         ReadKeys(shift);
-        
-        // Stop world selection, shotgun firing, and building highlights while the Barn Research UI is open
-        if (barnUI != null && barnUI.IsMenuOpen)
+
+        // Stop world selection, shotgun firing, and building highlights while modal UI or building placement/demolition is active
+        if (UIBlocker.IsModalUIOpen || (BuildingManager.Instance != null && BuildingManager.Instance.IsBusy))
         {
             Hover(System.Linq.Enumerable.Empty<Selectable>());
             HoverTarget(null);
+            left = LeftButton.Idle;
             return;
         }
 
@@ -86,51 +87,52 @@ public class PlayerControls : MonoBehaviour
         if (cam == null) return;
 
         Vector2 at = player.Point.ReadValue<Vector2>();
+        bool overUI = UIBlocker.IsPointerOverUI(at);
+
         Ray ray = cam.ScreenPointToRay(at);
-        if (player.Fire.WasPressedThisFrame() && shotgun && shotgun.isActiveAndEnabled && ground.Raycast(ray, out float along))
+        if (!overUI && player.Fire.WasPressedThisFrame() && shotgun && shotgun.isActiveAndEnabled && ground.Raycast(ray, out float along))
             shotgun.Fire(ray.GetPoint(along));
 
-        bool overSomething = MouseTarget.Find(ray, out RaycastHit hit);
+        RaycastHit hit = default;
+        bool overSomething = !overUI && MouseTarget.Find(ray, out hit);
         var unit = overSomething ? hit.collider.GetComponentInParent<Selectable>() : null;
 
-        // Right-click a broken structure to repair when at least one picked unit can repair it; otherwise resolve normally.
-        if (player.Command.WasPressedThisFrame())
+        if (!overUI && player.Command.WasPressedThisFrame())
         {
-            Buildable broken = BrokenTargetAt(ray);
-            if (broken) Command(Order.ForRepair(broken));
-            else if (overSomething) Command(ray, hit);
+            if (Order.BrokenAt(ray) == null && overSomething)
+                Command(ray, hit);
         }
 
-        // Ignore left-clicks over UI so clicking the repair button doesn't clear selection or dismiss the panel early.
-        bool overUI = EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
+        // Ignore left-clicks over UI so clicking UI panels/buttons doesn't clear selection or dismiss panels early.
         if (left == LeftButton.Idle && player.Select.WasPressedThisFrame() && !overUI)
         {
             left = LeftButton.Pressed;
             pressedAt = at;
         }
         if (left == LeftButton.Pressed && (at - pressedAt).magnitude > DragPixels) left = LeftButton.Dragging;
-        Hover(left == LeftButton.Dragging ? Selectable.All.Where(s => OnScreen(cam, s, Box(pressedAt, at))) : new[] { unit });
+
+        Hover(left == LeftButton.Dragging
+            ? Selectable.All.Where(s => OnScreen(cam, s, Box(pressedAt, at)))
+            : (overUI ? System.Linq.Enumerable.Empty<Selectable>() : new[] { unit }));
+
         // Do not gate on overSomething: broken buildings without colliders are still found via renderer bounds.
-        HoverTarget(left != LeftButton.Dragging ? Target(ray, overSomething, hit) : null);
+        HoverTarget(!overUI && left != LeftButton.Dragging ? Target(ray, overSomething, hit) : null);
+
         if (left == LeftButton.Idle || !player.Select.WasReleasedThisFrame()) return;
 
         if (left == LeftButton.Dragging) Pick(Selectable.All.Where(s => OnScreen(cam, s, Box(pressedAt, at))), shift, ctrl);
-        else Click(cam, unit, shift, ctrl);
+        else if (!overUI) Click(cam, unit, shift, ctrl);
         left = LeftButton.Idle;
     }
 
     void LateUpdate()
     {
-        // Let UI Toolkit's USS cursor rules control the cursor while the Barn Research UI is open
-        if (barnUI != null && barnUI.IsMenuOpen)
-            return;
-
-        if (cameraController != null &&
-            (cameraController.IsDragging || cameraController.IsEdgeScrolling))
+        if (UIBlocker.IsModalUIOpen)
         {
+            ShowCursor(CursorType.Default);
             return;
         }
-        
+
         if (cameraController != null &&
             (cameraController.IsDragging || cameraController.IsEdgeScrolling))
         {
@@ -141,6 +143,18 @@ public class PlayerControls : MonoBehaviour
         if (cam == null) return;
 
         Vector2 at = input.Player.Point.ReadValue<Vector2>();
+        if (UIBlocker.IsPointerOverUI(at))
+        {
+            ShowCursor(CursorType.Default);
+            return;
+        }
+
+        if (BuildingManager.Instance != null && BuildingManager.Instance.IsDemolishing)
+        {
+            ShowCursor(CursorType.Repair);
+            return;
+        }
+
         Ray ray = cam.ScreenPointToRay(at);
         bool overSomething = MouseTarget.Find(ray, out RaycastHit hit);
         var unit = overSomething
@@ -159,6 +173,22 @@ public class PlayerControls : MonoBehaviour
     void ReadKeys(bool shift)
     {
         var player = input.Player;
+
+        // Playtest shortcut: press R to restart the current scene
+        if (Keyboard.current != null && Keyboard.current.rKey.wasPressedThisFrame)
+        {
+            Time.timeScale = 1f;
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+            return;
+        }
+        
+        // Press I to add 5 of each resource for testing purposes:
+        if (Keyboard.current != null && Keyboard.current.iKey.wasPressedThisFrame)
+        {
+            ResourceManager.Instance.Deposit(ResourceType.Wood, 5);
+            ResourceManager.Instance.Deposit(ResourceType.Hay, 5);
+            ResourceManager.Instance.Deposit(ResourceType.Technology, 5);
+        }
 
         // Toggle Barn Research menu with J
         if (Keyboard.current != null && Keyboard.current.jKey.wasPressedThisFrame && barnUI != null)
@@ -207,17 +237,20 @@ public class PlayerControls : MonoBehaviour
         if (broken != null) return broken;
         if (!overSomething) return null;
 
+        var knockedOut = hit.collider.GetComponentInParent<Animal>();
+        if (knockedOut != null && knockedOut.Down) return knockedOut;
+
         var order = Order.From(ray, hit);
         if (AnyPickedCan(order))
         {
-            if (order.enemy) return order.enemy;
+            if (order.enemy is Component enemyComp && enemyComp) return enemyComp;
             if (order.node) return order.node;
             if (order.field) return order.field;
             if (order.building) return order.building;
         }
 
-        // Only open/highlight context menus on non-broken buildings.
-        var menuTarget = MouseTarget.Menu(ray, hit);
+        // Only open/highlight context menus on non-broken IContextInteractable buildings or AnimalPen interior.
+        var menuTarget = MouseTarget.Menu(ray, hit) ?? (MouseTarget.Building(ray, hit) as AnimalPen);
         return menuTarget is Buildable b && b.IsBroken ? null : menuTarget;
     }
 
@@ -240,21 +273,35 @@ public class PlayerControls : MonoBehaviour
     // when a picked unit can carry it out: with just cows picked, a tree shows the walk-here cursor, since they walk there.
     static CursorType CursorFor(Ray ray, RaycastHit hit, Selectable unit)
     {
-        var menuTarget = MouseTarget.Menu(ray, hit);
-        if (menuTarget && !(menuTarget is Buildable b && b.IsBroken)) return CursorType.OpenMenu;
+        var knockedOut = hit.collider.GetComponentInParent<Animal>();
+        if (knockedOut != null && knockedOut.Down)
+            return CursorType.Interact;
 
         var order = Order.From(ray, hit);
-        return (AnyPickedCan(order) ? order.kind : OrderKind.Move) switch
+        if (AnyPickedCan(order))
         {
-            OrderKind.Attack => CursorType.Attack,
-            OrderKind.Harvest => CursorType.Harvest,
-            OrderKind.Work => CursorType.Chop,
-            OrderKind.Repair => CursorType.Repair,
-            OrderKind.Pen => CursorType.AssignToPen,
-            OrderKind.Barn => CursorType.EnterBarn,
-            _ when unit && !unit.Down => CursorType.Interact,
-            _ => AnyPicked ? CursorType.MoveTo : CursorType.Default,
-        };
+            return order.kind switch
+            {
+                OrderKind.Attack => CursorType.Attack,
+                OrderKind.Harvest => CursorType.Harvest,
+                OrderKind.Work => CursorType.Chop,
+                OrderKind.Repair => CursorType.Repair,
+                OrderKind.Pen => CursorType.AssignToPen,
+                OrderKind.Barn => CursorType.EnterBarn,
+                _ when unit && !unit.Down => CursorType.Interact,
+                _ => CursorType.MoveTo,
+            };
+        }
+
+        // Only buildings implementing IContextInteractable (via MouseTarget.Menu) or AnimalPen interior get OpenMenu
+        var menuTarget = MouseTarget.Menu(ray, hit) ?? (MouseTarget.Building(ray, hit) as AnimalPen);
+        if (menuTarget && !(menuTarget is Buildable b && b.IsBroken))
+            return CursorType.OpenMenu;
+
+        if (unit && !unit.Down)
+            return CursorType.Interact;
+
+        return AnyPicked ? CursorType.MoveTo : CursorType.Default;
     }
 
     // Quarter steps. Reload100 is never shown: the frame the reload completes, the hover cursor comes back.
@@ -314,21 +361,46 @@ public class PlayerControls : MonoBehaviour
         return p.z > 0f && area.Contains(p);
     }
 
-    // Resolves a standard right-click against the world; a right-click that opens an intact building's menu is not an order.
+    // Yields to ContextInteractionManager whenever clicking on or inside an intact building (including AnimalPen interior)
+    // or on a knocked-out animal so its context menu opens instead of auto-executing.
     void Command(Ray ray, RaycastHit hit)
     {
-        var menuTarget = MouseTarget.Menu(ray, hit);
+        var clickedAnimal = hit.collider.GetComponentInParent<Animal>();
+        if (clickedAnimal != null && clickedAnimal.Down)
+        {
+            Gatherer.DismissRepairUI();
+            return;
+        }
+
+        // Always let AnimalPen open its context menu ("View Pen" / "Assign to pen") instead of auto-assigning on right-click.
+        if (MouseTarget.Building(ray, hit) is AnimalPen { IsBroken: false })
+        {
+            Gatherer.DismissRepairUI();
+            return;
+        }
+
+        var order = Order.From(ray, hit);
+        if (order.kind != OrderKind.Move && AnyPickedCan(order))
+        {
+            Command(order);
+            return;
+        }
+
+        var menuTarget = MouseTarget.Menu(ray, hit) ?? (MouseTarget.Building(ray, hit) as AnimalPen);
         if (menuTarget && !(menuTarget is Buildable b && b.IsBroken))
         {
             Gatherer.DismissRepairUI();
             return;
         }
-        Command(Order.From(ray, hit));
+
+        Command(order);
     }
 
-    // Everyone gets the same target; spread points stop a group stacking on one spot when it walks.
+    // Everyone gets the same order, but each unit walks to its own spot around the point, so a group stands
+    // side by side there instead of shoving for one spot.
     void Command(Order order)
     {
+        ContextMenuEventBus.RequestClose();
         var group = Selectable.All.Where(s => s.Selected).ToList();
 
         // Any right-click dismisses an open repair panel unless re-issuing repair on the same building to the active repairer.
@@ -352,19 +424,55 @@ public class PlayerControls : MonoBehaviour
         }
 
         if (marker) Instantiate(marker, order.point, Quaternion.identity).Show(order.kind);
-        for (int i = 0; i < group.Count; i++) group[i].Command(order.Offset(Spread(i)));
+        var spots = Spots(order.point, group.Count, SpacingFor(group));
+        foreach (var (unit, spot) in Pair(group, spots)) unit.Command(order.Offset(spot - order.point));
     }
 
-    // Unit 0 stands on the point; the rest fill rings Spacing apart. Ring k holds 6k units,
-    // which keeps neighbours on a ring about Spacing apart too.
+    // Centre to centre, room for the widest picked unit plus a little gap.
+    static float SpacingFor(List<Selectable> group) =>
+        Gap + 2f * group.Select(s => s.TryGetComponent(out NavMeshAgent a) ? a.radius * s.transform.lossyScale.x : 0f).DefaultIfEmpty().Max();
+
+    // `count` spots on the NavMesh around `centre`, at least `spacing` apart: the centre first, then rings outwards.
+    // Spots inside a wall or a fence are skipped, so the group packs round obstacles.
+    static List<Vector3> Spots(Vector3 centre, int count, float spacing)
+    {
+        var spots = new List<Vector3>();
+        for (int i = 0; spots.Count < count && i < count * 4 + 30; i++)
+        {
+            if (!NavMesh.SamplePosition(centre + Spread(i) * spacing, out NavMeshHit hit, spacing / 2f, NavMesh.AllAreas)) continue;
+            if (spots.Any(s => Vector3.Distance(s, hit.position) < spacing * 0.9f)) continue;
+            spots.Add(hit.position);
+        }
+        while (spots.Count < count) spots.Add(centre); // nowhere left to stand nearby
+        return spots;
+    }
+
+    // Closest unit-and-spot pairs first, so units don't cross each other's paths to get to their spots.
+    static IEnumerable<(Selectable, Vector3)> Pair(List<Selectable> units, List<Vector3> spots)
+    {
+        var free = units.ToList();
+        var open = spots.ToList();
+        while (free.Count > 0)
+        {
+            var (unit, spot) = free.SelectMany(u => open.Select(s => (u, s)))
+                .OrderBy(p => (p.u.transform.position - p.s).sqrMagnitude).First();
+            free.Remove(unit);
+            open.Remove(spot);
+            yield return (unit, spot);
+        }
+    }
+
+    // Spot 0 is the point; the rest fill rings one step apart. Ring k holds 6k spots,
+    // which keeps neighbours on a ring about one step apart too.
     static Vector3 Spread(int i)
     {
         if (i == 0) return Vector3.zero;
         int ring = 1;
-        while (i > 3 * ring * (ring + 1)) ring++; // rings 1..k hold 6 + 12 + ... + 6k = 3k(k+1) units
+        while (i > 3 * ring * (ring + 1)) ring++; // rings 1..k hold 6 + 12 + ... + 6k = 3k(k+1) spots
         int firstOnRing = 3 * (ring - 1) * ring + 1;
         float angle = (i - firstOnRing) * 2f * Mathf.PI / (6 * ring);
-        return new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle)) * (ring * Spacing);
+
+        return new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle)) * ring;
     }
 
     static Rect Box(Vector2 a, Vector2 b) =>

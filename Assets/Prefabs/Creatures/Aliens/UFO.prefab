@@ -4973,6 +4973,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6397610247305053726}
   - component: {fileID: 7530360299568405993}
+  - component: {fileID: 1365729982572466755}
   m_Layer: 0
   m_Name: UFO
   m_TagString: Untagged
@@ -5009,12 +5010,35 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5360991dc7aa242b495fa8e208210882, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UFO
-  flySpeed: 2
+  maxHealth: 20
+  destroyedEffectPrefab: {fileID: 0}
+  flySpeed: 4
   hoverHeight: 3.5
   beam: {fileID: 8076097286781388867}
   liftTime: 5
   storedOffset: {x: 0, y: -1.2141303, z: 0}
   storedScale: 0.5
+--- !u!65 &1365729982572466755
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3901847273309557445}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 5, y: 1.25, z: 5}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &8076097286781388867
 GameObject:
   m_ObjectHideFlags: 0

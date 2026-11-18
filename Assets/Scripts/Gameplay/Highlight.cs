@@ -7,10 +7,10 @@ using UnityEngine;
 [DisallowMultipleComponent]
 public class Highlight : MonoBehaviour
 {
-    Outline outline;
-    Creature creature;
-    CreatureMutator mutator;
-    bool hovered, selected, partsChanged;
+    private Outline outline;
+    private Creature creature;
+    private CreatureMutator mutator;
+    private bool hovered, selected, partsChanged;
 
     public bool Hovered
     {
@@ -24,33 +24,29 @@ public class Highlight : MonoBehaviour
         set { selected = value; Show(); }
     }
 
-    void Awake()
+    private void Awake()
     {
         creature = GetComponent<Creature>();
         mutator = GetComponent<CreatureMutator>();
+
         // A creature's outline goes on its model (ToyBob's object), so the rings under it aren't outlined too.
-        // A building's goes on its ground plate when it has an active renderer, or on the root so broken visuals outline cleanly.
+        // Buildings attach Outline at the root so swapping between repairedVisual and brokenVisual keeps outlines active.
         Component model = GetComponentInChildren<ToyBob>();
-        if (model == null && TryGetComponent(out Buildable building) &&
-            building.GroundElement != null && building.GroundElement.GetComponentInChildren<Renderer>() != null)
-        {
-            model = building.GroundElement;
-        }
         outline = (model != null ? model.gameObject : gameObject).AddComponent<Outline>();
         Show();
     }
 
-    void OnEnable()
+    private void OnEnable()
     {
         if (mutator != null) mutator.OnMutationsUpdated += PartsChanged;
     }
 
-    void OnDisable()
+    private void OnDisable()
     {
         if (mutator != null) mutator.OnMutationsUpdated -= PartsChanged;
     }
 
-    void PartsChanged() => partsChanged = true;
+    private void PartsChanged() => partsChanged = true;
 
     // Re-indexes child renderers whenever a building swaps between its repaired and broken models.
     public void Refresh()
@@ -59,7 +55,7 @@ public class Highlight : MonoBehaviour
     }
 
     // Once per frame however many parts were swapped.
-    void LateUpdate()
+    private void LateUpdate()
     {
         if (!partsChanged) return;
         partsChanged = false;
@@ -67,8 +63,11 @@ public class Highlight : MonoBehaviour
     }
 
     // Lit (hovered or selected) shows through everything; otherwise a creature shows only where it is hidden.
-    void Show()
+    private void Show()
     {
+        if (outline == null)
+            outline = GetComponent<Outline>() ?? gameObject.AddComponent<Outline>();
+
         bool lit = hovered || selected;
         bool on = lit || creature != null;
         if (on) outline.Refresh(); // refresh cached renderers in case the building broke or was repaired since last lit

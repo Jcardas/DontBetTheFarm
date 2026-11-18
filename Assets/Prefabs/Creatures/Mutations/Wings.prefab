@@ -9,6 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4671551156571284112}
+  - component: {fileID: 6823174468671502262}
   m_Layer: 6
   m_Name: Wings
   m_TagString: Untagged
@@ -33,6 +34,31 @@ Transform:
   - {fileID: 8230686934547618826}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &6823174468671502262
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7851528953947801171}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bd9a35c501cc4a57803591246a0a3044, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WingFlapBehavior
+  wingPivot: {fileID: 0}
+  flapAxis: 2
+  invertMirrorSign: 0
+  takeoffFlapHz: 5.5
+  cruiseFlapHz: 3.2
+  hoverFlapHz: 4
+  landingFlapHz: 4.5
+  groundedIdleFlapHz: 0.5
+  airborneFlapDegrees: 42
+  groundedIdleDegrees: 5
+  groundedFoldDegrees: -25
+  swoopGlideDegrees: 18
+  poseBlendSpeed: 10
 --- !u!1001 &4969761510485243664
 PrefabInstance:
   m_ObjectHideFlags: 0

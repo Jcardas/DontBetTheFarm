@@ -12,6 +12,9 @@ public abstract class Buildable : MonoBehaviour, IDamageable
     [SerializeField] protected int maxHealth;
     [SerializeField] protected int buildingCost;
     [SerializeField] protected ResourceType resourceType;
+    [SerializeField] private bool canBeRemoved = true;
+    [Range(0f, 1f)]
+    [SerializeField] private float removeRefundRatio = 0.5f;
 
     [Header("Repair Settings")]
     [SerializeField] private int repairWoodCost = 10;
@@ -24,7 +27,7 @@ public abstract class Buildable : MonoBehaviour, IDamageable
     private NavMeshObstacle obstacle;
 
     public virtual (ResourceType, int) CostAndResource { get; private set; }
-    public string BuildableName => buildableName;
+    public string BuildableName => string.IsNullOrWhiteSpace(buildableName) ? gameObject.name : buildableName;
     public int MaxHealth => maxHealth;
     private int CurrentHealth { get; set; }
     public bool Down => CurrentHealth <= 0;
@@ -34,6 +37,10 @@ public abstract class Buildable : MonoBehaviour, IDamageable
 
     public bool IsBroken { get; private set; }
     public int RepairWoodCost => repairWoodCost;
+    public virtual bool CanBeRemoved => canBeRemoved;
+    public float RemoveRefundRatio => removeRefundRatio;
+    public GameObject BrokenVisual => brokenVisual;
+    public GameObject RepairedVisual => repairedVisual;
 
     protected virtual void Awake()
     {
@@ -70,13 +77,27 @@ public abstract class Buildable : MonoBehaviour, IDamageable
 
     public virtual void Build()
     {
-        Debug.Log(buildableName + " has been built.");
+        Debug.Log(BuildableName + " has been built.");
     }
 
     public virtual void Remove()
     {
-        Debug.Log(buildableName + " has been removed.");
+        if (!CanBeRemoved) return;
 
+        var (refundType, baseCost) = CostAndResource;
+        int refund = Mathf.FloorToInt(baseCost * removeRefundRatio);
+        if (refund > 0 && ResourceManager.Instance != null)
+        {
+            ResourceManager.Instance.Deposit(refundType, refund);
+        }
+
+        if (BuildingManager.Instance != null)
+        {
+            BuildingManager.Instance.UnregisterBuilding(this);
+            BuildingManager.Instance.RequestNavMeshRefresh();
+        }
+
+        Debug.Log($"{BuildableName} has been removed (refunded {refund} {refundType}).");
         Destroy(gameObject);
     }
 
@@ -111,7 +132,7 @@ public abstract class Buildable : MonoBehaviour, IDamageable
         HandleDestroyed();
     }
 
-     protected virtual void Repair(int amount)
+    protected virtual void Repair(int amount)
     {
         CurrentHealth = Mathf.Clamp(
             CurrentHealth + amount, 0, maxHealth
@@ -131,11 +152,12 @@ public abstract class Buildable : MonoBehaviour, IDamageable
     {
         TakeDamage(damage);
     }
+
     public virtual void TakeDamage(int damage)
     {
         if (IsBroken || damage <= 0) return;
 
-         CurrentHealth = Mathf.Max(
+        CurrentHealth = Mathf.Max(
             0, CurrentHealth - damage
         );
 
@@ -143,9 +165,9 @@ public abstract class Buildable : MonoBehaviour, IDamageable
             Break();
     }
 
-   protected virtual void HandleDestroyed()
+    protected virtual void HandleDestroyed()
     {
-        Debug.Log(buildableName + " destroyed!");
+        Debug.Log(BuildableName + " destroyed!");
     }
 
     private IEnumerator RefreshNavMeshAfterBreak()
