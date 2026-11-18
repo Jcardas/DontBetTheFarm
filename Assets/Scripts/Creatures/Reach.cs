@@ -15,7 +15,7 @@ public static class Reach
 
     // ClosestPoint only supports box, sphere, capsule and convex mesh colliders. On a concave MeshCollider
     // it returns the query point itself, which would make every target count as reached, so use its bounds.
-    static Vector3 NearestPoint(Collider c, Vector3 p) =>
+    public static Vector3 NearestPoint(Collider c, Vector3 p) =>
         c is MeshCollider { convex: false } ? c.ClosestPointOnBounds(p) : c.ClosestPoint(p);
 
     // Path to the side of `target` facing the agent. Aiming at the centre fails for barns and trees,

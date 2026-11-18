@@ -31,6 +31,7 @@ public class Gatherer : MonoBehaviour
     private Animal reviveTarget;
     private Collider targetCollider;
     private Collider heading;
+    private Collider flewTo; // work site a flier has already been sent flying to
 
     private State state = State.Idle;
     private float workTimer;
@@ -119,6 +120,7 @@ public class Gatherer : MonoBehaviour
         building = null;
         reviveTarget = null;
         heading = null;
+        flewTo = null;
         targetCollider = col;
         workTimer = 0f;
         repairing = false;
@@ -136,6 +138,7 @@ public class Gatherer : MonoBehaviour
         reviveTarget = null;
         targetCollider = null;
         heading = null;
+        flewTo = null;
         workTimer = 0f;
         repairing = false;
 
@@ -272,8 +275,21 @@ public class Gatherer : MonoBehaviour
 
     private bool Arrive(Collider target, float stopDistance = -1f)
     {
-        if (!target || !target.enabled || !target.gameObject.activeInHierarchy ||
-            !agent.enabled || !agent.isOnNavMesh) return false;
+        if (!target || !target.enabled || !target.gameObject.activeInHierarchy) return false;
+
+        // Fliers fly to the work site (field, tree, broken building) and land by it. In the air the agent is off,
+        // so without this an airborne goose hovered in place forever.
+        CreatureFlight flight = creature.Flight;
+        if (flight != null && flight.IsAirborne)
+        {
+            if (flewTo != target)
+            {
+                flewTo = target;
+                flight.FlyToAndLand(Reach.NearestPoint(target, transform.position));
+            }
+            return false;
+        }
+        if (!agent.enabled || !agent.isOnNavMesh) return false;
 
         float distance = stopDistance < 0f ? reach : stopDistance;
         if (Reach.Gap(transform.position, target) <= distance)
@@ -285,7 +301,10 @@ public class Gatherer : MonoBehaviour
         if (heading != target || !(agent.hasPath || agent.pathPending))
         {
             heading = target;
-            Reach.WalkTo(agent, target);
+            if (flewTo != target && flight != null && flight.FlyToAndLand(Reach.NearestPoint(target, transform.position)))
+                flewTo = target;
+            else
+                Reach.WalkTo(agent, target);
         }
         return false;
     }
