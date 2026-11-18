@@ -12,6 +12,9 @@ EditorBuildSettings:
     path: Assets/SandboxScenes/Justin-Sandbox.unity
     guid: 87ac14e27023cd14ea2845174b1cae47
   - enabled: 1
+    path: Assets/Scenes/MainMenu.unity
+    guid: 032fb05601a9f0647b182f498850d4ba
+  - enabled: 1
     path: Assets/Scenes/Farm.unity
     guid: 60fddd386b0a38544bf1058dc8502645
   m_configObjects:
