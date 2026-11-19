@@ -119,6 +119,75 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1001 &685248012
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 1801678175}
+    m_Modifications:
+    - target: {fileID: 160274844795061053, guid: 047f721bcaa8b474a9770150eb2d351e, type: 3}
+      propertyPath: uiDocument
+      value: 
+      objectReference: {fileID: 884803701}
+    - target: {fileID: 515420263854423148, guid: 047f721bcaa8b474a9770150eb2d351e, type: 3}
+      propertyPath: m_Name
+      value: TutorialModal
+      objectReference: {fileID: 0}
+    - target: {fileID: 7056312077600929730, guid: 047f721bcaa8b474a9770150eb2d351e, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 74.40133
+      objectReference: {fileID: 0}
+    - target: {fileID: 7056312077600929730, guid: 047f721bcaa8b474a9770150eb2d351e, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -52.7482
+      objectReference: {fileID: 0}
+    - target: {fileID: 7056312077600929730, guid: 047f721bcaa8b474a9770150eb2d351e, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -52.362545
+      objectReference: {fileID: 0}
+    - target: {fileID: 7056312077600929730, guid: 047f721bcaa8b474a9770150eb2d351e, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7056312077600929730, guid: 047f721bcaa8b474a9770150eb2d351e, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7056312077600929730, guid: 047f721bcaa8b474a9770150eb2d351e, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7056312077600929730, guid: 047f721bcaa8b474a9770150eb2d351e, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7056312077600929730, guid: 047f721bcaa8b474a9770150eb2d351e, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7056312077600929730, guid: 047f721bcaa8b474a9770150eb2d351e, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7056312077600929730, guid: 047f721bcaa8b474a9770150eb2d351e, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7436938114640013446, guid: 047f721bcaa8b474a9770150eb2d351e, type: 3}
+      propertyPath: m_SortingOrder
+      value: 50
+      objectReference: {fileID: 0}
+    - target: {fileID: 7436938114640013446, guid: 047f721bcaa8b474a9770150eb2d351e, type: 3}
+      propertyPath: m_PanelSettings
+      value: 
+      objectReference: {fileID: 11400000, guid: 35b46e08aec0f8344a3a04b761645b80, type: 2}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 047f721bcaa8b474a9770150eb2d351e, type: 3}
 --- !u!1 &789440411
 GameObject:
   m_ObjectHideFlags: 0
@@ -246,6 +315,33 @@ MonoBehaviour:
   m_ShadowLayerMask: 1
   m_RenderingLayers: 1
   m_ShadowRenderingLayers: 1
+--- !u!4 &884803699 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 7056312077600929730, guid: 047f721bcaa8b474a9770150eb2d351e, type: 3}
+  m_PrefabInstance: {fileID: 685248012}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &884803700 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 160274844795061053, guid: 047f721bcaa8b474a9770150eb2d351e, type: 3}
+  m_PrefabInstance: {fileID: 685248012}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 82ab0f7f0a838dd4b8d49e0faf9c9d82, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TutorialModalController
+--- !u!114 &884803701 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7436938114640013446, guid: 047f721bcaa8b474a9770150eb2d351e, type: 3}
+  m_PrefabInstance: {fileID: 685248012}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 19102, guid: 0000000000000000e000000000000000, type: 0}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.dll::UnityEngine.UIElements.UIDocument
 --- !u!1 &897410959
 GameObject:
   m_ObjectHideFlags: 0
@@ -511,6 +607,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: '::'
   playButtonSceneToRedirectTo: Farm
   optionsModalDocument: {fileID: 1609299225}
+  tutorialModalController: {fileID: 884803700}
   previewCreatureRoot: {fileID: 1217867143}
   turntableSpeed: 20
 --- !u!1 &1609299223 stripped
@@ -579,6 +676,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1609299224}
+  - {fileID: 884803699}
   - {fileID: 1336903425}
   m_Father: {fileID: 1994941350}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

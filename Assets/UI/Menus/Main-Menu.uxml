@@ -13,10 +13,11 @@
                     <ui:VisualElement name="LeftSide" style="flex-grow: 1; width: 30%;">
                         <ui:VisualElement name="Spacer" style="flex-grow: 1; height: 55%;"/>
                         <ui:VisualElement name="ContentPane" style="flex-grow: 1; max-width: none; min-width: auto; width: auto; justify-content: space-between; height: 400px;">
-                            <ui:Button text="Play" name="LoadGameButton" class="button" style="flex-grow: 1;"/>
-                            <ui:Button text="Options" name="OptionsButton" class="button" style="margin-top: 10px;"/>
+                            <ui:Button text="Play" name="LoadGameButton" class="button menu-button" style="flex-grow: 1;"/>
+                            <ui:Button text="Options" name="OptionsButton" class="button menu-button" style="margin-top: 10px;"/>
+                            <ui:Button text="Tutorial" name="TutorialButton" class="button menu-button" style="margin-top: 10px;"/>
                             <ui:VisualElement name="Spacer" style="flex-grow: 0; height: 10px; margin-top: 10px;"/>
-                            <ui:Button text="Exit" name="ExitButton" class="button"/>
+                            <ui:Button text="Exit" name="ExitButton" class="button menu-button"/>
                         </ui:VisualElement>
                     </ui:VisualElement>
                     <ui:VisualElement name="AsideSection" style="flex-grow: 1; width: 70%; align-items: center; justify-content: center; padding-left: 50px; padding-right: 50px;">
