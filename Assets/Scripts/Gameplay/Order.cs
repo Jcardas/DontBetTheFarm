@@ -75,7 +75,7 @@ public readonly struct Order
             return ForRepair(broken);
 
         var field = hit.collider.GetComponentInParent<WheatField>();
-        if (field && !field.IsBroken && field.mature)
+        if (field && !field.IsBroken)
             return new Order(OrderKind.Harvest, hit.point, field: field);
 
         var node = hit.collider.GetComponentInParent<ResourceNode>();

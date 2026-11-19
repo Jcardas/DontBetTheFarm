@@ -192,18 +192,62 @@ public class Gatherer : MonoBehaviour
 
     private void UpdateFieldHarvest()
     {
-        if (!creature.HasCapability(CreatureCapabilities.CanHarvestCrops) || field == null || targetCollider == null)
+        if (!creature.HasCapability(CreatureCapabilities.CanHarvestCrops) || field == null || field.IsBroken || targetCollider == null)
         {
             AbortWork();
             return;
         }
 
+        if (!field.mature)
+        {
+            WheatField readyField = FindNearestMatureField();
+            if (readyField != null)
+            {
+                Collider col = readyField.GetComponentInChildren<Collider>();
+                if (col != null)
+                {
+                    field = readyField;
+                    targetCollider = col;
+                    heading = null;
+                    flewTo = null;
+                    workTimer = 0f;
+                    brain.SetGuardPost(field.transform.position);
+                }
+            }
+        }
+
         if (!Arrive(targetCollider) || !field.mature) return;
+
         if (DoWorkTick(secondsPerHarvest))
         {
             field.HarvestWheat();
-            AbortWork();
         }
+    }
+    
+    private WheatField FindNearestMatureField()
+    {
+        if (BuildingManager.Instance == null) return null;
+
+        WheatField best = null;
+        float bestDist = float.MaxValue;
+
+        foreach (Buildable b in BuildingManager.Instance.Buildings)
+        {
+            if (b is not WheatField candidate || candidate.IsBroken || !candidate.mature)
+                continue;
+
+            Collider col = candidate.GetComponentInChildren<Collider>();
+            if (col == null) continue;
+
+            float dist = Reach.Gap(transform.position, col);
+            if (dist < bestDist)
+            {
+                bestDist = dist;
+                best = candidate;
+            }
+        }
+
+        return best;
     }
 
     private void UpdateRepair()
