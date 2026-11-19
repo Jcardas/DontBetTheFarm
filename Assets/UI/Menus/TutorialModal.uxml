@@ -1,0 +1,26 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+<Style src="../Stylesheets/TutorialModal.uss" />
+
+    <ui:VisualElement name="tutorial-overlay" class="overlay">
+        <ui:VisualElement name="tutorial-modal" class="modal-container">
+            
+            <!-- Header -->
+            <ui:VisualElement name="header" class="header">
+                <ui:Button name="btn-close-x" text="X" class="close-btn" />
+                <ui:Label name="title-label" text="Tutorial On Getting Started" class="title" />
+            </ui:VisualElement>
+
+            <!-- Image Container -->
+            <ui:VisualElement name="image-container" class="image-container" />
+
+            <!-- Footer Controls -->
+            <ui:VisualElement name="footer" class="footer">
+                <ui:Button name="btn-back" text="Back" class="nav-btn" />
+                <ui:Label name="page-counter" text="1 / 1" class="counter-label" />
+                <ui:Button name="btn-next" text="Next" class="nav-btn" />
+                <ui:Button name="btn-confirm" text="Confirm &amp; Close" class="confirm-btn" />
+            </ui:VisualElement>
+
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>
