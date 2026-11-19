@@ -46,7 +46,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WaveManager
   waves:
   - waveName: 
-    enemyPool: []
+    enemyPool:
+    - enemyPrefab: {fileID: 0}
+      weight: 0
     spawnDelay: 0.5
     batchSize: 3
     flightTime: 5

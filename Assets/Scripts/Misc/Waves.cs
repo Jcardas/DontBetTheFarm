@@ -1,7 +1,15 @@
 using UnityEngine;
 
+
 [System.Serializable]
-public class EnemySpawnWeight
+public class SpecialWaveEnemy
+{
+    public GameObject enemyPrefab;
+    public int number = 1;
+}
+
+[System.Serializable]
+public class BasicWaveEnemy
 {
     public GameObject enemyPrefab;
     public int weight = 1;
@@ -13,7 +21,8 @@ public class Wave
     // Wave Name
     public string waveName;
 
-    public EnemySpawnWeight[] enemyPool;
+    public SpecialWaveEnemy[] specialEnemyPool;
+    public BasicWaveEnemy[] enemyPool;
 
     // Enemies Spawning Levers
     public float spawnDelay = 0.5f;         // Delay between spawning each enemy in a batch
@@ -25,16 +34,18 @@ public class Wave
     {
         if (enemyPool == null || enemyPool.Length == 0) return null;
 
-        int totalWeight = 0;
-        foreach (var entry in enemyPool)
-        {
-            totalWeight += entry.weight;
-        }
+        int currentWeight;
+        int totalWeight;
+        int randomValue;
+
+        currentWeight = 0;
+        totalWeight = FindWaveWeight();
+        if (totalWeight <= 0) return null;
 
         // Pick a random number between 0 and the total weight
-        int randomValue = Random.Range(0, totalWeight);
-        int currentWeight = 0;
+        randomValue = Random.Range(0, totalWeight);
 
+        // Random order for enemies in Enemy Pool based off their weights
         foreach (var entry in enemyPool)
         {
             currentWeight += entry.weight;
@@ -45,5 +56,18 @@ public class Wave
         }
 
         return enemyPool[0].enemyPrefab;
+    }
+
+    public int FindWaveWeight()
+    {
+        if (enemyPool.Length == 0) return 0;
+
+        int totalWeight = 0;
+        foreach (var entry in enemyPool)
+        {
+            totalWeight += entry.weight;
+        }
+
+        return totalWeight;
     }
 }

@@ -12,6 +12,7 @@ public class WaveManager : MonoBehaviour
 
 
     private List<Creature> activeEnemies = new List<Creature>();
+    private Queue<GameObject> specialEnemyQueue = new Queue<GameObject>();
 
     private void Awake()
     {
@@ -35,8 +36,10 @@ public class WaveManager : MonoBehaviour
         }
 
         activeEnemies.Clear();
+        specialEnemyQueue.Clear();
 
         int waveIndex = (currentDay - 1) % waves.Length;
+        Wave currentWave = waves[waveIndex];
 
         //if(waveIndex > waves.Length - 1)
         //{
@@ -44,8 +47,20 @@ public class WaveManager : MonoBehaviour
         //    // Play Final Cutscene?
         //}
 
-        Wave currentWave = waves[waveIndex];
-        
+        if(currentWave.specialEnemyPool != null)
+        {
+            foreach (SpecialWaveEnemy special in currentWave.specialEnemyPool)
+            {
+                if (special.enemyPrefab == null) continue;
+
+                for (int i = 0; i < special.number; i++)
+                {
+                    specialEnemyQueue.Enqueue(special.enemyPrefab);
+                }
+            }
+        }
+
+
         foreach (Spawner ship in motherships)
         {
             if (ship != null)
@@ -53,26 +68,6 @@ public class WaveManager : MonoBehaviour
                 ship.StartNightRoutine(currentWave, this);
             }
         }
-    }
-
-    public void RetreatWave()
-    {
-        foreach (Spawner ship in motherships)
-        {
-            if (ship != null)
-            {
-                ship.StopSpawning();
-            }
-        }
-
-        foreach (Creature enemy in activeEnemies)
-        {
-            if (enemy != null && !enemy.Down)
-            {
-                enemy.Retreat();
-            }
-        }
-
     }
 
     public void RegisterEnemy(Creature enemy)
@@ -99,10 +94,38 @@ public class WaveManager : MonoBehaviour
 
     public void UnregisterEnemy(Creature enemy) => activeEnemies.Remove(enemy);
 
+    public GameObject GetNextEnemyPrefab(Wave wave)
+    {
+        if(specialEnemyQueue.Count > 0)
+        {
+            return specialEnemyQueue.Dequeue();
+        }
+        return wave.GetRandomEnemyPrefab();
+    }
+
     public int GetActiveAlienCount()
     {
         activeEnemies.RemoveAll(enemy => enemy == null || enemy.Down);
         return activeEnemies.Count;
+    }
+
+    public void RetreatWave()
+    {
+        foreach (Spawner ship in motherships)
+        {
+            if (ship != null)
+            {
+                ship.StopSpawning();
+            }
+        }
+
+        foreach (Creature enemy in activeEnemies)
+        {
+            if (enemy != null && !enemy.Down)
+            {
+                enemy.Retreat();
+            }
+        }
     }
 
     public void CloakMotherships()
