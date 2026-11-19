@@ -28,6 +28,7 @@ public class CombatFeedback : MonoBehaviour
     MaterialPropertyBlock flashBlock;
     RectTransform bar, fill;
     int lastHealth;
+    GameConstants.Team barTeam; // Team the bar is colored for; recolored when an animal changes sides
     float flashEnds;
     bool tinted;
 
@@ -119,9 +120,12 @@ public class CombatFeedback : MonoBehaviour
         bar.sizeDelta = barSize * 100f;
         bar.localScale = Vector3.one * 0.01f;
         Layer("Back", new Color(0f, 0f, 0f, 0.6f));
-        fill = Layer("Fill", creature.Team == GameConstants.Team.Alien ? AlienBar : FarmBar);
+        barTeam = creature.Team;
+        fill = Layer("Fill", TeamColor(barTeam));
         bar.gameObject.SetActive(false);
     }
+
+    static Color TeamColor(GameConstants.Team team) => team == GameConstants.Team.Alien ? AlienBar : FarmBar;
 
     RectTransform Layer(string name, Color color)
     {
@@ -156,6 +160,11 @@ public class CombatFeedback : MonoBehaviour
         bool hurt = !creature.Down && health < creature.CalculatedMaxHealth;
         bar.gameObject.SetActive(hurt);
         if (!hurt) return;
+        if (creature.Team != barTeam)
+        {
+            barTeam = creature.Team; // Won-back or mind-controlled animal: match its new side
+            fill.GetComponent<Image>().color = TeamColor(barTeam);
+        }
         fill.anchorMax = new Vector2((float)health / creature.CalculatedMaxHealth, 1f);
         if (Camera.main) bar.rotation = Camera.main.transform.rotation;
     }

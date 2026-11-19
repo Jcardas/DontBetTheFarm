@@ -38,7 +38,6 @@ public class PlayerControls : MonoBehaviour
     CursorType cursor;
     float lastClickAt;
     readonly List<Selectable>[] groups = { new(), new(), new() };
-    readonly Plane ground = new(Vector3.up, Vector3.zero);
 
     void Awake()
     {
@@ -90,7 +89,9 @@ public class PlayerControls : MonoBehaviour
         bool overUI = UIBlocker.IsPointerOverUI(at);
 
         Ray ray = cam.ScreenPointToRay(at);
-        if (!overUI && player.Fire.WasPressedThisFrame() && shotgun && shotgun.isActiveAndEnabled && ground.Raycast(ray, out float along))
+        // Aim on a flat plane at the farmer's own height, so the shot goes under the cursor on hills and slopes too
+        if (!overUI && player.Fire.WasPressedThisFrame() && shotgun && shotgun.isActiveAndEnabled
+            && new Plane(Vector3.up, shotgun.transform.position).Raycast(ray, out float along))
             shotgun.Fire(ray.GetPoint(along));
 
         RaycastHit hit = default;
@@ -121,7 +122,7 @@ public class PlayerControls : MonoBehaviour
         if (left == LeftButton.Idle || !player.Select.WasReleasedThisFrame()) return;
 
         if (left == LeftButton.Dragging) Pick(Selectable.All.Where(s => OnScreen(cam, s, Box(pressedAt, at))), shift, ctrl);
-        else if (!overUI) Click(cam, unit, shift, ctrl);
+        else if (!overUI) Click(cam, unit, shift, ctrl, ray, overSomething, hit);
         left = LeftButton.Idle;
     }
 
@@ -196,6 +197,10 @@ public class PlayerControls : MonoBehaviour
             if (barnUI.IsMenuOpen) barnUI.CloseMenu();
             else barnUI.OpenMenu();
         }
+
+        // F selects the farmer (Shift+F adds him to the selection)
+        if (Keyboard.current != null && Keyboard.current.fKey.wasPressedThisFrame)
+            Pick(Selectable.All.Where(s => s.Creature is Farmer), shift);
 
         if (player.Cancel.WasPressedThisFrame()) Clear();
         for (int g = 0; g < groups.Length; g++)
@@ -320,7 +325,7 @@ public class PlayerControls : MonoBehaviour
     }
 
     // `unit` is whatever unit is under the mouse, or null.
-    void Click(Camera cam, Selectable unit, bool shift, bool ctrl)
+    void Click(Camera cam, Selectable unit, bool shift, bool ctrl, Ray ray, bool overSomething, RaycastHit hit)
     {
         if (unit != null && unit.Down) unit = null;
         bool twice = unit != null && unit == lastClicked && Time.unscaledTime - lastClickAt < DoubleClickSeconds;
@@ -330,6 +335,17 @@ public class PlayerControls : MonoBehaviour
         // Left-clicking the ground or another unit dismisses any open repair panel unless the active repairer was clicked.
         if (unit == null || !Gatherer.IsActiveRepairer(unit))
             Gatherer.DismissRepairUI();
+
+        // Left-clicking a pen picks the animals in it
+        if (unit == null && overSomething && MouseTarget.Building(ray, hit) is AnimalPen pen)
+        {
+            var penned = pen.AnimalsInPen.Where(a => a != null).Select(a => a.GetComponent<Selectable>()).Where(s => s != null && !s.Down).ToList();
+            if (penned.Count > 0)
+            {
+                Pick(penned, shift, ctrl);
+                return;
+            }
+        }
 
         if (unit == null)
         {

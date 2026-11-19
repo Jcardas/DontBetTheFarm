@@ -219,7 +219,7 @@ public class ContextInteractionManager : MonoBehaviour
                 var repairActions = new List<ContextActionData>
                 {
                     new ContextActionData(
-                        label: $"Repair ({woodCost} <sprite name=\"Wood\">)",
+                        label: $"Repair ({woodCost} <sprite=\"ResourceIcons\" name=\"Wood\">)",
                         onExecute: () =>
                         {
                             if (hasWood)

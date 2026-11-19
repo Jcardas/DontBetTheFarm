@@ -29,7 +29,7 @@ public class PenAnimalsTab
     private Vector2 _dragStartPos;
     private bool _isDragging;
 
-    private readonly Label _countLbl, _nameLbl, _hpLbl, _healCostLbl, _hayCostLbl, _techCostLbl;
+    private readonly Label _countLbl, _nameLbl, _hpLbl, _healTextLbl, _healCostLbl, _hayCostLbl, _techCostLbl;
     private readonly Label _lvlLbl, _hpStatLbl, _spdLbl, _meleeLbl, _rangedLbl;
     private readonly VisualElement _hpFill, _slotsBox, _gridContainer, _selectedCard;
     private readonly Button _healBtn, _cancelBtn, _mutateBtn;
@@ -66,6 +66,7 @@ public class PenAnimalsTab
         _hpFill = root.Q("HPFillBar");
         _healBtn = root.Q<Button>("HealButton");
         _healCostLbl = root.Q<Label>("HealCostLabel");
+        _healTextLbl = root.Q<Label>("HealTextLabel");
         _slotsBox = root.Q("EquippedSlotsContainer");
         _hayCostLbl = root.Q<Label>("MutationHayCost");
         _techCostLbl = root.Q<Label>("MutationTechCost");
@@ -153,6 +154,7 @@ public class PenAnimalsTab
         if (_hpLbl != null) _hpLbl.text = $"HP: {curHp}/{maxHp}";
 
         int healCost = animal.HealCost > 0 ? animal.HealCost : HealFallbackCost;
+        if (_healTextLbl != null) _healTextLbl.text = animal.Down ? "Revive: " : "Heal: ";
         if (_healCostLbl != null) _healCostLbl.text = healCost.ToString();
         _healBtn?.SetEnabled(curHp < maxHp && ResourceManager.Count(ResourceType.Hay) >= healCost);
     }
@@ -289,7 +291,15 @@ public class PenAnimalsTab
         if (_hayCostLbl != null) _hayCostLbl.text = hay.ToString();
         if (_techCostLbl != null) _techCostLbl.text = tech.ToString();
         _cancelBtn?.SetEnabled(_staged.Count > 0);
-        _mutateBtn?.SetEnabled(_staged.Count > 0 && ResourceManager.Count(ResourceType.Hay) >= hay && ResourceManager.Count(ResourceType.Technology) >= tech);
+        int hayShort = hay - ResourceManager.Count(ResourceType.Hay);
+        int techShort = tech - ResourceManager.Count(ResourceType.Technology);
+        _mutateBtn?.SetEnabled(_staged.Count > 0 && hayShort <= 0 && techShort <= 0);
+        // Say why Mutate is greyed out instead of leaving players guessing
+        if (_mutateBtn != null)
+            _mutateBtn.text = _staged.Count == 0 ? "Mutate"
+                : hayShort > 0 ? $"Need {hayShort} Hay"
+                : techShort > 0 ? $"Need {techShort} Tech"
+                : "Mutate";
 
         var defaultPreview = Slots.Select(s => Effective(mutator, s)).FirstOrDefault(m => m != null);
         ShowDetails(defaultPreview);
@@ -640,6 +650,13 @@ public class PenAnimalsTab
         _booth?.InvalidatePortrait(animal);
         _staged.Clear();
         Refresh();
+
+        // Confirm it worked, then put the label back
+        if (_mutateBtn != null)
+        {
+            _mutateBtn.text = "Mutated!";
+            _mutateBtn.schedule.Execute(() => { if (_staged.Count == 0) _mutateBtn.text = "Mutate"; }).StartingIn(1500);
+        }
     }
 
     private void ShowDetails(MutationData m)
