@@ -12,6 +12,7 @@ public class MainMenuController : MonoBehaviour
 
     [Header("Optional Overlay Panels")]
     [SerializeField] private UIDocument optionsModalDocument;
+    [SerializeField] private TutorialModalController tutorialModalController;
 
     [Header("3D Animal Preview Turntable (Optional)")]
     [Tooltip("Root Transform of the creature displayed by MenuPreviewRenderTexture.")]
@@ -21,11 +22,11 @@ public class MainMenuController : MonoBehaviour
     private UIDocument menuDocument;
     private Button loadGameButton;
     private Button optionsButton;
+    private Button tutorialButton;
     private Button exitButton;
 
     public event Action OnOptionsRequested;
-    public event Action OnCreditsRequested;
-
+    public event Action OnTutorialRequested;
     private void Awake()
     {
         menuDocument = GetComponent<UIDocument>();
@@ -45,10 +46,12 @@ public class MainMenuController : MonoBehaviour
 
         loadGameButton = root.Q<Button>("LoadGameButton");
         optionsButton = root.Q<Button>("OptionsButton");
+        tutorialButton = root.Q<Button>("TutorialButton");
         exitButton = root.Q<Button>("ExitButton");
 
         if (loadGameButton != null) loadGameButton.clicked += HandlePlayClicked;
         if (optionsButton != null) optionsButton.clicked += HandleOptionsClicked;
+        if (tutorialButton != null) tutorialButton.clicked += HandleTutorialClicked;
         if (exitButton != null) exitButton.clicked += HandleExitClicked;
 
         SetOverlayVisible(optionsModalDocument, false);
@@ -58,6 +61,7 @@ public class MainMenuController : MonoBehaviour
     {
         if (loadGameButton != null) loadGameButton.clicked -= HandlePlayClicked;
         if (optionsButton != null) optionsButton.clicked -= HandleOptionsClicked;
+        if(tutorialButton != null) tutorialButton.clicked -= HandleTutorialClicked;
         if (exitButton != null) exitButton.clicked -= HandleExitClicked;
     }
 
@@ -86,7 +90,13 @@ public class MainMenuController : MonoBehaviour
         OnOptionsRequested?.Invoke();
     }
     
-
+    private void HandleTutorialClicked()
+    {
+        Debug.Log("Tutorial button clicked.");
+        tutorialModalController.OpenModal();
+        OnTutorialRequested?.Invoke();
+    }
+    
     private void HandleExitClicked()
     {
 #if UNITY_EDITOR

@@ -28,6 +28,8 @@
     border-left-width: 0;
 }
 
+
+
 .TabSelector {
     background-color: rgb(22, 38, 32);
     border-top-left-radius: 12px;
@@ -75,7 +77,7 @@
 
 .description-text {
     color: rgb(255, 255, 255);
-    font-size: 16px;
+    font-size: 24px;
 }
 
 .descriptionHeader {
@@ -120,7 +122,21 @@
     flex-shrink: 0;
 }
 
-#AnimalsView,
+#AnimalsView {
+    flex-grow: 1;
+    flex-shrink: 1;
+    flex-basis: 0;
+    width: 100%;
+}
+
+#BreedingView {
+    flex-grow: 1;
+    flex-shrink: 1;
+    flex-basis: 0;
+    width: 100%;
+}
+
+#BreedingView,
 #BreedingView {
     flex-grow: 1;
     flex-shrink: 1;
@@ -139,12 +155,34 @@
     background-color: transparent;
 }
 
-.unity-scroller--vertical .unity-scroller__low-button,
+.unity-scroller--vertical .unity-scroller__low-button {
+    display: none;
+}
+
 .unity-scroller--vertical .unity-scroller__high-button {
     display: none;
 }
 
-.unity-scroller--vertical .unity-base-slider,
+.unity-scroller--vertical .unity-scroller__high-button,
+.unity-scroller--vertical .unity-scroller__high-button {
+    display: none;
+}
+
+.unity-scroller--vertical .unity-base-slider {
+    background-color: transparent;
+    border-width: 0;
+    margin: 0;
+    padding: 0;
+}
+
+.unity-scroller--vertical .unity-base-slider__tracker {
+    background-color: transparent;
+    border-width: 0;
+    margin: 0;
+    padding: 0;
+}
+
+.unity-scroller--vertical .unity-base-slider__tracker,
 .unity-scroller--vertical .unity-base-slider__tracker {
     background-color: transparent;
     border-width: 0;
@@ -168,12 +206,34 @@
     background-color: rgb(76, 205, 130);
 }
 
-.horizontalScrollbar .unity-scroller--horizontal .unity-scroller__low-button,
+.horizontalScrollbar .unity-scroller--horizontal .unity-scroller__low-button {
+    display: none;
+}
+
 .horizontalScrollbar .unity-scroller--horizontal .unity-scroller__high-button {
     display: none;
 }
 
-.horizontalScrollbar .unity-scroller--horizontal .unity-base-slider,
+.horizontalScrollbar .unity-scroller--horizontal .unity-scroller__high-button,
+.horizontalScrollbar .unity-scroller--horizontal .unity-scroller__high-button {
+    display: none;
+}
+
+.horizontalScrollbar .unity-scroller--horizontal .unity-base-slider {
+    background-color: transparent;
+    border-width: 0;
+    margin: 0;
+    padding: 0;
+}
+
+.horizontalScrollbar .unity-scroller--horizontal .unity-base-slider__tracker {
+    background-color: transparent;
+    border-width: 0;
+    margin: 0;
+    padding: 0;
+}
+
+.horizontalScrollbar .unity-scroller--horizontal .unity-base-slider__tracker,
 .horizontalScrollbar .unity-scroller--horizontal .unity-base-slider__tracker {
     background-color: transparent;
     border-width: 0;
@@ -215,7 +275,17 @@
     overflow: hidden;
 }
 
-.slot-drop-valid,
+.slot-drop-valid {
+    border-top-color: rgb(110, 220, 130);
+    border-bottom-color: rgb(110, 220, 130);
+    border-left-color: rgb(110, 220, 130);
+    border-right-color: rgb(110, 220, 130);
+    border-top-width: 3px;
+    border-bottom-width: 3px;
+    border-left-width: 3px;
+    border-right-width: 3px;
+}
+
 .breeding-parent-slot.slot-drop-valid {
     border-top-color: rgb(110, 220, 130);
     border-bottom-color: rgb(110, 220, 130);
@@ -227,7 +297,30 @@
     border-right-width: 3px;
 }
 
-.slot-drop-invalid,
+.breeding-parent-slot.slot-drop-valid,
+.breeding-parent-slot.slot-drop-valid {
+    border-top-color: rgb(110, 220, 130);
+    border-bottom-color: rgb(110, 220, 130);
+    border-left-color: rgb(110, 220, 130);
+    border-right-color: rgb(110, 220, 130);
+    border-top-width: 3px;
+    border-bottom-width: 3px;
+    border-left-width: 3px;
+    border-right-width: 3px;
+}
+
+.slot-drop-invalid {
+    border-top-color: rgb(210, 80, 80);
+    border-bottom-color: rgb(210, 80, 80);
+    border-left-color: rgb(210, 80, 80);
+    border-right-color: rgb(210, 80, 80);
+    border-top-width: 2px;
+    border-bottom-width: 2px;
+    border-left-width: 2px;
+    border-right-width: 2px;
+    opacity: 0.5;
+}
+
 .breeding-parent-slot.slot-drop-invalid {
     border-top-color: rgb(210, 80, 80);
     border-bottom-color: rgb(210, 80, 80);
@@ -240,7 +333,30 @@
     opacity: 0.5;
 }
 
-.slot-drop-hover,
+.breeding-parent-slot.slot-drop-invalid,
+.breeding-parent-slot.slot-drop-invalid {
+    border-top-color: rgb(210, 80, 80);
+    border-bottom-color: rgb(210, 80, 80);
+    border-left-color: rgb(210, 80, 80);
+    border-right-color: rgb(210, 80, 80);
+    border-top-width: 2px;
+    border-bottom-width: 2px;
+    border-left-width: 2px;
+    border-right-width: 2px;
+    opacity: 0.5;
+}
+
+.slot-drop-hover {
+    scale: 1.05 1.05;
+    background-color: rgba(110, 220, 130, 0.25);
+}
+
+.breeding-parent-slot.slot-drop-hover {
+    scale: 1.05 1.05;
+    background-color: rgba(110, 220, 130, 0.25);
+}
+
+.breeding-parent-slot.slot-drop-hover,
 .breeding-parent-slot.slot-drop-hover {
     scale: 1.05 1.05;
     background-color: rgba(110, 220, 130, 0.25);
@@ -255,4 +371,12 @@
 
 .dragBar * {
     cursor: url("project://database/Assets/UI/Cursors/hand_small_point.png?fileID=2800000&guid=fedc076baeb05804cab1ff17dd39e132&type=3#hand_small_point");
+}
+
+.menu-button {
+    background-color: rgb(34, 58, 42);
+}
+
+.menu-button:hover {
+    background-color: rgb(24, 38, 29);
 }

@@ -11,7 +11,7 @@ public class TutorialModalController : MonoBehaviour
     [SerializeField] private List<Texture2D> tutorialSlides = new List<Texture2D>();
 
     private VisualElement _overlay;
-    private VisualElement _imageContainer;
+    private Image _slideImage;
     private Button _closeXButton;
     private Button _backButton;
     private Button _nextButton;
@@ -28,7 +28,7 @@ public class TutorialModalController : MonoBehaviour
         var root = uiDocument.rootVisualElement;
 
         _overlay = root.Q<VisualElement>("tutorial-overlay");
-        _imageContainer = root.Q<VisualElement>("image-container");
+        _slideImage = root.Q<Image>("tutorial-slide-image");
         _closeXButton = root.Q<Button>("btn-close-x");
         _backButton = root.Q<Button>("btn-back");
         _nextButton = root.Q<Button>("btn-next");
@@ -39,9 +39,9 @@ public class TutorialModalController : MonoBehaviour
         _backButton.clicked += OnBackClicked;
         _nextButton.clicked += OnNextClicked;
         _confirmButton.clicked += CloseModal;
+        
+        root.style.display = DisplayStyle.None; // Hide the overlay initially
 
-        // Show automatically when hitting Play
-        OpenModal();
     }
 
     private void OnDisable()
@@ -62,7 +62,7 @@ public class TutorialModalController : MonoBehaviour
         }
 
         _currentIndex = 0;
-        _overlay.style.display = DisplayStyle.Flex;
+        uiDocument.rootVisualElement.style.display = DisplayStyle.Flex;
         UpdateUI();
     }
 
@@ -86,17 +86,18 @@ public class TutorialModalController : MonoBehaviour
 
     private void CloseModal()
     {
-        _overlay.style.display = DisplayStyle.None;
+        _currentIndex = 0;
+        uiDocument.rootVisualElement.style.display = DisplayStyle.None;
     }
 
     private void UpdateUI()
     {
         // Update image
         Texture2D currentSlide = tutorialSlides[_currentIndex];
-        _imageContainer.style.backgroundImage = new StyleBackground(currentSlide);
 
         // Update counter (e.g., "1 / 4")
         _pageCounterLabel.text = $"{_currentIndex + 1} / {tutorialSlides.Count}";
+        _slideImage.image = currentSlide;
 
         // Update button enabled states
         bool isFirstSlide = _currentIndex == 0;
