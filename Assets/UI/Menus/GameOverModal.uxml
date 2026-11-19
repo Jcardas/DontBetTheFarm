@@ -1,0 +1,14 @@
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Assets/UI/StyleSheets/InteractionUI.uss?fileID=7433441132597879392&amp;guid=3c26107ceb91787478132dd32f00eb5c&amp;type=3#InteractionUI"/>
+    <ui:VisualElement name="UI_PANE" style="flex-grow: 1; width: 100%; height: 100%; justify-content: center; align-items: center; padding-left: 50px; padding-right: 50px; padding-top: 50px; padding-bottom: 50px;">
+        <ui:VisualElement name="Background" picking-mode="Position" style="position: absolute; left: 0; top: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.65); filter: blur(4);"/>
+        <ui:VisualElement name="GameOverModal" class="SolidPanel" style="width: 540px; max-width: 90%; padding-left: 36px; padding-right: 36px; padding-top: 36px; padding-bottom: 36px; border-width: 0; align-items: center;">
+            <ui:Label name="OutcomeTitleLabel" text="You Win!" class="title" style="font-size: 64px; -unity-text-align: middle-center; margin-bottom: 12px;"/>
+            <ui:Label name="RoundsSurvivedLabel" text="Rounds Survived: 0" class="description-text" style="font-size: 28px; -unity-text-align: middle-center; margin-bottom: 32px;"/>
+            <ui:VisualElement name="FooterButtons" style="flex-direction: row; justify-content: space-between; align-items: center; width: 100%;">
+                <ui:Button text="Main Menu" name="MainMenuButton" class="button cancelButton" style="font-size: 22px; padding-left: 24px; padding-right: 24px; padding-top: 12px; padding-bottom: 12px;"/>
+                <ui:Button text="Play Again" name="PlayAgainButton" class="button" style="font-size: 22px; padding-left: 28px; padding-right: 28px; padding-top: 12px; padding-bottom: 12px;"/>
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

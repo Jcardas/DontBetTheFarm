@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -14,6 +15,12 @@ public class WaveManager : MonoBehaviour
     private List<Creature> activeEnemies = new List<Creature>();
     private Queue<GameObject> specialEnemyQueue = new Queue<GameObject>();
 
+    
+    
+    private int _wavesStarted;
+    public static event Action<int> OnWaveStarted;
+    public static event Action<int> OnAllWavesCleared;
+
     private void Awake()
     {
         if (Instance == null)
@@ -29,6 +36,9 @@ public class WaveManager : MonoBehaviour
 
     public void SpawnWave(int currentDay)
     {
+        _wavesStarted++;
+        OnWaveStarted?.Invoke(_wavesStarted);
+
         if (waves.Length == 0)
         {
             Debug.LogWarning("No waves defined in WaveManager.");
@@ -38,7 +48,7 @@ public class WaveManager : MonoBehaviour
         activeEnemies.Clear();
         specialEnemyQueue.Clear();
 
-        int waveIndex = (currentDay - 1) % waves.Length;
+        int waveIndex = (_wavesStarted - 1) % waves.Length;
         Wave currentWave = waves[waveIndex];
 
         //if(waveIndex > waves.Length - 1)
@@ -125,6 +135,13 @@ public class WaveManager : MonoBehaviour
             {
                 enemy.Retreat();
             }
+        }
+        
+        // TimeManager calls RetreatWave() at 6am when night ends.
+        // If we just survived the final wave, trigger victory immediately!
+        if (waves != null && waves.Length > 0 && _wavesStarted >= waves.Length)
+        {
+            OnAllWavesCleared?.Invoke(_wavesStarted);
         }
     }
 

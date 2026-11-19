@@ -1,0 +1,166 @@
+.gameover-card {
+    width: 780px;
+    max-width: 92%;
+    padding: 32px;
+    border-radius: 18px;
+    border-width: 3px;
+    transition-property: scale, opacity;
+    transition-duration: 0.25s;
+    transition-timing-function: ease-out-back;
+}
+
+.gameover-card--hidden {
+    scale: 0.88 0.88;
+    opacity: 0;
+}
+
+/* --- WIN THEME (Gold & Emerald) --- */
+.state-win {
+    border-color: rgb(235, 195, 75);
+    background-color: rgb(22, 38, 32);
+}
+
+.state-win .outcome-badge {
+    background-color: rgba(235, 195, 75, 0.2);
+    border-color: rgb(235, 195, 75);
+}
+
+.state-win .outcome-tag {
+    color: rgb(235, 195, 75);
+}
+
+.state-win .outcome-title {
+    color: rgb(255, 232, 145);
+}
+
+.state-win .rank-pill {
+    background-color: rgba(110, 220, 130, 0.2);
+    border-color: rgb(110, 220, 130);
+    color: rgb(110, 220, 130);
+}
+
+.state-win .primary-action-btn {
+    background-color: rgb(46, 139, 87);
+}
+
+.state-win .primary-action-btn:hover {
+    background-color: rgb(60, 175, 110);
+}
+
+/* --- LOSE THEME (Crimson & Charred Barn) --- */
+.state-lose {
+    border-color: rgb(210, 80, 80);
+    background-color: rgb(36, 22, 24);
+}
+
+.state-lose .outcome-badge {
+    background-color: rgba(210, 80, 80, 0.22);
+    border-color: rgb(210, 80, 80);
+}
+
+.state-lose .outcome-tag {
+    color: rgb(245, 125, 125);
+}
+
+.state-lose .outcome-title {
+    color: rgb(255, 150, 150);
+}
+
+.state-lose .rank-pill {
+    background-color: rgba(210, 80, 80, 0.2);
+    border-color: rgb(210, 80, 80);
+    color: rgb(245, 125, 125);
+}
+
+.state-lose .primary-action-btn {
+    background-color: rgb(175, 58, 58);
+}
+
+.state-lose .primary-action-btn:hover {
+    background-color: rgb(205, 72, 72);
+}
+
+/* --- LAYOUT & TYPOGRAPHY --- */
+.outcome-banner {
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.outcome-badge {
+    padding: 4px 16px;
+    border-radius: 99px;
+    border-width: 1px;
+    margin-bottom: 8px;
+}
+
+.outcome-tag {
+    font-size: 14px;
+    -unity-font-style: bold;
+    letter-spacing: 2px;
+}
+
+.outcome-title {
+    font-size: 52px;
+    -unity-text-align: middle-center;
+    margin-bottom: 6px;
+}
+
+.outcome-subtitle {
+    font-size: 19px;
+    color: rgb(215, 222, 218);
+    -unity-text-align: middle-center;
+    white-space: normal;
+}
+
+.gameover-divider {
+    height: 2px;
+    background-color: rgba(255, 255, 255, 0.16);
+    margin-bottom: 18px;
+}
+
+.ledger-panel {
+    padding: 18px;
+    background-color: rgba(0, 0, 0, 0.26);
+}
+
+.rank-pill {
+    padding: 4px 14px;
+    border-radius: 8px;
+    border-width: 1px;
+    font-size: 18px;
+    -unity-font-style: bold;
+}
+
+.stats-grid-row {
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.stat-box {
+    flex-grow: 1;
+    flex-basis: 0;
+    background-color: rgba(22, 38, 32, 0.65);
+    border-radius: 10px;
+    padding: 12px 16px;
+    align-items: center;
+}
+
+.stat-box-label {
+    font-size: 15px;
+    color: rgb(190, 200, 195);
+    margin-bottom: 4px;
+}
+
+.stat-box-value {
+    font-size: 28px;
+}
+
+.mvp-row {
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top-width: 1px;
+    border-top-color: rgba(255, 255, 255, 0.12);
+}

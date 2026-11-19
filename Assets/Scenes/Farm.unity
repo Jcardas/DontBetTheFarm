@@ -4034,8 +4034,7 @@ PrefabInstance:
       propertyPath: celestialRig
       value: 
       objectReference: {fileID: 2016354321}
-    m_RemovedComponents:
-    - {fileID: 238343526638594571, guid: 59ba79a8fc03547d5999c44065bd285a, type: 3}
+    m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
