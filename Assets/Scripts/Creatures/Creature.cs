@@ -430,6 +430,7 @@ public abstract class Creature : MonoBehaviour, IDamageable
             beamDespawnPosition.y -= 2.5f;
 
             Instantiate(beamEffectPrefab, beamDespawnPosition, Quaternion.identity);
+            SoundManager.Instance.PlaySFX(SoundManager.SoundName.AlienBeamUp);
         }
         Destroy(gameObject);
     }

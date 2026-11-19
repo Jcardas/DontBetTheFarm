@@ -125,6 +125,8 @@ public class Spawner : MonoBehaviour
 
             Vector3 spawnPosition = platform.GetRandomSpawnPosition();
 
+            SoundManager.Instance.PlaySFX(SoundManager.SoundName.AlienBeamDown);
+
             if (beamEffectPrefab != null)
             {
                 Vector3 beamSpawnPosition = spawnPosition;

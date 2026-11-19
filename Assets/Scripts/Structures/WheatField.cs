@@ -128,6 +128,8 @@ public class WheatField : Buildable
         if (store != null)
             store.Deposit(ResourceType.Hay, wheatPerHarvest);
 
+        SoundManager.Instance.PlaySFX(SoundManager.SoundName.HarvestWheat);
+
         StartNewCrop();
     }
 

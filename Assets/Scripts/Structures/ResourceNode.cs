@@ -34,6 +34,8 @@ public class ResourceNode : MonoBehaviour
     // Removes up to `wanted` and returns how much was actually taken.
     public int Take(int wanted)
     {
+        SoundManager.Instance.PlaySFX(SoundManager.SoundName.ChopWood);
+
         int taken = Mathf.Min(wanted, left);
         left -= taken;
         if (Empty) emptiedAt = Time.time;
