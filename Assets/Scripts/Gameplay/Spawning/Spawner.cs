@@ -116,7 +116,8 @@ public class Spawner : MonoBehaviour
     {
         if (platform != null && currentWave != null)
         {
-            GameObject enemyPrefab = currentWave.GetRandomEnemyPrefab();
+            GameObject enemyPrefab = WaveManager.Instance.GetNextEnemyPrefab(currentWave);
+
             if (enemyPrefab == null)
             {
                 return;

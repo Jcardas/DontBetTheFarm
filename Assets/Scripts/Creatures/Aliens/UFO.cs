@@ -41,6 +41,8 @@ public class UFO : MonoBehaviour, IDamageable
     static readonly HashSet<Creature> claimed = new();
     public static bool IsClaimed(Creature c) => claimed.Contains(c);
     protected static void Release(Creature c) => claimed.Remove(c);
+    
+    public static event Action OnFarmerAbducted;
 
     // Clears the lists between plays even when "Reload Domain" is off in Enter Play Mode settings.
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
@@ -273,8 +275,7 @@ public class UFO : MonoBehaviour, IDamageable
 
         if (farmerAbducted)
         {
-            Time.timeScale = 1f;
-            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+            OnFarmerAbducted?.Invoke(); // the game is over, the farmer is gone
         }
     }
 

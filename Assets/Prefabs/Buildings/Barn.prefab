@@ -121,10 +121,13 @@ MonoBehaviour:
   maxHealth: 100
   buildingCost: 10
   resourceType: 0
+  canBeRemoved: 1
+  removeRefundRatio: 0.5
   repairWoodCost: 10
   startsBroken: 0
   repairedVisual: {fileID: 589704149503858968}
   brokenVisual: {fileID: 2357974123883534583}
+  healPerSecondInside: 15
 --- !u!114 &5536863143027479355
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -270,7 +273,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 26412614464024292}
-  m_Layer: 8
+  m_Layer: 6
   m_Name: SaucerThresholdPoint
   m_TagString: Untagged
   m_Icon: {fileID: 0}
