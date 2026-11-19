@@ -95,7 +95,8 @@ public class TimeManager : MonoBehaviour
         currentDay++;
         Debug.Log("Day " + currentDay + " has started.");
 
-        SoundManager.Instance.PlaySFX(SoundManager.SoundName.RoosterSFX);
+        SoundManager.Instance.PlaySFX(SoundManager.SoundName.DayStart);
+        SoundManager.Instance.PlayMusic(SoundManager.SoundName.DayMusic);
 
         isDayTimeFlag = true;
         NightLightOff();
@@ -110,6 +111,9 @@ public class TimeManager : MonoBehaviour
     void setNightTime()
     {
         Debug.Log("Night has started.");
+
+        SoundManager.Instance.PlaySFX(SoundManager.SoundName.NightStart);
+        SoundManager.Instance.PlayMusic(SoundManager.SoundName.NightMusic);
 
         isDayTimeFlag = false;
         DayLightOff();

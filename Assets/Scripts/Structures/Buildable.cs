@@ -78,6 +78,8 @@ public abstract class Buildable : MonoBehaviour, IDamageable
     public virtual void Build()
     {
         Debug.Log(BuildableName + " has been built.");
+        SoundManager.Instance.PlaySFX(SoundManager.SoundName.ChopWood);
+
     }
 
     public virtual void Remove()
@@ -118,6 +120,7 @@ public abstract class Buildable : MonoBehaviour, IDamageable
     {
         if (IsBroken) return;
         IsBroken = true;
+
         UpdateVisuals();
         OnBroken();
 
@@ -129,6 +132,7 @@ public abstract class Buildable : MonoBehaviour, IDamageable
     protected virtual void OnBroken()
     {
         CurrentHealth = 0;
+        SoundManager.Instance.PlaySFX(SoundManager.SoundName.BuildingDestroyed);
         HandleDestroyed();
     }
 
@@ -167,8 +171,7 @@ public abstract class Buildable : MonoBehaviour, IDamageable
 
     protected virtual void HandleDestroyed()
     {
-        Debug.Log(BuildableName + " destroyed!");
-    }
+        Debug.Log(BuildableName + " destroyed!");    }
 
     private IEnumerator RefreshNavMeshAfterBreak()
     {
