@@ -306,6 +306,105 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SoundManager
   sfxSource: {fileID: 2590857950525283169}
   musicSource: {fileID: 1610291313887766162}
+  musicVolume: 0.5
+  sfxVolume: 0.5
   soundLibrary:
-  - name: SFXRoosterCry
+  - name: 0
     clip: {fileID: 8300000, guid: bef4960e869617b46a2514eafa8a493a, type: 3}
+    clipVolume: 0
+  - name: 1
+    clip: {fileID: 8300000, guid: 2cfa21c459a7caf45af2619f81140402, type: 3}
+    clipVolume: 0
+  - name: 2
+    clip: {fileID: 8300000, guid: 9222918589e5b864692b16815dbd9084, type: 3}
+    clipVolume: 0
+  - name: 3
+    clip: {fileID: 8300000, guid: 73e03c6f439204e4cbee2fb583b41f98, type: 3}
+    clipVolume: 0
+  - name: 4
+    clip: {fileID: 8300000, guid: 95429bc9517128341afde5982d4017d9, type: 3}
+    clipVolume: 0
+  - name: 6
+    clip: {fileID: 8300000, guid: 10c2e4659d9afb84da03e0fe27574b35, type: 3}
+    clipVolume: 0
+  - name: 7
+    clip: {fileID: 8300000, guid: eee51bb60369b5d49bb72d2491b3739d, type: 3}
+    clipVolume: 0
+  - name: 8
+    clip: {fileID: 8300000, guid: 7a25bdbce65bf87499b1f6223c87f3d5, type: 3}
+    clipVolume: 0
+  - name: 9
+    clip: {fileID: 8300000, guid: bef4960e869617b46a2514eafa8a493a, type: 3}
+    clipVolume: 0
+  - name: 10
+    clip: {fileID: 8300000, guid: 4833570ea7bee0a4c8e11db264600862, type: 3}
+    clipVolume: 0
+  - name: 11
+    clip: {fileID: 8300000, guid: 08543ffcb4b501d4e81ac7aede8e4b5b, type: 3}
+    clipVolume: 0
+  - name: 12
+    clip: {fileID: 8300000, guid: 752135f7fbacdd04799f326456223317, type: 3}
+    clipVolume: 0
+  - name: 13
+    clip: {fileID: 8300000, guid: c8594196f1d66854dae039a17dcbbcba, type: 3}
+    clipVolume: 0
+  - name: 14
+    clip: {fileID: 8300000, guid: f8f7ba804a081064f9832ad5803f531c, type: 3}
+    clipVolume: 0
+  - name: 15
+    clip: {fileID: 8300000, guid: 2cfa21c459a7caf45af2619f81140402, type: 3}
+    clipVolume: 0
+  - name: 16
+    clip: {fileID: 8300000, guid: a022cb6a4a106b7408a601668f4a7acd, type: 3}
+    clipVolume: 0
+  - name: 17
+    clip: {fileID: 8300000, guid: a022cb6a4a106b7408a601668f4a7acd, type: 3}
+    clipVolume: 0
+  - name: 18
+    clip: {fileID: 8300000, guid: 7e0c9d6415ac41648bd97cfd652ec36d, type: 3}
+    clipVolume: 0
+  - name: 19
+    clip: {fileID: 8300000, guid: f03324abd2a132f4cb88aa8b87e04ee6, type: 3}
+    clipVolume: 0
+  - name: 20
+    clip: {fileID: 8300000, guid: 96b2de07d5714a44da3c684debdb3e99, type: 3}
+    clipVolume: 0
+  - name: 21
+    clip: {fileID: 8300000, guid: bb7a45fef0f39c44988224c38579e163, type: 3}
+    clipVolume: 0
+  - name: 22
+    clip: {fileID: 8300000, guid: f03324abd2a132f4cb88aa8b87e04ee6, type: 3}
+    clipVolume: 0
+  - name: 23
+    clip: {fileID: 8300000, guid: 5c24aa75e803efc439616ca8b6837e2a, type: 3}
+    clipVolume: 0
+  - name: 24
+    clip: {fileID: 8300000, guid: 83af0dff06924204094f997ef5573524, type: 3}
+    clipVolume: 0
+  - name: 25
+    clip: {fileID: 8300000, guid: b08014114eb534e4999f3602e9476a95, type: 3}
+    clipVolume: 0
+  - name: 24
+    clip: {fileID: 8300000, guid: 5f36077b5f0269b4686856859c303588, type: 3}
+    clipVolume: 0
+  - name: 26
+    clip: {fileID: 8300000, guid: 9e10d3df12612584694c390d500a94e1, type: 3}
+    clipVolume: 0
+  - name: 28
+    clip: {fileID: 8300000, guid: 13dcf1a51b73ca2409a3c9a7af015a84, type: 3}
+    clipVolume: 0
+  - name: 29
+    clip: {fileID: 8300000, guid: f9fdb0190d346424c877b59c181aa28a, type: 3}
+    clipVolume: 0
+  - name: 30
+    clip: {fileID: 8300000, guid: 52eca6ec632628e4f8f6a3ded76cf6fd, type: 3}
+    clipVolume: 0
+  - name: 31
+    clip: {fileID: 8300000, guid: 7e0c9d6415ac41648bd97cfd652ec36d, type: 3}
+    clipVolume: 0
+  - name: 32
+    clip: {fileID: 8300000, guid: 6c5bdf079028285488f6c33f5d6ac23c, type: 3}
+    clipVolume: 0
+  - name: 33
+    clip: {fileID: 8300000, guid: 7a25bdbce65bf87499b1f6223c87f3d5, type: 3}
+    clipVolume: 0
