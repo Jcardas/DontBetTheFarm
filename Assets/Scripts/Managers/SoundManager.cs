@@ -15,16 +15,50 @@ public class SoundManager : MonoBehaviour
     public enum SoundName
     {
         RoosterSFX,
-        Daytime,
-        Nighttime,
+        UiClick,
+        UiClose,
+        UiOpen,
+        UiMutate,
+        MutateConfirm,
+        UiBreed,
+        GameOver,
+        NightStart,
+        DayStart,
+        DayMusic,
+        NightMusic,
+        BuildingDestroyed,
+        EnterBuilding,
+        ExitBuilding,
+        OrderUnitSuccess,
+        OrderUnitFail,
+        ActionFail,
+        EnemyUfoAbduction,
+        FriendlyUfoAbduction,
+        CreatureAttack,
+        ChopWood,
+        HarvestWheat,
+        CowAmbient,
+        CowSelected,
+        LlamaAmbient,
+        LlamaSpit,
+        LlamaSelected,
+        GooseAmbient,
+        GooseSelected,
+        AlienBeamDown,
+        AlienBeamUp,
+        UfoHover,
+        MothershipHover
     }
 
 
     [System.Serializable]
-    public struct Sound
+    public struct Sound // TODO: Consider making this a class instead of a struct so we can control the volume of each sound effect individually
     {
         public SoundName name;
         public AudioClip clip;
+        
+        // Adjust the volume of the sound effect (0.0 to 1.0)
+        [Range(0f, 2f)] public float clipVolume;  //TODO: This isnt linked to anything
     }
 
     [SerializeField] private List<Sound> soundLibrary;
