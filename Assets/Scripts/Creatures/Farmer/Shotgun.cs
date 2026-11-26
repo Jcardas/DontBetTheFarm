@@ -38,6 +38,9 @@ public class Shotgun : MonoBehaviour
     public Material tracer;
     [Tooltip("Played on every shot that fires.")]
     public AudioClip shot;
+    [Tooltip("Where the reload ring floats while he reloads: metres to the right of him on screen, and up.")]
+    public Vector2 reloadRingOffset = new Vector2(0.9f, 1.3f);
+    public Color reloadTint = new Color(1f, 0.75f, 0.2f);
 
     Creature self;
     ToyBob toy;
@@ -45,6 +48,7 @@ public class Shotgun : MonoBehaviour
     State state;
     int shells = MaxShells;
     float nextShot, reloadedAt;
+    ProgressRing reloadRing;
 
     public int Shells => shells;
     public bool Reloading => state == State.Reloading;
@@ -57,8 +61,29 @@ public class Shotgun : MonoBehaviour
         audioSource = GetComponent<AudioSource>();
     }
 
+    // The reload shows on a copy of his work ring beside him, so the cursor stays free for orders.
+    void Start()
+    {
+        var work = GetComponent<ProgressRing>();
+        if (work == null || work.fill == null) return;
+        var holder = new GameObject("ReloadRing");
+        holder.SetActive(false); // the copy's Awake waits until its fill is set
+        holder.transform.SetParent(transform, false);
+        var view = Instantiate(work.fill.transform.parent.gameObject, holder.transform);
+        reloadRing = holder.AddComponent<ProgressRing>();
+        reloadRing.fill = view.transform.Find(work.fill.name).GetComponent<UnityEngine.UI.Image>();
+        holder.SetActive(true);
+    }
+
     void Update()
     {
+        if (reloadRing && Reloading && !self.Down)
+        {
+            reloadRing.Set(ReloadProgress, reloadTint);
+            if (Camera.main) reloadRing.fill.transform.parent.position = transform.position
+                + Camera.main.transform.right * reloadRingOffset.x + Vector3.up * reloadRingOffset.y;
+        }
+
         if (state != State.Reloading || Time.time < reloadedAt) return;
         shells = MaxShells;
         state = State.Ready;

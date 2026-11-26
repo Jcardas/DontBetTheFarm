@@ -13,7 +13,7 @@ using UnityEngine.SceneManagement;
 // building), right-click opens its context menu (ContextInteractionManager). Ctrl+1..3 saves the picked units as a group,
 // 1..3 picks the group again (Shift+1..3 adds it). J toggles the Barn Research menu.
 // Space fires the farmer's shotgun toward the cursor.
-// The cursor shows what a right-click would do on whatever the mouse is over, or how far along a shotgun reload is.
+// The cursor shows what a right-click would do on whatever the mouse is over.
 public class PlayerControls : MonoBehaviour
 {
     const float DragPixels = 8f;
@@ -162,13 +162,11 @@ public class PlayerControls : MonoBehaviour
             ? hit.collider.GetComponentInParent<Selectable>()
             : null;
 
-        ShowCursor(shotgun && shotgun.Reloading
-            ? ReloadCursor(shotgun.ReloadProgress)
-            : BrokenTargetAt(ray) != null
-                ? CursorType.Repair
-                : overSomething
-                    ? CursorFor(ray, hit, unit)
-                    : CursorType.Default);
+        ShowCursor(BrokenTargetAt(ray) != null
+            ? CursorType.Repair
+            : overSomething
+                ? CursorFor(ray, hit, unit)
+                : CursorType.Default);
     }
 
     void ReadKeys(bool shift)
@@ -308,9 +306,6 @@ public class PlayerControls : MonoBehaviour
 
         return AnyPicked ? CursorType.MoveTo : CursorType.Default;
     }
-
-    // Quarter steps. Reload100 is never shown: the frame the reload completes, the hover cursor comes back.
-    static CursorType ReloadCursor(float progress) => CursorType.Reload0 + Mathf.Min(3, (int)(progress * 4f));
 
     // CameraController also sets cursors (Grab, edge arrows) and resets to Default when its own state ends,
     // so a non-Default hover cursor is re-asserted every frame; SetCursor ignores repeats. Grab wins while held.

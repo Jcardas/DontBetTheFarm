@@ -4,7 +4,7 @@ using UnityEngine.UI;
 
 // A small ring over a unit's head that fills while it works (chopping, harvesting).
 // The work calls Set every frame it runs, and a frame with no call hides the ring, so work that is cut short
-// (new order, a fight, knocked out) can't leave it showing. The farmer's reload shows on the cursor instead (PlayerControls).
+// (new order, a fight, knocked out) can't leave it showing. The farmer's reload shows on a copy beside him (Shotgun).
 public class ProgressRing : MonoBehaviour
 {
     [Tooltip("The filled ring. Its parent is the world-space canvas that is shown or hidden.")]
