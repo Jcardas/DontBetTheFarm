@@ -12,20 +12,25 @@ public class Alien : Creature
         Farmer => TargetTier.Farmer,
         AnimalPen => TargetTier.Pen,
         WheatField => TargetTier.Field,
-        // The farmhouse maps to TargetTier.Farmhouse here once its class exists.
+        Barn => TargetTier.Farmhouse, // the farmhouse is the research barn
         _ => TargetTier.OtherBuilding,
     };
 
-    // Lowest tier near the guard post first, nearest within a tier. With nothing in range it marches on the farm.
+    // Lowest tier near the guard post first, nearest within a tier. With nothing in range it marches on the farmhouse,
+    // then on the farmer once the farmhouse is knocked down and he has nowhere left to hide, then on whatever is left.
     public override IDamageable FindTarget(Vector3 guardPost)
     {
-        IDamageable best = null, nearestBuilding = null;
+        IDamageable best = null, nearestBuilding = null, farmer = null, farmhouse = null;
         TargetTier bestTier = default;
         float bestGap = float.MaxValue, buildingGap = float.MaxValue;
+        bool barnDown = false;
 
         void Consider(IDamageable target)
         {
+            if (target is Barn && target.Down) barnDown = true;
             if (target.Body == null || target.Down) return;
+            if (target is Farmer) farmer = target;
+            if (target is Barn) farmhouse = target;
             float gap = Reach.Gap(transform.position, target.Body);
             if (target is Buildable && gap < buildingGap)
             {
@@ -47,12 +52,12 @@ public class Alien : Creature
             foreach (Buildable building in BuildingManager.Instance.Buildings)
                 if (building != null) Consider(building);
 
-        if (best != null || nearestBuilding == null) return best;
+        IDamageable march = farmhouse ?? (barnDown && farmer != null ? farmer : nearestBuilding);
+        if (best != null || march == null) return best;
 
-        // ponytail: the nearest building stands in for the farmhouse; target the farmhouse instead once it exists.
         // The post moves with the march, so whatever the alien passes on the way counts as in range.
         CreatureBrain.SetGuardPost(transform.position);
-        return nearestBuilding;
+        return march;
     }
 
     protected override void Reset()
