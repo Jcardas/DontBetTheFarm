@@ -9,6 +9,7 @@
 Shader "Custom/Outline Mask" {
   Properties {
     [Enum(UnityEngine.Rendering.CompareFunction)] _ZTest("ZTest", Float) = 0
+    _StencilBit("Stencil Bit", Float) = 1 // DBTF
   }
 
   SubShader {
@@ -25,7 +26,8 @@ Shader "Custom/Outline Mask" {
       ColorMask 0
 
       Stencil {
-        Ref 1
+        Ref [_StencilBit] // DBTF: each outline marks only its own bit, so buildings and creatures don't hide each other
+        WriteMask [_StencilBit]
         Pass Replace
       }
     }
