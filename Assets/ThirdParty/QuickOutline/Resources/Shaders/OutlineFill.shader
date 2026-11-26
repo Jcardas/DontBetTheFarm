@@ -16,6 +16,7 @@ Shader "Custom/Outline Fill" {
     _OutlineColor("Outline Color", Color) = (1, 1, 1, 1)
     _OutlineWidth("Outline Width", Range(0, 10)) = 2
     _HiddenBias("Hidden Bias", Float) = 0.3
+    _StencilBit("Stencil Bit", Float) = 1 // DBTF
   }
 
   SubShader {
@@ -34,7 +35,9 @@ Shader "Custom/Outline Fill" {
       ColorMask RGB
 
       Stencil {
-        Ref 1
+        Ref [_StencilBit] // DBTF: tests and marks only its own bit (see OutlineMask)
+        ReadMask [_StencilBit]
+        WriteMask [_StencilBit]
         Comp NotEqual
         Pass Replace // DBTF: overlapping parts don't blend twice, so a see-through outline stays one even shade
       }

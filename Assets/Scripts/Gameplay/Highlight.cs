@@ -33,6 +33,8 @@ public class Highlight : MonoBehaviour
         // Buildings attach Outline at the root so swapping between repairedVisual and brokenVisual keeps outlines active.
         Component model = GetComponentInChildren<ToyBob>();
         outline = (model != null ? model.gameObject : gameObject).AddComponent<Outline>();
+        // Buildings mask with a stencil bit of their own, so a lit barn doesn't hide the outlines of creatures behind it.
+        if (creature == null) outline.StencilBit = 2;
         Show();
     }
 

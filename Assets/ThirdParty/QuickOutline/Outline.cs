@@ -6,7 +6,7 @@
 //  Copyright © 2018 Chris Nolet. All rights reserved.
 //
 //  Don't Bet the Farm changes, each marked "DBTF": Refresh() for models whose parts change at runtime, skip
-//  renderers destroyed since, and leave unreadable meshes' normals alone instead of erroring in builds.
+//  renderers destroyed since, leave unreadable meshes' normals alone instead of erroring in builds, and StencilBit.
 //
 
 using System;
@@ -50,6 +50,17 @@ public class Outline : MonoBehaviour {
       needsUpdate = true;
     }
   }
+
+  // DBTF: the stencil bit this outline masks with. Outlines on different bits don't cut into each other.
+  public int StencilBit {
+    get { return stencilBit; }
+    set {
+      stencilBit = value;
+      needsUpdate = true;
+    }
+  }
+
+  private int stencilBit = 1;
 
   [Serializable]
   private class ListVector3 {
@@ -296,6 +307,8 @@ public class Outline : MonoBehaviour {
 
     // Apply properties according to mode
     outlineFillMaterial.SetColor("_OutlineColor", outlineColor);
+    outlineMaskMaterial.SetFloat("_StencilBit", stencilBit); // DBTF
+    outlineFillMaterial.SetFloat("_StencilBit", stencilBit);
 
     switch (outlineMode) {
       case Mode.OutlineAll:
